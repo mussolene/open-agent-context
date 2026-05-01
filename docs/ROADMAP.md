@@ -21,6 +21,14 @@ This roadmap is for OACS v0.1 draft and the Python reference implementation.
 - Thin import adapters added: MemoryArena `progressive_search` and AMA-Bench
   open-ended QA rows. These validate OACS mapping only; they are not native
   benchmark harness replacements.
+- Real LM Studio `google/gemma-4-e2b` runs now cover synthetic memory-critical,
+  MemoryArena group travel, MemoryArena progressive search, and AMA-Bench
+  open-ended QA. Results show clear gains for medium/large/long memory tasks and
+  overhead on tiny tasks.
+- Known gap: benchmark-specific text parsing still lives in the prototype
+  memory-tool loop. v0.2 must move parsing into adapters or structured
+  EvidenceRef / typed MemoryRecord content before treating it as standard
+  behavior.
 - Not done yet: MemoryArena `bundled_shopping`, PERMA, Mem2ActBench, and native
   external benchmark harness compatibility.
 
@@ -41,7 +49,8 @@ This roadmap is for OACS v0.1 draft and the Python reference implementation.
 - Add namespace/scope-aware capability constraints for tools and skills.
 - Add audit chain verification commands.
 - Add task pack import/download with schema and checksum validation.
-- Add larger benchmark suites with real LM Studio mode reporting.
+- Add larger benchmark suites with real LM Studio mode reporting and native
+  harness comparison where available.
 
 ### v1.0
 - Freeze stable schemas for ContextCapsule, MemoryRecord, CapabilityGrant,
@@ -73,6 +82,14 @@ This roadmap is for OACS v0.1 draft and the Python reference implementation.
 - Добавлены thin import adapters: MemoryArena `progressive_search` и AMA-Bench
   open-ended QA rows. Они валидируют OACS mapping, но не заменяют native
   benchmark harnesses.
+- Real LM Studio прогоны с `google/gemma-4-e2b` теперь покрывают synthetic
+  memory-critical, MemoryArena group travel, MemoryArena progressive search и
+  AMA-Bench open-ended QA. Результаты показывают пользу на medium/large/long
+  memory tasks и overhead на tiny tasks.
+- Известный gap: benchmark-specific text parsing пока находится в prototype
+  memory-tool loop. В v0.2 parsing нужно вынести в adapters или structured
+  EvidenceRef / typed MemoryRecord content, прежде чем считать это standard
+  behavior.
 - Ещё не готово: MemoryArena `bundled_shopping`, PERMA, Mem2ActBench и native
   external benchmark harness compatibility.
 
@@ -93,7 +110,8 @@ This roadmap is for OACS v0.1 draft and the Python reference implementation.
 - Добавить namespace/scope-aware capability constraints для tools и skills.
 - Добавить команды проверки audit chain.
 - Добавить import/download task packs с schema и checksum validation.
-- Расширить benchmark suites с real LM Studio mode reporting.
+- Расширить benchmark suites с real LM Studio mode reporting и native harness
+  comparison там, где он доступен.
 
 ### v1.0
 - Заморозить stable schemas для ContextCapsule, MemoryRecord, CapabilityGrant,

@@ -44,3 +44,6 @@ tokenizer-specific counts.
 
 Latest public adapter token report:
 `examples/benchmarks/public_memory_adapters_2026-05-01.md`.
+
+Latest real LM Studio `google/gemma-4-e2b` context-scale report:
+`examples/benchmarks/gemma_e2b_context_scale_2026-05-01.md`.
