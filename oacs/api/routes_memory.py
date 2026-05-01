@@ -32,7 +32,8 @@ class MemoryQuery(BaseModel):
 def create_actor(req: ActorCreate) -> dict[str, object]:
     svc = services(require_key=False)
     actor = svc.actors.create(req.type, req.name)  # type: ignore[arg-type]
-    svc.capabilities.grant(actor.id, "system", ["*"], memory_depth_allowed=5)
+    if req.type == "human":
+        svc.capabilities.grant(actor.id, "system", ["*"], memory_depth_allowed=5)
     return actor.model_dump()
 
 

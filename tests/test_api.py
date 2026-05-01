@@ -16,6 +16,16 @@ def test_api_health_and_actor(db, monkeypatch):
     assert response.json()["name"] == "User"
 
 
+def test_api_agent_actor_does_not_receive_wildcard_grant(db, monkeypatch):
+    monkeypatch.setenv("OACS_DB", str(db))
+    client = TestClient(create_app())
+    response = client.post("/v1/actors", json={"type": "agent", "name": "Subagent"})
+    assert response.status_code == 200
+    actor_id = response.json()["id"]
+    grants = services(str(db), require_key=False).capabilities.for_actor(actor_id)
+    assert grants == []
+
+
 def test_api_registries_and_capsule_round_trip(db, monkeypatch):
     monkeypatch.setenv("OACS_DB", str(db))
     client = TestClient(create_app())
