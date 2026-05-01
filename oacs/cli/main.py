@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 from typing import Annotated
 
@@ -19,6 +20,7 @@ from oacs.core.config import OacsConfig
 from oacs.core.json import hash_json
 from oacs.core.time import now_iso
 from oacs.crypto.hybrid_pqc import HybridPQCKeyProvider
+from oacs.memory.models import EvidenceItem
 from oacs.rules.models import RuleManifest
 from oacs.skills.models import SkillManifest
 from oacs.tools.local import call_local_tool
@@ -39,6 +41,7 @@ benchmark_app = typer.Typer()
 server_app = typer.Typer()
 audit_app = typer.Typer()
 capability_app = typer.Typer()
+repo_app = typer.Typer()
 
 app.add_typer(actor_app, name="actor")
 app.add_typer(capability_app, name="capability")
@@ -54,6 +57,7 @@ app.add_typer(loop_app, name="loop")
 app.add_typer(benchmark_app, name="benchmark")
 app.add_typer(server_app, name="server")
 app.add_typer(audit_app, name="audit")
+app.add_typer(repo_app, name="repo")
 
 
 DbOpt = Annotated[str | None, typer.Option("--db")]
@@ -62,6 +66,40 @@ ActorOpt = Annotated[str | None, typer.Option("--actor")]
 AgentOpt = Annotated[str | None, typer.Option("--agent")]
 ScopeOpt = Annotated[list[str] | None, typer.Option("--scope")]
 PassOpt = Annotated[str | None, typer.Option("--passphrase")]
+
+
+def _git_value(args: list[str], cwd: Path | None = None) -> str | None:
+    try:
+        result = subprocess.run(
+            ["git", *args],
+            cwd=cwd,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if result.returncode != 0:
+        return None
+    value = result.stdout.strip()
+    return value or None
+
+
+def _repo_scope(cwd: Path) -> list[str]:
+    root = _git_value(["rev-parse", "--show-toplevel"], cwd)
+    repo_name = Path(root).name if root else cwd.resolve().name
+    return [f"repo:{repo_name}"]
+
+
+def _repo_state(cwd: Path) -> dict[str, object]:
+    changed = (_git_value(["status", "--short"], cwd) or "").splitlines()
+    return {
+        "branch": _git_value(["branch", "--show-current"], cwd) or "unknown",
+        "commit": _git_value(["rev-parse", "--short", "HEAD"], cwd) or "unknown",
+        "dirty": bool(changed),
+        "changed_files": changed[:50],
+    }
 
 
 def emit(data: object, json_out: bool) -> None:
@@ -403,6 +441,76 @@ def context_validate(
         json.loads(file.read_text(encoding="utf-8"))
     )
     emit(result, json_out)
+
+
+@repo_app.command("capture")
+def repo_capture(
+    task: Annotated[str, typer.Option("--task")],
+    summary: Annotated[str, typer.Option("--summary")],
+    actor: ActorOpt = None,
+    scope: ScopeOpt = None,
+    cwd: Annotated[Path, typer.Option("--cwd")] = Path("."),
+    db: DbOpt = None,
+    json_out: JsonOpt = False,
+) -> None:
+    svc = services(db)
+    repo_scope = scope or _repo_scope(cwd)
+    state = _repo_state(cwd)
+    text = "\n".join(
+        [
+            f"Repository task: {task}",
+            f"Summary: {summary}",
+            f"Git branch: {state['branch']}",
+            f"Git commit: {state['commit']}",
+            f"Dirty worktree: {state['dirty']}",
+        ]
+    )
+    evidence: list[EvidenceItem | dict[str, object]] = [
+        EvidenceItem(
+            evidence_kind="repo_task_trace",
+            claim="Repository development task summary",
+            value=summary,
+            source_ref=f"git:{state['commit']}",
+            confidence=1.0,
+            scope=repo_scope,
+            slot="evidence",
+        )
+    ]
+    proposed = svc.memory.propose("episode", 1, text, actor, repo_scope, evidence=evidence)
+    committed = svc.memory.commit(proposed.id, actor)
+    svc.audit.record("repo.capture", actor, committed.id, {"task_hash": hash_json(task)})
+    emit(
+        {
+            "memory_id": committed.id,
+            "scope": repo_scope,
+            "git": state,
+            "status": committed.lifecycle_status,
+        },
+        json_out,
+    )
+
+
+@repo_app.command("context")
+def repo_context(
+    task: Annotated[str, typer.Option("--task")],
+    actor: ActorOpt = None,
+    agent: AgentOpt = None,
+    scope: ScopeOpt = None,
+    cwd: Annotated[Path, typer.Option("--cwd")] = Path("."),
+    budget: Annotated[int, typer.Option("--budget")] = 4000,
+    db: DbOpt = None,
+    json_out: JsonOpt = False,
+) -> None:
+    svc = services(db)
+    repo_scope = scope or _repo_scope(cwd)
+    capsule = svc.context.build(task, actor, agent, repo_scope, budget)
+    emit(
+        {
+            "capsule": capsule.model_dump(),
+            "explain": svc.context.explain(capsule.id, actor),
+        },
+        json_out,
+    )
 
 
 @capsule_app.command("create")

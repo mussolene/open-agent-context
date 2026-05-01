@@ -63,6 +63,20 @@ projection plus selected evidence.
 Current technical report:
 `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`.
 
+### Repo Dogfood
+
+Use OACS as a development memory layer for this repository:
+
+```bash
+acs repo capture --task "tighten memory_calls" \
+  --summary "Removed benchmark-specific shortcuts and kept selector metadata typed." --json
+
+acs repo context --task "continue OACS development" --json
+```
+
+`repo capture` stores a committed D1 episode with git state and structured
+evidence. `repo context` builds an explainable capsule over the repo scope.
+
 ### LM Studio
 
 Start LM Studio with an OpenAI-compatible server at `http://localhost:1234/v1`.
@@ -157,6 +171,20 @@ projection и selected evidence.
 
 Текущий technical report:
 `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`.
+
+### Repo dogfood
+
+Используйте OACS как development memory layer для этого репозитория:
+
+```bash
+acs repo capture --task "tighten memory_calls" \
+  --summary "Removed benchmark-specific shortcuts and kept selector metadata typed." --json
+
+acs repo context --task "continue OACS development" --json
+```
+
+`repo capture` сохраняет committed D1 episode с git state и structured evidence.
+`repo context` строит explainable capsule по repo scope.
 
 ### LM Studio
 

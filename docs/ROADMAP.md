@@ -4,7 +4,7 @@
 This roadmap tracks the OACS v0.1 draft standard and the Python reference
 implementation.
 
-### Current Position: v0.2.0 Reference POC, selector cleanup
+### Current Position: v0.2.1 Reference POC, repo dogfood
 - Done: OACS v0.1 draft terminology, schemas, encrypted SQLite memory,
   ContextCapsule, CLI/API, rules/skills/tools/MCP registries, basic memory loop,
   memory_calls, and public benchmark adapters.
@@ -26,6 +26,8 @@ implementation.
   against a clean temporary SQLite store.
 - Done: CI build pipeline added for lint, typecheck, tests, package build,
   wheel install, and CLI smoke checks.
+- Done: repo dogfood commands added for capturing development episodes and
+  building repo-scoped context capsules.
 - Current technical report:
   `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`.
 
@@ -60,7 +62,7 @@ implementation.
 Этот roadmap отслеживает OACS v0.1 draft standard и Python reference
 implementation.
 
-### Текущая позиция: v0.2.0 Reference POC, selector cleanup
+### Текущая позиция: v0.2.1 Reference POC, repo dogfood
 - Готово: OACS v0.1 draft terminology, schemas, encrypted SQLite memory,
   ContextCapsule, CLI/API, rules/skills/tools/MCP registries, базовый memory
   loop, memory_calls и public benchmark adapters.
@@ -83,6 +85,8 @@ implementation.
   чистом temporary SQLite store.
 - Готово: добавлена CI build pipeline для lint, typecheck, tests, package build,
   wheel install и CLI smoke checks.
+- Готово: добавлены repo dogfood commands для capture development episodes и
+  repo-scoped context capsules.
 - Текущий technical report:
   `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`.
 

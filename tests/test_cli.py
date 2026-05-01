@@ -68,3 +68,50 @@ def test_cli_capability_and_capsule_round_trip(tmp_path):
     assert capsule.id in exported.output
     missing = runner.invoke(app, ["context", "lock", "ctx_missing", "--db", str(db), "--json"])
     assert missing.exit_code != 0
+
+
+def test_cli_repo_capture_and_context(tmp_path):
+    db = tmp_path / "oacs.db"
+    runner = CliRunner()
+    assert runner.invoke(app, ["init", "--db", str(db), "--json"]).exit_code == 0
+    assert (
+        runner.invoke(
+            app, ["key", "init", "--db", str(db), "--passphrase", "pw", "--json"]
+        ).exit_code
+        == 0
+    )
+    capture = runner.invoke(
+        app,
+        [
+            "repo",
+            "capture",
+            "--db",
+            str(db),
+            "--cwd",
+            str(tmp_path),
+            "--task",
+            "tighten dogfood path",
+            "--summary",
+            "repo capture stores a committed episode",
+            "--json",
+        ],
+    )
+    assert capture.exit_code == 0, capture.output
+    assert "memory_id" in capture.output
+
+    context = runner.invoke(
+        app,
+        [
+            "repo",
+            "context",
+            "--db",
+            str(db),
+            "--cwd",
+            str(tmp_path),
+            "--task",
+            "continue dogfood work",
+            "--json",
+        ],
+    )
+    assert context.exit_code == 0, context.output
+    assert "included_memories" in context.output
