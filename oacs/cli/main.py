@@ -21,12 +21,6 @@ from oacs.core.json import hash_json
 from oacs.core.time import now_iso
 from oacs.crypto.hybrid_pqc import HybridPQCKeyProvider
 from oacs.memory.models import EvidenceItem
-from oacs.repo.proof_loop import (
-    RepoProofCaptureRequest,
-    RepoProofContextRequest,
-    RepoProofLoopAdapter,
-    RepoProofStatusRequest,
-)
 from oacs.rules.models import RuleManifest
 from oacs.skills.models import SkillManifest
 from oacs.tools.local import call_local_tool
@@ -540,72 +534,6 @@ def repo_context(
         },
         json_out,
     )
-
-
-@repo_app.command("proof-capture")
-def repo_proof_capture(
-    task_id: Annotated[str, typer.Option("--task-id")],
-    phase: Annotated[str, typer.Option("--phase")],
-    summary: Annotated[str, typer.Option("--summary")],
-    actor: ActorOpt = None,
-    scope: ScopeOpt = None,
-    artifact: Annotated[list[Path] | None, typer.Option("--artifact")] = None,
-    cwd: Annotated[Path, typer.Option("--cwd")] = Path("."),
-    db: DbOpt = None,
-    json_out: JsonOpt = False,
-) -> None:
-    request = RepoProofCaptureRequest(
-        task_id=task_id,
-        phase=phase,  # type: ignore[arg-type]
-        summary=summary,
-        actor_id=actor,
-        cwd=cwd,
-        scope=scope or [],
-        artifacts=artifact or [],
-    )
-    emit(RepoProofLoopAdapter(services(db)).capture(request), json_out)
-
-
-@repo_app.command("proof-context")
-def repo_proof_context(
-    task_id: Annotated[str, typer.Option("--task-id")],
-    intent: Annotated[str, typer.Option("--intent")] = "continue repo proof-loop task",
-    actor: ActorOpt = None,
-    agent: AgentOpt = None,
-    scope: ScopeOpt = None,
-    cwd: Annotated[Path, typer.Option("--cwd")] = Path("."),
-    budget: Annotated[int, typer.Option("--budget")] = 4000,
-    db: DbOpt = None,
-    json_out: JsonOpt = False,
-) -> None:
-    request = RepoProofContextRequest(
-        task_id=task_id,
-        intent=intent,
-        actor_id=actor,
-        agent_id=agent,
-        cwd=cwd,
-        scope=scope or [],
-        token_budget=budget,
-    )
-    emit(RepoProofLoopAdapter(services(db)).context(request), json_out)
-
-
-@repo_app.command("proof-status")
-def repo_proof_status(
-    task_id: Annotated[str, typer.Option("--task-id")],
-    actor: ActorOpt = None,
-    scope: ScopeOpt = None,
-    cwd: Annotated[Path, typer.Option("--cwd")] = Path("."),
-    db: DbOpt = None,
-    json_out: JsonOpt = False,
-) -> None:
-    request = RepoProofStatusRequest(
-        task_id=task_id,
-        actor_id=actor,
-        cwd=cwd,
-        scope=scope or [],
-    )
-    emit(RepoProofLoopAdapter(services(db)).status(request), json_out)
 
 
 @capsule_app.command("create")

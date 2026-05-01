@@ -38,8 +38,6 @@ implementation.
   backend.
 - Done: capability-scoped shared memory added for subagents through
   `CapabilityGrant.scope`, `namespaces_allowed`, and `memory_depth_allowed`.
-- Done: formal repo proof-loop adapter added through `acs repo proof-capture`,
-  `proof-context`, and `proof-status`.
 - Current technical report:
   `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`.
 
@@ -105,8 +103,6 @@ implementation.
   backend.
 - Готово: capability-scoped shared memory добавлена для subagents через
   `CapabilityGrant.scope`, `namespaces_allowed` и `memory_depth_allowed`.
-- Готово: formal repo proof-loop adapter добавлен через `acs repo
-  proof-capture`, `proof-context` и `proof-status`.
 - Текущий technical report:
   `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`.
 

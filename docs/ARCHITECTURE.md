@@ -8,7 +8,7 @@ The POC is layered:
    encrypted sensitive payloads above it.
 3. Capability and policy checks, including scoped memory grants for subagents.
 4. Registries for rules, skills, tools, and MCP bindings.
-5. Context capsule builder, memory loop, and repo proof-loop adapter.
+5. Context capsule builder and memory loop.
 6. CLI `acs` and FastAPI HTTP API.
 7. Deterministic benchmark runner.
 
@@ -22,7 +22,7 @@ POC построен слоями:
    шифрованием sensitive payloads поверх него.
 3. Проверка capabilities и политик, включая scoped memory grants для subagents.
 4. Реестры правил, skills, tools и MCP bindings.
-5. Сборщик Context Capsule, memory loop и repo proof-loop adapter.
+5. Сборщик Context Capsule и memory loop.
 6. CLI `acs` и HTTP API на FastAPI.
 7. Детерминированный benchmark runner.
 

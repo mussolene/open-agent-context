@@ -171,3 +171,109 @@ def test_cli_loop_run_emits_memory_calls(tmp_path):
     assert result.exit_code == 0, result.output
     assert "memory_calls" in result.output
     assert "memory.read" in result.output
+
+
+def test_cli_grant_shared_memory_enforces_scope(tmp_path):
+    db = tmp_path / "oacs.db"
+    runner = CliRunner()
+    assert runner.invoke(app, ["init", "--db", str(db), "--json"]).exit_code == 0
+    assert (
+        runner.invoke(
+            app, ["key", "init", "--db", str(db), "--passphrase", "pw", "--json"]
+        ).exit_code
+        == 0
+    )
+    actor = runner.invoke(
+        app,
+        ["actor", "create", "--db", str(db), "--type", "agent", "--name", "Subagent", "--json"],
+    )
+    actor_id = json.loads(actor.output)["id"]
+    grant = runner.invoke(
+        app,
+        [
+            "capability",
+            "grant-shared-memory",
+            "--db",
+            str(db),
+            "--subject",
+            actor_id,
+            "--scope",
+            "task:allowed",
+            "--json",
+        ],
+    )
+    assert grant.exit_code == 0, grant.output
+    assert json.loads(grant.output)["grant"]["scope"] == ["task:allowed"]
+
+    allowed = runner.invoke(
+        app,
+        [
+            "memory",
+            "propose",
+            "--db",
+            str(db),
+            "--type",
+            "fact",
+            "--depth",
+            "2",
+            "--scope",
+            "task:allowed",
+            "--text",
+            "allowed cli memory",
+            "--json",
+        ],
+    )
+    other = runner.invoke(
+        app,
+        [
+            "memory",
+            "propose",
+            "--db",
+            str(db),
+            "--type",
+            "fact",
+            "--depth",
+            "2",
+            "--scope",
+            "task:other",
+            "--text",
+            "other cli memory",
+            "--json",
+        ],
+    )
+    allowed_id = json.loads(allowed.output)["id"]
+    other_id = json.loads(other.output)["id"]
+    assert (
+        runner.invoke(app, ["memory", "commit", allowed_id, "--db", str(db), "--json"]).exit_code
+        == 0
+    )
+    assert (
+        runner.invoke(app, ["memory", "commit", other_id, "--db", str(db), "--json"]).exit_code
+        == 0
+    )
+
+    query = runner.invoke(
+        app,
+        [
+            "memory",
+            "query",
+            "--db",
+            str(db),
+            "--actor",
+            actor_id,
+            "--scope",
+            "task:allowed",
+            "--query",
+            "cli memory",
+            "--json",
+        ],
+    )
+    assert query.exit_code == 0, query.output
+    assert allowed_id in query.output
+    assert other_id not in query.output
+
+    denied_read = runner.invoke(
+        app,
+        ["memory", "read", other_id, "--db", str(db), "--actor", actor_id, "--json"],
+    )
+    assert denied_read.exit_code != 0
