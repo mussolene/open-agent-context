@@ -18,8 +18,11 @@ This roadmap is for OACS v0.1 draft and the Python reference implementation.
   success with lower token use than raw full context.
 - In progress: promote benchmark-local memory tools into the general
   MemoryLoopEngine and expose the same operations as stable OACS tool calls.
-- Not done yet: public adapters for MemoryArena `progressive_search`,
-  MemoryArena `bundled_shopping`, PERMA, and AMA-Bench.
+- Thin import adapters added: MemoryArena `progressive_search` and AMA-Bench
+  open-ended QA rows. These validate OACS mapping only; they are not native
+  benchmark harness replacements.
+- Not done yet: MemoryArena `bundled_shopping`, PERMA, Mem2ActBench, and native
+  external benchmark harness compatibility.
 
 ### v0.2
 - Dogfood OACS under its own development and benchmark workflows: memory,
@@ -67,8 +70,11 @@ This roadmap is for OACS v0.1 draft and the Python reference implementation.
   success с меньшим token use, чем raw full context.
 - В работе: перенести benchmark-local memory tools в общий MemoryLoopEngine и
   открыть те же операции как stable OACS tool calls.
-- Ещё не готово: public adapters для MemoryArena `progressive_search`,
-  MemoryArena `bundled_shopping`, PERMA и AMA-Bench.
+- Добавлены thin import adapters: MemoryArena `progressive_search` и AMA-Bench
+  open-ended QA rows. Они валидируют OACS mapping, но не заменяют native
+  benchmark harnesses.
+- Ещё не готово: MemoryArena `bundled_shopping`, PERMA, Mem2ActBench и native
+  external benchmark harness compatibility.
 
 ### v0.2
 - Использовать OACS под капотом собственной разработки и benchmark workflows:

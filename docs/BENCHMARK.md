@@ -11,11 +11,14 @@ The benchmark compares:
   MCP-like memory operations, extracts participant/day/slot evidence, and gives
   the model a compact evidence prompt.
 
-Synthetic tasks are local and deterministic. External adapters can import open
-benchmark data such as MemoryArena. Scoring checks required facts, forbidden
-facts, superseded memory handling, clarification behavior, JSON validity,
-estimated prompt/output tokens, memory used, memory-tool operations, evidence
-items, and audit events. Token estimates are deterministic approximations, not
+Synthetic tasks are local and deterministic. External adapters are thin import
+layers for checking OACS memory/context compatibility, not a replacement for the
+native benchmark harnesses. Current adapters cover MemoryArena
+`group_travel_planner`, MemoryArena `progressive_search`, and AMA-Bench
+open-ended QA trajectory rows. Scoring checks required facts, forbidden facts,
+superseded memory handling, clarification behavior, JSON validity, estimated
+prompt/output tokens, memory used, memory-tool operations, evidence items, and
+audit events. Token estimates are deterministic approximations, not
 model-tokenizer counts.
 
 ## RU
@@ -29,9 +32,12 @@ Benchmark сравнивает:
   deterministic MCP-like memory operations, извлекает participant/day/slot
   evidence и даёт модели компактный evidence prompt.
 
-Синтетические задачи локальные и детерминированные. External adapters могут
-импортировать открытые benchmark data, например MemoryArena. Scoring проверяет
-required facts, forbidden facts, superseded memory, clarification, JSON validity,
-estimated prompt/output tokens, использованную память, memory-tool operations,
-evidence items и audit events. Token estimates являются deterministic
-approximations, а не tokenizer-specific counts.
+Синтетические задачи локальные и детерминированные. External adapters являются
+тонкими import layers для проверки OACS memory/context compatibility, а не
+заменой native benchmark harnesses. Сейчас adapters покрывают MemoryArena
+`group_travel_planner`, MemoryArena `progressive_search` и AMA-Bench
+open-ended QA trajectory rows. Scoring проверяет required facts, forbidden
+facts, superseded memory, clarification, JSON validity, estimated prompt/output
+tokens, использованную память, memory-tool operations, evidence items и audit
+events. Token estimates являются deterministic approximations, а не
+tokenizer-specific counts.

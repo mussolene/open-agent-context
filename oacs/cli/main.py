@@ -9,7 +9,7 @@ import uvicorn
 from rich import print as rprint
 
 from oacs.app import OacsServices, services
-from oacs.benchmark.external import MemoryArenaImporter
+from oacs.benchmark.external import AmaBenchImporter, MemoryArenaImporter
 from oacs.benchmark.generator import SyntheticTaskGenerator
 from oacs.benchmark.models import BenchmarkRun, BenchmarkTask
 from oacs.benchmark.reports import compare_runs
@@ -679,11 +679,31 @@ def benchmark_import_memoryarena(
 ) -> None:
     importer = MemoryArenaImporter()
     if file is not None:
-        tasks = importer.from_file(file, count)
+        tasks = importer.from_file(file, count, subset)
     elif url is not None:
         tasks = importer.from_url(url, count)
     else:
         tasks = importer.from_subset(subset, count)
+    svc = services(db, require_key=False)
+    _store_benchmark_tasks(svc, tasks)
+    emit([t.model_dump() for t in tasks], json_out)
+
+
+@benchmark_app.command("import-ama")
+def benchmark_import_ama(
+    count: Annotated[int, typer.Option("--count")] = 5,
+    file: Annotated[Path | None, typer.Option("--file")] = None,
+    url: Annotated[str | None, typer.Option("--url")] = None,
+    db: DbOpt = None,
+    json_out: JsonOpt = False,
+) -> None:
+    importer = AmaBenchImporter()
+    if file is not None:
+        tasks = importer.from_file(file, count)
+    elif url is not None:
+        tasks = importer.from_url(url, count)
+    else:
+        raise typer.BadParameter("--file or --url is required for AMA-Bench import")
     svc = services(db, require_key=False)
     _store_benchmark_tasks(svc, tasks)
     emit([t.model_dump() for t in tasks], json_out)
