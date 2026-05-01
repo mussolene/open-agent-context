@@ -81,6 +81,8 @@ class CapabilityService:
         scope: list[str] | None = None,
         memory_depth_allowed: int = 2,
         namespaces_allowed: list[str] | None = None,
+        tools_allowed: list[str] | None = None,
+        skills_allowed: list[str] | None = None,
         denied_operations: list[str] | None = None,
         expires_at: str | None = None,
     ) -> CapabilityGrant:
@@ -92,6 +94,8 @@ class CapabilityService:
             scope=scope if scope is not None else ["*"],
             memory_depth_allowed=memory_depth_allowed,
             namespaces_allowed=namespaces_allowed or ["default"],
+            tools_allowed=tools_allowed or [],
+            skills_allowed=skills_allowed or [],
             expires_at=expires_at,
         )
         self.repo.save(grant.to_record())
@@ -210,6 +214,18 @@ def builtin_capabilities() -> list[CapabilityDefinition]:
             name="context_export",
             operation="context.export",
             description="Allows exporting a context capsule after policy checks.",
+        ),
+        CapabilityDefinition(
+            id="cap_tool_call",
+            name="tool_call",
+            operation="tool.call",
+            description="Allows calling explicitly granted tools inside granted scopes.",
+        ),
+        CapabilityDefinition(
+            id="cap_skill_run",
+            name="skill_run",
+            operation="skill.run",
+            description="Allows running explicitly granted skills inside granted scopes.",
         ),
         CapabilityDefinition(
             id="cap_shared_memory",

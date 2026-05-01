@@ -19,3 +19,6 @@ class SkillManifest(BaseModel):
     output_schema: dict[str, object] = Field(default_factory=dict)
     permissions: dict[str, object] = Field(default_factory=dict)
     status: str = "active"
+    namespace: str = "default"
+    scope: list[str] = Field(default_factory=list)
+    owner_actor_id: str | None = None

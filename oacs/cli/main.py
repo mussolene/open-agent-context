@@ -24,6 +24,7 @@ from oacs.memory.models import EvidenceItem
 from oacs.rules.models import RuleManifest
 from oacs.skills.models import SkillManifest
 from oacs.tools.local import call_local_tool
+from oacs.tools.mcp_client import McpClientAdapter
 from oacs.tools.models import ToolBinding
 
 app = typer.Typer(help="acs - Agent Context Shell")
@@ -233,6 +234,34 @@ def capability_grant_shared_memory(
         expires_at=expires_at,
     )
     emit({"grant": grant.model_dump(), "shared_memory": True}, json_out)
+
+
+@capability_app.command("grant")
+def capability_grant(
+    subject: Annotated[str, typer.Option("--subject")],
+    operation: Annotated[list[str], typer.Option("--operation")],
+    issuer: Annotated[str, typer.Option("--issuer")] = "system",
+    scope: ScopeOpt = None,
+    depth: Annotated[int, typer.Option("--depth")] = 2,
+    namespace: Annotated[list[str] | None, typer.Option("--namespace")] = None,
+    tool: Annotated[list[str] | None, typer.Option("--tool")] = None,
+    skill: Annotated[list[str] | None, typer.Option("--skill")] = None,
+    deny: Annotated[list[str] | None, typer.Option("--deny")] = None,
+    db: DbOpt = None,
+    json_out: JsonOpt = False,
+) -> None:
+    grant = services(db, require_key=False).capabilities.grant(
+        subject,
+        issuer,
+        list(operation),
+        scope=scope,
+        memory_depth_allowed=depth,
+        namespaces_allowed=namespace,
+        tools_allowed=tool,
+        skills_allowed=skill,
+        denied_operations=deny,
+    )
+    emit(grant.model_dump(), json_out)
 
 
 @memory_app.command("observe")
@@ -733,10 +762,32 @@ def skill_activate(skill_id: str, db: DbOpt = None, json_out: JsonOpt = False) -
 
 
 @skill_app.command("run")
-def skill_run(skill_id: str, json_out: JsonOpt = False) -> None:
+def skill_run(
+    skill_id: str,
+    actor: ActorOpt = None,
+    scope: ScopeOpt = None,
+    db: DbOpt = None,
+    json_out: JsonOpt = False,
+) -> None:
     from oacs.skills.runner import run_builtin_skill
 
-    emit(run_builtin_skill(skill_id, {}), json_out)
+    svc = services(db, require_key=False)
+    skill = svc.skills.inspect(skill_id)
+    check_scope = skill.scope or scope or []
+    if not (
+        svc.policy.allows(
+            actor, "skill.run", scope=check_scope, namespace=skill.namespace, skill=skill.id
+        )
+        or svc.policy.allows(
+            actor, "skill.run", scope=check_scope, namespace=skill.namespace, skill=skill.name
+        )
+    ):
+        svc.policy.require(
+            actor, "skill.run", scope=check_scope, namespace=skill.namespace, skill=skill.id
+        )
+    result = run_builtin_skill(skill.name, {})
+    svc.audit.record("skill.run", actor, skill.id, {"status": "completed"})
+    emit(result, json_out)
 
 
 @tool_app.command("add")
@@ -766,16 +817,58 @@ def tool_inspect(tool_id: str, db: DbOpt = None, json_out: JsonOpt = False) -> N
 
 
 @tool_app.command("call")
-def tool_call(name: str, json_out: JsonOpt = False) -> None:
-    emit(call_local_tool(name, {"called": True}), json_out)
+def tool_call(
+    name: str,
+    actor: ActorOpt = None,
+    scope: ScopeOpt = None,
+    payload: Annotated[str, typer.Option("--payload")] = "{}",
+    execute_mcp: Annotated[bool, typer.Option("--execute-mcp")] = False,
+    db: DbOpt = None,
+    json_out: JsonOpt = False,
+) -> None:
+    svc = services(db, require_key=False)
+    tool = svc.tools.inspect(name)
+    check_scope = tool.scope or scope or []
+    if not (
+        svc.policy.allows(
+            actor, "tool.call", scope=check_scope, namespace=tool.namespace, tool=tool.id
+        )
+        or svc.policy.allows(
+            actor, "tool.call", scope=check_scope, namespace=tool.namespace, tool=tool.name
+        )
+    ):
+        svc.policy.require(
+            actor, "tool.call", scope=check_scope, namespace=tool.namespace, tool=tool.id
+        )
+    parsed_payload = json.loads(payload)
+    if not isinstance(parsed_payload, dict):
+        raise typer.BadParameter("--payload must be a JSON object")
+    if tool.type == "mcp":
+        if not execute_mcp:
+            result = {
+                "tool_id": tool.id,
+                "mcp_ref": tool.mcp_ref,
+                "executed": False,
+                "reason": "MCP execution requires --execute-mcp",
+            }
+        else:
+            if not tool.mcp_ref:
+                raise typer.BadParameter("MCP tool has no mcp_ref")
+            binding = svc.mcp.inspect(tool.mcp_ref)
+            result = McpClientAdapter().call(binding, tool, parsed_payload)
+    else:
+        result = call_local_tool(tool.name, parsed_payload or {"called": True})
+    svc.audit.record("tool.call", actor, tool.id, {"status": "completed", "type": tool.type})
+    emit(result, json_out)
 
 
 @mcp_app.command("import")
 def mcp_import(file: Path, db: DbOpt = None, json_out: JsonOpt = False) -> None:
-    emit(
-        [m.model_dump() for m in services(db, require_key=False).mcp.import_config(str(file))],
-        json_out,
-    )
+    svc = services(db, require_key=False)
+    imported = svc.mcp.import_config(str(file))
+    for binding in imported:
+        svc.audit.record("mcp.import", None, binding.id)
+    emit([m.model_dump() for m in imported], json_out)
 
 
 @mcp_app.command("list")
@@ -1012,3 +1105,8 @@ def audit_explain(audit_id: str, db: DbOpt = None, json_out: JsonOpt = False) ->
 @audit_app.command("export")
 def audit_export(db: DbOpt = None, json_out: JsonOpt = False) -> None:
     audit_list(db, json_out)
+
+
+@audit_app.command("verify")
+def audit_verify(db: DbOpt = None, json_out: JsonOpt = False) -> None:
+    emit(services(db, require_key=False).audit.verify_chain(), json_out)

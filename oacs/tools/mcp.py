@@ -27,6 +27,9 @@ class McpRegistry:
                 args=cfg.get("args", []),
                 env=cfg.get("env", {}),
                 allowed_tools=cfg.get("allowed_tools", cfg.get("tools", [])),
+                namespace=cfg.get("namespace", "default"),
+                scope=cfg.get("scope", []),
+                owner_actor_id=cfg.get("owner_actor_id"),
             )
             self.add(binding)
             for tool_name in binding.allowed_tools:
@@ -36,6 +39,9 @@ class McpRegistry:
                         type="mcp",
                         mcp_ref=binding.id,
                         risk_level=binding.risk_level,
+                        namespace=binding.namespace,
+                        scope=binding.scope,
+                        owner_actor_id=binding.owner_actor_id,
                     )
                 )
             imported.append(binding)
@@ -53,9 +59,9 @@ class McpRegistry:
                 "manifest": manifest,
                 "risk_level": binding.risk_level,
                 "status": binding.status,
-                "namespace": "default",
-                "scope": [],
-                "owner_actor_id": None,
+                "namespace": binding.namespace,
+                "scope": binding.scope,
+                "owner_actor_id": binding.owner_actor_id,
                 "created_at": now,
                 "updated_at": now,
                 "content_hash": hash_json(manifest),

@@ -20,6 +20,8 @@ class PolicyEngine:
         depth: int | None = None,
         scope: Sequence[str] | None = None,
         namespace: str | None = None,
+        tool: str | None = None,
+        skill: str | None = None,
     ) -> bool:
         if actor_id in (None, "", DEFAULT_BOOTSTRAP_ACTOR):
             return True
@@ -35,7 +37,16 @@ class PolicyEngine:
             depth_allowed = depth is None or depth <= grant.memory_depth_allowed
             namespace_allowed = self._namespace_matches(namespace, grant.namespaces_allowed)
             scope_allowed = self._scope_matches(scope, grant.scope)
-            if operation_allowed and depth_allowed and namespace_allowed and scope_allowed:
+            tool_allowed = self._resource_matches(tool, grant.tools_allowed)
+            skill_allowed = self._resource_matches(skill, grant.skills_allowed)
+            if (
+                operation_allowed
+                and depth_allowed
+                and namespace_allowed
+                and scope_allowed
+                and tool_allowed
+                and skill_allowed
+            ):
                 return True
         raise AccessDenied(f"operation requires capability: {operation}")
 
@@ -46,8 +57,10 @@ class PolicyEngine:
         depth: int | None = None,
         scope: Sequence[str] | None = None,
         namespace: str | None = None,
+        tool: str | None = None,
+        skill: str | None = None,
     ) -> None:
-        self.check(actor_id, operation, depth, scope, namespace)
+        self.check(actor_id, operation, depth, scope, namespace, tool, skill)
 
     def allows(
         self,
@@ -56,9 +69,11 @@ class PolicyEngine:
         depth: int | None = None,
         scope: Sequence[str] | None = None,
         namespace: str | None = None,
+        tool: str | None = None,
+        skill: str | None = None,
     ) -> bool:
         try:
-            return self.check(actor_id, operation, depth, scope, namespace)
+            return self.check(actor_id, operation, depth, scope, namespace, tool, skill)
         except AccessDenied:
             return False
 
@@ -75,3 +90,9 @@ class PolicyEngine:
         if not scope:
             return not grant_scope
         return set(scope).issubset(set(grant_scope))
+
+    @staticmethod
+    def _resource_matches(resource: str | None, allowed: Sequence[str]) -> bool:
+        if resource is None:
+            return True
+        return "*" in allowed or resource in allowed

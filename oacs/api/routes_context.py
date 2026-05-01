@@ -5,6 +5,9 @@ from pydantic import BaseModel
 
 from oacs.app import services
 from oacs.core.errors import AccessDenied
+from oacs.skills.runner import run_builtin_skill
+from oacs.tools.local import call_local_tool
+from oacs.tools.mcp_client import McpClientAdapter
 
 router = APIRouter(prefix="/v1")
 
@@ -136,6 +139,37 @@ def inspect_capability(capability_id: str) -> dict[str, object]:
     return services(require_key=False).capabilities.inspect_definition(capability_id).model_dump()
 
 
+@router.post("/capabilities/grant")
+def grant_capability(req: dict[str, object]) -> dict[str, object]:
+    allowed = req.get("allowed_operations", req.get("operations", []))
+    if not isinstance(allowed, list) or not all(isinstance(item, str) for item in allowed):
+        allowed = []
+    grant_obj = services(require_key=False).capabilities.grant(
+        str(req["subject_actor_id"]),
+        str(req.get("issuer_actor_id", "system")),
+        allowed,
+        scope=req.get("scope") if isinstance(req.get("scope"), list) else None,  # type: ignore[arg-type]
+        memory_depth_allowed=int(str(req.get("memory_depth_allowed", 2))),
+        namespaces_allowed=(
+            req.get("namespaces_allowed")
+            if isinstance(req.get("namespaces_allowed"), list)
+            else None
+        ),  # type: ignore[arg-type]
+        tools_allowed=(
+            req.get("tools_allowed") if isinstance(req.get("tools_allowed"), list) else None
+        ),  # type: ignore[arg-type]
+        skills_allowed=(
+            req.get("skills_allowed") if isinstance(req.get("skills_allowed"), list) else None
+        ),  # type: ignore[arg-type]
+        denied_operations=(
+            req.get("denied_operations")
+            if isinstance(req.get("denied_operations"), list)
+            else None
+        ),  # type: ignore[arg-type]
+    )
+    return grant_obj.model_dump()
+
+
 @router.get("/rules")
 def list_rules() -> list[dict[str, object]]:
     return [rule.model_dump() for rule in services(require_key=False).rules.list()]
@@ -159,6 +193,29 @@ def inspect_skill(skill_id: str) -> dict[str, object]:
     return services(require_key=False).skills.inspect(skill_id).model_dump()
 
 
+@router.post("/skills/{skill_id}/run")
+def run_skill(skill_id: str, req: dict[str, object]) -> dict[str, object]:
+    svc = services(require_key=False)
+    actor_id = req.get("actor_id") if isinstance(req.get("actor_id"), str) else None
+    skill = svc.skills.inspect(skill_id)
+    scope = skill.scope or (req.get("scope") if isinstance(req.get("scope"), list) else [])
+    if not (
+        svc.policy.allows(
+            actor_id, "skill.run", scope=scope, namespace=skill.namespace, skill=skill.id
+        )
+        or svc.policy.allows(
+            actor_id, "skill.run", scope=scope, namespace=skill.namespace, skill=skill.name
+        )
+    ):
+        svc.policy.require(
+            actor_id, "skill.run", scope=scope, namespace=skill.namespace, skill=skill.id
+        )
+    payload = req.get("payload") if isinstance(req.get("payload"), dict) else {}
+    result = run_builtin_skill(skill.name, payload)
+    svc.audit.record("skill.run", actor_id, skill.id, {"status": "completed"})
+    return result
+
+
 @router.get("/tools")
 def list_tools() -> list[dict[str, object]]:
     return [tool.model_dump() for tool in services(require_key=False).tools.list()]
@@ -169,6 +226,43 @@ def inspect_tool(tool_id: str) -> dict[str, object]:
     return services(require_key=False).tools.inspect(tool_id).model_dump()
 
 
+@router.post("/tools/{tool_id}/call")
+def call_tool(tool_id: str, req: dict[str, object]) -> dict[str, object]:
+    svc = services(require_key=False)
+    actor_id = req.get("actor_id") if isinstance(req.get("actor_id"), str) else None
+    tool = svc.tools.inspect(tool_id)
+    scope = tool.scope or (req.get("scope") if isinstance(req.get("scope"), list) else [])
+    if not (
+        svc.policy.allows(
+            actor_id, "tool.call", scope=scope, namespace=tool.namespace, tool=tool.id
+        )
+        or svc.policy.allows(
+            actor_id, "tool.call", scope=scope, namespace=tool.namespace, tool=tool.name
+        )
+    ):
+        svc.policy.require(
+            actor_id, "tool.call", scope=scope, namespace=tool.namespace, tool=tool.id
+        )
+    payload = req.get("payload") if isinstance(req.get("payload"), dict) else {}
+    if tool.type == "mcp":
+        execute = bool(req.get("execute_mcp", False))
+        if execute:
+            if not tool.mcp_ref:
+                return {"error": "MCP tool has no mcp_ref"}
+            result = McpClientAdapter().call(svc.mcp.inspect(tool.mcp_ref), tool, payload)
+        else:
+            result = {
+                "tool_id": tool.id,
+                "mcp_ref": tool.mcp_ref,
+                "executed": False,
+                "reason": "MCP execution requires execute_mcp=true",
+            }
+    else:
+        result = call_local_tool(tool.name, payload or {"called": True})
+    svc.audit.record("tool.call", actor_id, tool.id, {"status": "completed", "type": tool.type})
+    return result
+
+
 @router.get("/mcp")
 def list_mcp() -> list[dict[str, object]]:
     return [binding.model_dump() for binding in services(require_key=False).mcp.list()]
@@ -177,6 +271,18 @@ def list_mcp() -> list[dict[str, object]]:
 @router.get("/mcp/{binding_id}")
 def inspect_mcp(binding_id: str) -> dict[str, object]:
     return services(require_key=False).mcp.inspect(binding_id).model_dump()
+
+
+@router.post("/mcp/import")
+def import_mcp(req: dict[str, object]) -> list[dict[str, object]]:
+    path = req.get("file")
+    if not isinstance(path, str):
+        return [{"error": "file is required"}]
+    svc = services(require_key=False)
+    imported = svc.mcp.import_config(path)
+    for binding in imported:
+        svc.audit.record("mcp.import", None, binding.id)
+    return [binding.model_dump() for binding in imported]
 
 
 @router.post("/loop/run")

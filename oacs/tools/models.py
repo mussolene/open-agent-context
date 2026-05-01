@@ -18,6 +18,9 @@ class ToolBinding(BaseModel):
     permissions: dict[str, object] = Field(default_factory=dict)
     risk_level: str = "low"
     status: str = "active"
+    namespace: str = "default"
+    scope: list[str] = Field(default_factory=list)
+    owner_actor_id: str | None = None
 
 
 class McpBinding(BaseModel):
@@ -32,3 +35,6 @@ class McpBinding(BaseModel):
     allowed_tools: list[str] = Field(default_factory=list)
     risk_level: str = "medium"
     status: str = "active"
+    namespace: str = "default"
+    scope: list[str] = Field(default_factory=list)
+    owner_actor_id: str | None = None

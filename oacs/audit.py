@@ -38,3 +38,33 @@ class AuditService:
 
     def list(self) -> list[dict[str, object]]:
         return self.repo.list(order_by=[("created_at", "asc")])
+
+    def verify_chain(self) -> dict[str, object]:
+        events = self.list()
+        errors: list[dict[str, object]] = []
+        previous_hash: str | None = None
+        for index, event in enumerate(events):
+            expected_hash = _event_hash(event)
+            if event.get("content_hash") != expected_hash:
+                errors.append(
+                    {
+                        "index": index,
+                        "id": event.get("id"),
+                        "error": "content_hash_mismatch",
+                    }
+                )
+            if event.get("previous_hash") != previous_hash:
+                errors.append(
+                    {
+                        "index": index,
+                        "id": event.get("id"),
+                        "error": "previous_hash_mismatch",
+                    }
+                )
+            previous_hash = str(event.get("content_hash") or "")
+        return {"valid": not errors, "events": len(events), "errors": errors}
+
+
+def _event_hash(event: dict[str, object]) -> str:
+    payload = {key: value for key, value in event.items() if key != "content_hash"}
+    return hash_json(payload)

@@ -52,6 +52,7 @@ class MemoryLoopEngine:
         model_config: dict[str, object] | None = None,
     ) -> MemoryLoopResult:
         config = model_config or {}
+        checked_tools = self._authorized_tools(actor_id, allowed_tools or [], scope or [])
         intent_name = classify_intent(user_request)
         intent: dict[str, object] = {"name": intent_name, "query": user_request}
         self.memory.observe(user_request, actor_id, scope or [])
@@ -130,7 +131,7 @@ class MemoryLoopEngine:
             context_capsule_id=capsule.id,
             intent=intent,
             memories_used=[memory.id for memory in memories],
-            tools_used=allowed_tools or [],
+            tools_used=checked_tools,
             rules_applied=capsule.included_rules,
             proposed_memories=[proposed.id],
             memory_calls=memory_call_payload,
@@ -163,3 +164,36 @@ class MemoryLoopEngine:
         deepened = self.memory.query(user_request, actor_id, [])
         seen = {memory.id for memory in memories}
         return memories + [memory for memory in deepened if memory.id not in seen]
+
+    def _authorized_tools(
+        self, actor_id: str | None, allowed_tools: list[str], scope: list[str]
+    ) -> list[str]:
+        checked: list[str] = []
+        for requested in allowed_tools:
+            tool = self.context_builder.tools.inspect(requested)
+            check_scope = tool.scope or scope
+            if not (
+                self.context_builder.policy.allows(
+                    actor_id,
+                    "tool.call",
+                    scope=check_scope,
+                    namespace=tool.namespace,
+                    tool=tool.id,
+                )
+                or self.context_builder.policy.allows(
+                    actor_id,
+                    "tool.call",
+                    scope=check_scope,
+                    namespace=tool.namespace,
+                    tool=tool.name,
+                )
+            ):
+                self.context_builder.policy.require(
+                    actor_id,
+                    "tool.call",
+                    scope=check_scope,
+                    namespace=tool.namespace,
+                    tool=tool.id,
+                )
+            checked.append(tool.id)
+        return checked

@@ -1,0 +1,194 @@
+from __future__ import annotations
+
+import json
+
+import pytest
+from fastapi.testclient import TestClient
+from typer.testing import CliRunner
+
+from oacs.api.server import create_app
+from oacs.app import services
+from oacs.cli.main import app
+from oacs.core.errors import AccessDenied
+
+
+def test_tool_and_skill_capability_allowlists_are_enforced(svc) -> None:
+    actor = svc.actors.create("agent", "AdapterAgent")
+
+    with pytest.raises(AccessDenied):
+        svc.policy.require(actor.id, "tool.call", tool="tool_local_echo")
+
+    svc.capabilities.grant(
+        actor.id,
+        "system",
+        ["tool.call", "skill.run"],
+        tools_allowed=["tool_local_echo"],
+        skills_allowed=["skill_task_trace_distiller"],
+    )
+
+    assert svc.policy.allows(actor.id, "tool.call", tool="tool_local_echo")
+    assert not svc.policy.allows(actor.id, "tool.call", tool="other_tool")
+    assert svc.policy.allows(actor.id, "skill.run", skill="skill_task_trace_distiller")
+    assert not svc.policy.allows(actor.id, "skill.run", skill="skill_memory_critical_solver")
+
+
+def test_context_build_filters_tools_and_skills_by_actor_grants(svc) -> None:
+    actor = svc.actors.create("agent", "CapsuleAdapterAgent")
+    svc.capabilities.grant(actor.id, "system", ["context.build", "memory.query", "memory.read"])
+    capsule = svc.context.build("adapter task", actor.id, scope=[])
+    assert capsule.included_tools == []
+    assert capsule.included_skills == []
+
+    svc.capabilities.grant(
+        actor.id,
+        "system",
+        ["tool.call", "skill.run"],
+        tools_allowed=["tool_local_echo"],
+        skills_allowed=["skill_task_trace_distiller"],
+    )
+    capsule = svc.context.build("adapter task", actor.id, scope=[])
+    assert capsule.included_tools == ["tool_local_echo"]
+    assert capsule.included_skills == ["skill_task_trace_distiller"]
+
+
+def test_loop_rejects_unauthorized_allowed_tools(svc) -> None:
+    actor = svc.actors.create("agent", "LoopToolAgent")
+    svc.capabilities.grant(actor.id, "system", ["context.build", "memory.observe"])
+
+    with pytest.raises(AccessDenied):
+        svc.loop.run("use a tool", actor.id, allowed_tools=["tool_local_echo"])
+
+
+def test_audit_chain_verify_detects_tampering(svc) -> None:
+    first = svc.audit.record("test.first", "actor")
+    svc.audit.record("test.second", "actor")
+    assert svc.audit.verify_chain()["valid"] is True
+
+    row = svc.store.get("audit_events", first["id"])
+    row["metadata"] = {"tampered": True}
+    svc.store.put_json("audit_events", row)
+
+    result = svc.audit.verify_chain()
+    assert result["valid"] is False
+    assert result["errors"][0]["error"] == "content_hash_mismatch"
+
+
+def test_cli_tool_and_skill_calls_require_resource_grants(tmp_path) -> None:
+    db = tmp_path / "oacs.db"
+    runner = CliRunner()
+    assert runner.invoke(app, ["init", "--db", str(db), "--json"]).exit_code == 0
+    actor = runner.invoke(
+        app,
+        ["actor", "create", "--db", str(db), "--type", "agent", "--name", "ToolAgent", "--json"],
+    )
+    actor_id = json.loads(actor.output)["id"]
+
+    denied = runner.invoke(
+        app,
+        ["tool", "call", "local_echo", "--db", str(db), "--actor", actor_id, "--json"],
+    )
+    assert denied.exit_code != 0
+
+    grant = runner.invoke(
+        app,
+        [
+            "capability",
+            "grant",
+            "--db",
+            str(db),
+            "--subject",
+            actor_id,
+            "--operation",
+            "tool.call",
+            "--operation",
+            "skill.run",
+            "--tool",
+            "tool_local_echo",
+            "--skill",
+            "skill_task_trace_distiller",
+            "--json",
+        ],
+    )
+    assert grant.exit_code == 0, grant.output
+    assert (
+        runner.invoke(
+            app,
+            ["tool", "call", "local_echo", "--db", str(db), "--actor", actor_id, "--json"],
+        ).exit_code
+        == 0
+    )
+    assert (
+        runner.invoke(
+            app,
+            [
+                "skill",
+                "run",
+                "task_trace_distiller",
+                "--db",
+                str(db),
+                "--actor",
+                actor_id,
+                "--json",
+            ],
+        ).exit_code
+        == 0
+    )
+
+
+def test_api_tool_call_and_audit_verify(db, monkeypatch) -> None:
+    monkeypatch.setenv("OACS_DB", str(db))
+    svc = services(str(db))
+    actor = svc.actors.create("agent", "ApiToolAgent")
+    svc.capabilities.grant(
+        actor.id,
+        "system",
+        ["tool.call"],
+        tools_allowed=["tool_local_echo"],
+    )
+    client = TestClient(create_app())
+
+    response = client.post(
+        "/v1/tools/local_echo/call",
+        json={"actor_id": actor.id, "payload": {"ok": True}},
+    )
+    assert response.status_code == 200
+    assert response.json()["echo"] == {"ok": True}
+
+    verify = client.get("/v1/audit/verify")
+    assert verify.status_code == 200
+    assert verify.json()["valid"] is True
+
+
+def test_mcp_import_creates_scoped_tools_and_blocks_unlisted_binding_tool(svc, tmp_path) -> None:
+    config = tmp_path / "mcp.json"
+    config.write_text(
+        json.dumps(
+            {
+                "mcpServers": {
+                    "demo": {
+                        "command": "demo-mcp",
+                        "allowed_tools": ["search"],
+                        "scope": ["project"],
+                    }
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    imported = svc.mcp.import_config(str(config))
+    tool = svc.tools.inspect("search")
+    assert imported[0].allowed_tools == ["search"]
+    assert tool.type == "mcp"
+    assert tool.scope == ["project"]
+
+    actor = svc.actors.create("agent", "McpAgent")
+    svc.capabilities.grant(
+        actor.id,
+        "system",
+        ["tool.call"],
+        scope=["project"],
+        tools_allowed=[tool.id],
+    )
+    assert svc.policy.allows(actor.id, "tool.call", scope=["project"], tool=tool.id)
+    assert not svc.policy.allows(actor.id, "tool.call", scope=["project"], tool="not-imported")

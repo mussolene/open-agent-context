@@ -45,8 +45,42 @@ class ContextBuilder:
         self.policy.require(actor_id, "context.build", scope=requested_scope, namespace="default")
         memories = self.memory.query(intent, actor_id, requested_scope)
         rules = self.rules.check("context.build", {"memories": [m.model_dump() for m in memories]})
-        skills = self.skills.list()
-        tools = self.tools.list()
+        skills = [
+            skill
+            for skill in self.skills.list()
+            if self.policy.allows(
+                actor_id,
+                "skill.run",
+                scope=skill.scope or requested_scope,
+                namespace=skill.namespace,
+                skill=skill.id,
+            )
+            or self.policy.allows(
+                actor_id,
+                "skill.run",
+                scope=skill.scope or requested_scope,
+                namespace=skill.namespace,
+                skill=skill.name,
+            )
+        ]
+        tools = [
+            tool
+            for tool in self.tools.list()
+            if self.policy.allows(
+                actor_id,
+                "tool.call",
+                scope=tool.scope or requested_scope,
+                namespace=tool.namespace,
+                tool=tool.id,
+            )
+            or self.policy.allows(
+                actor_id,
+                "tool.call",
+                scope=tool.scope or requested_scope,
+                namespace=tool.namespace,
+                tool=tool.name,
+            )
+        ]
         capsule = ContextCapsule(
             purpose=intent,
             task_id=task_id,
