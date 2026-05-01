@@ -3,6 +3,7 @@ from __future__ import annotations
 from fastapi.testclient import TestClient
 
 from oacs.api.server import create_app
+from oacs.app import services
 from oacs.context.capsule import ContextCapsule
 
 
@@ -30,3 +31,28 @@ def test_api_registries_and_capsule_round_trip(db, monkeypatch):
     assert client.get(f"/v1/context/{capsule.id}").json()["id"] == capsule.id
     bad = payload | {"purpose": "tampered"}
     assert client.post("/v1/context/validate", json=bad).status_code >= 400
+
+
+def test_api_loop_run_returns_memory_calls(db, monkeypatch):
+    monkeypatch.setenv("OACS_DB", str(db))
+    svc = services(str(db))
+    mem = svc.memory.propose(
+        "procedure", 2, "Alpha reports use make report-safe.", None, ["project"]
+    )
+    svc.memory.commit(mem.id, None)
+    client = TestClient(create_app())
+
+    response = client.post(
+        "/v1/loop/run",
+        json={
+            "user_request": "How do I generate the Alpha report?",
+            "scope": ["project"],
+            "model_config": {"memory_calls": True},
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["memory_calls"][0]["op"] == "memory.query"
+    assert payload["memory_calls"][1]["op"] == "memory.read"
+    assert payload["benchmark_metrics"]["memory_calls_count"] == 3

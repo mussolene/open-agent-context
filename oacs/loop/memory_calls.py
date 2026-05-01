@@ -34,8 +34,11 @@ class MemoryCallLoopResult:
 class DeterministicMemoryCallLoop:
     """Deterministic OACS memory_calls before an LLM call."""
 
-    def __init__(self, selector: EvidenceSelector | None = None) -> None:
+    def __init__(
+        self, selector: EvidenceSelector | None = None, include_read: bool = False
+    ) -> None:
         self.selector = selector or StructuredEvidenceSelector()
+        self.include_read = include_read
 
     def build_prompt(self, task: str, memories: list[MemoryRecord]) -> MemoryCallLoopResult:
         selection = self.selector.select(task, memories)
@@ -58,10 +61,34 @@ class DeterministicMemoryCallLoop:
                 },
             )
         ]
+        if self.include_read:
+            memory_calls.append(
+                MemoryCall(
+                    id="mcall_2",
+                    op="memory.read",
+                    status="completed",
+                    arguments={
+                        "memory_ids": [memory.id for memory in memories],
+                    },
+                    result={
+                        "memories": [
+                            {
+                                "id": memory.id,
+                                "depth": memory.depth,
+                                "memory_type": memory.memory_type,
+                                "lifecycle_status": memory.lifecycle_status,
+                                "content_hash": memory.content_hash,
+                            }
+                            for memory in memories
+                        ],
+                        "count": len(memories),
+                    },
+                )
+            )
         evidence = selection.evidence
         memory_calls.append(
             MemoryCall(
-                id="mcall_2",
+                id=f"mcall_{len(memory_calls) + 1}",
                 op="memory.extract_evidence",
                 status="completed",
                 arguments={

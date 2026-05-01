@@ -738,10 +738,28 @@ def loop_run(
     actor: ActorOpt = None,
     agent: AgentOpt = None,
     scope: ScopeOpt = None,
+    budget: Annotated[int, typer.Option("--budget")] = 4000,
+    memory_calls: Annotated[bool, typer.Option("--memory-calls/--no-memory-calls")] = True,
+    allow_deepening: Annotated[bool, typer.Option("--deepening/--no-deepening")] = True,
     db: DbOpt = None,
     json_out: JsonOpt = False,
 ) -> None:
-    emit(services(db).loop.run(request, actor, agent, scope or []).model_dump(), json_out)
+    emit(
+        services(db)
+        .loop.run(
+            request,
+            actor,
+            agent,
+            scope or [],
+            budget,
+            model_config={
+                "memory_calls": memory_calls,
+                "allow_deepening": allow_deepening,
+            },
+        )
+        .model_dump(),
+        json_out,
+    )
 
 
 @loop_app.command("explain")

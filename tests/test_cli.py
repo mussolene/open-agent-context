@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 from typer.testing import CliRunner
 
 from oacs.cli.main import app
@@ -115,3 +117,57 @@ def test_cli_repo_capture_and_context(tmp_path):
     )
     assert context.exit_code == 0, context.output
     assert "included_memories" in context.output
+
+
+def test_cli_loop_run_emits_memory_calls(tmp_path):
+    db = tmp_path / "oacs.db"
+    runner = CliRunner()
+    assert runner.invoke(app, ["init", "--db", str(db), "--json"]).exit_code == 0
+    assert (
+        runner.invoke(
+            app, ["key", "init", "--db", str(db), "--passphrase", "pw", "--json"]
+        ).exit_code
+        == 0
+    )
+    proposed = runner.invoke(
+        app,
+        [
+            "memory",
+            "propose",
+            "--db",
+            str(db),
+            "--type",
+            "procedure",
+            "--depth",
+            "2",
+            "--scope",
+            "project",
+            "--text",
+            "Alpha reports use make report-safe.",
+            "--json",
+        ],
+    )
+    assert proposed.exit_code == 0, proposed.output
+    memory_id = json.loads(proposed.output)["id"]
+    committed = runner.invoke(
+        app, ["memory", "commit", memory_id, "--db", str(db), "--json"]
+    )
+    assert committed.exit_code == 0, committed.output
+
+    result = runner.invoke(
+        app,
+        [
+            "loop",
+            "run",
+            "--db",
+            str(db),
+            "--request",
+            "How do I generate the Alpha report?",
+            "--scope",
+            "project",
+            "--json",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    assert "memory_calls" in result.output
+    assert "memory.read" in result.output

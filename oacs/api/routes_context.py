@@ -150,6 +150,7 @@ def inspect_mcp(binding_id: str) -> dict[str, object]:
 
 @router.post("/loop/run")
 def loop_run(req: dict[str, object]) -> dict[str, object]:
+    model_config = req.get("model_config")
     return (
         services()
         .loop.run(
@@ -157,6 +158,9 @@ def loop_run(req: dict[str, object]) -> dict[str, object]:
             req.get("actor_id"),  # type: ignore[arg-type]
             req.get("agent_id"),  # type: ignore[arg-type]
             req.get("scope", []),  # type: ignore[arg-type]
+            int(str(req.get("token_budget", 4000))),
+            req.get("allowed_tools"),  # type: ignore[arg-type]
+            model_config if isinstance(model_config, dict) else None,
         )
         .model_dump()
     )

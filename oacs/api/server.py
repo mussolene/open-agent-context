@@ -3,6 +3,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
+from oacs import __version__
 from oacs.api.routes_audit import router as audit_router
 from oacs.api.routes_benchmark import router as benchmark_router
 from oacs.api.routes_context import router as context_router
@@ -11,7 +12,7 @@ from oacs.core.errors import AccessDenied, NotFound, OacsError
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="OACS API", version="0.1.1")
+    app = FastAPI(title="OACS API", version=__version__)
 
     @app.get("/health")
     def health() -> dict[str, str]:

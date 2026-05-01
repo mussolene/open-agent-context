@@ -4,7 +4,7 @@
 This roadmap tracks the OACS v0.1 draft standard and the Python reference
 implementation.
 
-### Current Position: v0.2.1 Reference POC, repo dogfood
+### Current Position: v0.2.2 Reference POC, general memory calls
 - Done: OACS v0.1 draft terminology, schemas, encrypted SQLite memory,
   ContextCapsule, CLI/API, rules/skills/tools/MCP registries, basic memory loop,
   memory_calls, and public benchmark adapters.
@@ -28,12 +28,13 @@ implementation.
   wheel install, and CLI smoke checks.
 - Done: repo dogfood commands added for capturing development episodes and
   building repo-scoped context capsules.
+- Done: `memory_calls` promoted into general `MemoryLoopEngine`, CLI `loop run`,
+  and API `/v1/loop/run` with intent, read trace, evidence, compact prompt, and
+  deepening controls.
 - Current technical report:
   `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`.
 
 ### v0.2
-- Promote `memory_calls` into the general MemoryLoopEngine, CLI, and API with
-  structured intent, memory query/read, evidence extraction, and deepening.
 - Add adaptive context policy: tiny context uses compact capsule, medium/large
   context uses memory_calls, exact evidence can short-circuit.
 - Add a storage backend protocol and keep SQLite as the reference backend.
@@ -62,7 +63,7 @@ implementation.
 Этот roadmap отслеживает OACS v0.1 draft standard и Python reference
 implementation.
 
-### Текущая позиция: v0.2.1 Reference POC, repo dogfood
+### Текущая позиция: v0.2.2 Reference POC, general memory calls
 - Готово: OACS v0.1 draft terminology, schemas, encrypted SQLite memory,
   ContextCapsule, CLI/API, rules/skills/tools/MCP registries, базовый memory
   loop, memory_calls и public benchmark adapters.
@@ -87,12 +88,13 @@ implementation.
   wheel install и CLI smoke checks.
 - Готово: добавлены repo dogfood commands для capture development episodes и
   repo-scoped context capsules.
+- Готово: `memory_calls` перенесены в общий `MemoryLoopEngine`, CLI `loop run`
+  и API `/v1/loop/run` с intent, read trace, evidence, compact prompt и
+  deepening controls.
 - Текущий technical report:
   `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`.
 
 ### v0.2
-- Перенести `memory_calls` в общий MemoryLoopEngine, CLI и API со structured
-  intent, memory query/read, evidence extraction и deepening.
 - Добавить adaptive context policy: tiny context использует compact capsule,
   medium/large context использует memory_calls, exact evidence может
   short-circuit.
