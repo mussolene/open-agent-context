@@ -7,7 +7,7 @@ evidence refs, forbidden assumptions, permissions, expiry, audit refs, and a
 checksum. Sensitive fields are encrypted in storage and exported as JSON when
 authorized.
 
-In v0.2.7, capsule export can use a `context_capsule_export` envelope containing
+Capsule export can use a `context_capsule_export` envelope containing
 `capsule` and `integrity`. The capsule `checksum` is SHA-256 over canonical JSON
 excluding the `checksum` field. Export `integrity.payload_checksum` is SHA-256
 over the exported capsule payload. `integrity.signature` is an HMAC-SHA256 tag
@@ -22,7 +22,7 @@ evidence refs, запрещённые предположения, permissions, e
 checksum. Чувствительные поля шифруются в хранилище и экспортируются в JSON
 только при наличии прав.
 
-В v0.2.7 capsule export может использовать envelope
+Capsule export может использовать envelope
 `context_capsule_export` с полями `capsule` и `integrity`. Capsule `checksum` -
 это SHA-256 по canonical JSON без поля `checksum`. Export
 `integrity.payload_checksum` - SHA-256 по exported capsule payload.

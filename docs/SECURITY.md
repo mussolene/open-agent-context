@@ -10,7 +10,7 @@ stored locally for development and removed with `acs key lock`.
 
 Audit events store operation metadata and hashes, not secret content.
 
-v0.2.7 capsule integrity is checksum- and MAC-based. Raw capsules carry a
+Capsule integrity is checksum- and MAC-based. Raw capsules carry a
 deterministic checksum for tamper detection. Export envelopes add
 `integrity.payload_checksum` and `integrity.signature`; despite the field name,
 `signature` is an HMAC-SHA256 tag using the local master key, not asymmetric
@@ -39,7 +39,7 @@ Payload памяти и capsules шифруются AEAD. Локальный pas
 
 Audit events содержат metadata и хэши, но не секретный контент.
 
-Integrity capsules в v0.2.7 основана на checksum и MAC. Raw capsules содержат
+Integrity capsules основана на checksum и MAC. Raw capsules содержат
 deterministic checksum для tamper detection. Export envelopes добавляют
 `integrity.payload_checksum` и `integrity.signature`; несмотря на имя поля,
 `signature` является HMAC-SHA256 tag на local master key, а не asymmetric

@@ -37,6 +37,18 @@ or adapters may parse external formats, but they must write structured evidence
 before generic retrieval and context building use it. Domain-specific evidence
 selection belongs in selector/adapters, not in the memory-call orchestrator.
 
+### Retrieval Contract
+
+v0.2.8 defines retrieval as a provider contract over already-authorized
+`MemoryRecord` objects. The reference baseline is deterministic:
+
+- policy-first filtering happens before provider ranking or evidence extraction;
+- `LexicalRetrievalProvider` ranks by token overlap, depth, and stable memory id;
+- `StructuredEvidenceRetrievalProvider` ranks typed `MemoryContent.evidence`
+  without benchmark-specific text parsing;
+- `EmbeddingRetrievalProvider` is disabled by default and never required for
+  conformance.
+
 ## RU
 Глубины:
 
@@ -74,3 +86,15 @@ Importers или adapters могут парсить внешние формат�
 и context building они должны записывать structured evidence. Domain-specific
 evidence selection должен жить в selector/adapters, а не в memory-call
 orchestrator.
+
+### Retrieval Contract
+
+v0.2.8 определяет retrieval как provider contract поверх уже authorized
+`MemoryRecord` objects. Reference baseline детерминированный:
+
+- policy-first filtering выполняется до provider ranking или evidence extraction;
+- `LexicalRetrievalProvider` ранжирует по token overlap, depth и stable memory id;
+- `StructuredEvidenceRetrievalProvider` ранжирует typed `MemoryContent.evidence`
+  без benchmark-specific text parsing;
+- `EmbeddingRetrievalProvider` disabled by default и не требуется для
+  conformance.

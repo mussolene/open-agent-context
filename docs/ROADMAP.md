@@ -5,7 +5,7 @@ This roadmap keeps the OACS v0.1 draft standard small. Core work must define
 memory, context, permissions, audit, and deterministic operation contracts.
 Reference adapters prove integration, but they do not expand the standard.
 
-### Current Position: v0.2.7 Reference POC, context capsule integrity
+### Current Position: v0.2.8 Reference POC, retrieval adapter contract
 - Done: OACS v0.1 draft terminology, schemas, encrypted SQLite memory,
   ContextCapsule, CLI/API, rules/skills/tools/MCP registries, basic memory loop,
   memory_calls, validation adapters, and CI build checks.
@@ -67,10 +67,10 @@ Reference adapters prove integration, but they do not expand the standard.
 - Done: expand API tests for context export/import validation and audit behavior.
 
 ### v0.2.8 - Retrieval Adapter Contract
-- Define a retrieval provider contract with policy-first filtering.
-- Keep deterministic lexical retrieval as the required baseline.
-- Define structured-evidence retrieval without benchmark-specific parsing.
-- Treat embeddings as optional adapters: disabled by default, no network by
+- Done: define a retrieval provider contract with policy-first filtering.
+- Done: keep deterministic lexical retrieval as the required baseline.
+- Done: define structured-evidence retrieval without benchmark-specific parsing.
+- Done: treat embeddings as optional adapters: disabled by default, no network by
   default, and never part of core conformance.
 
 ### v0.3 - Integration Adapters
@@ -95,7 +95,7 @@ Reference adapters prove integration, but they do not expand the standard.
 определять memory, context, permissions, audit и deterministic operation
 contracts. Reference adapters доказывают интеграцию, но не расширяют стандарт.
 
-### Текущая позиция: v0.2.7 Reference POC, context capsule integrity
+### Текущая позиция: v0.2.8 Reference POC, retrieval adapter contract
 - Готово: OACS v0.1 draft terminology, schemas, encrypted SQLite memory,
   ContextCapsule, CLI/API, rules/skills/tools/MCP registries, базовый memory
   loop, memory_calls, validation adapters и CI build checks.
@@ -159,10 +159,10 @@ contracts. Reference adapters доказывают интеграцию, но н
 - Готово: расширить API tests для context export/import validation и audit behavior.
 
 ### v0.2.8 - Retrieval Adapter Contract
-- Определить retrieval provider contract с policy-first filtering.
-- Оставить deterministic lexical retrieval обязательным baseline.
-- Определить structured-evidence retrieval без benchmark-specific parsing.
-- Считать embeddings optional adapters: disabled by default, no network by
+- Готово: определить retrieval provider contract с policy-first filtering.
+- Готово: оставить deterministic lexical retrieval обязательным baseline.
+- Готово: определить structured-evidence retrieval без benchmark-specific parsing.
+- Готово: считать embeddings optional adapters: disabled by default, no network by
   default и не часть core conformance.
 
 ### v0.3 - Integration Adapters

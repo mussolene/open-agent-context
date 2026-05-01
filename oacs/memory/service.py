@@ -9,15 +9,22 @@ from oacs.crypto.aead import decrypt_json_bytes, encrypt_json_bytes
 from oacs.identity.policy import PolicyEngine
 from oacs.memory.lifecycle import can_transition
 from oacs.memory.models import EvidenceItem, MemoryContent, MemoryRecord
-from oacs.memory.search import rank_memories
+from oacs.memory.retrieval import HybridRetrievalProvider, RetrievalProvider, rank_memories
 from oacs.storage.repositories import Repository
 
 
 class MemoryService:
-    def __init__(self, repo: Repository, policy: PolicyEngine, master_key: bytes):
+    def __init__(
+        self,
+        repo: Repository,
+        policy: PolicyEngine,
+        master_key: bytes,
+        retrieval_provider: RetrievalProvider | None = None,
+    ):
         self.repo = repo
         self.policy = policy
         self.master_key = master_key
+        self.retrieval_provider = retrieval_provider or HybridRetrievalProvider()
 
     def observe(
         self, text: str, actor_id: str | None, scope: list[str] | None = None
@@ -66,7 +73,7 @@ class MemoryService:
             ):
                 continue
             memories.append(self._decrypt(row))
-        return rank_memories(query, memories)
+        return rank_memories(query, memories, provider=self.retrieval_provider)
 
     def read(self, memory_id: str, actor_id: str | None) -> MemoryRecord:
         row = self.repo.get(memory_id)
