@@ -15,10 +15,20 @@ OACS_SYSTEM = (
 def build_oacs_prompt(task: str, capsule: ContextCapsule, memories: list[MemoryRecord]) -> str:
     facts = [m for m in memories if m.depth <= 2]
     fuzzy = [m for m in memories if m.depth >= 3]
+    capsule_view = {
+        "id": capsule.id,
+        "purpose": capsule.purpose,
+        "scope": capsule.scope,
+        "token_budget": capsule.token_budget,
+        "included_memories": capsule.included_memories,
+        "included_rules": capsule.included_rules,
+        "forbidden_assumptions": capsule.forbidden_assumptions,
+        "permissions": capsule.permissions,
+    }
     return "\n".join(
         [
             f"Task: {task}",
-            f"Context Capsule: {capsule.model_dump_json()}",
+            f"Context Capsule: {capsule_view}",
             "Relevant D0-D2 facts/procedures:",
             "\n".join(f"- {m.id}: {m.content.text}" for m in facts) or "- none",
             "D3-D5 hypotheses only:",

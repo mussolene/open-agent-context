@@ -8,7 +8,8 @@ import typer
 import uvicorn
 from rich import print as rprint
 
-from oacs.app import services
+from oacs.app import OacsServices, services
+from oacs.benchmark.external import MemoryArenaImporter
 from oacs.benchmark.generator import SyntheticTaskGenerator
 from oacs.benchmark.models import BenchmarkRun, BenchmarkTask
 from oacs.benchmark.reports import compare_runs
@@ -663,6 +664,32 @@ def benchmark_generate(
 ) -> None:
     svc = services(db, require_key=False)
     tasks = SyntheticTaskGenerator().generate(suite, count)
+    _store_benchmark_tasks(svc, tasks)
+    emit([t.model_dump() for t in tasks], json_out)
+
+
+@benchmark_app.command("import-memoryarena")
+def benchmark_import_memoryarena(
+    subset: Annotated[str, typer.Option("--subset")] = "group_travel_planner",
+    count: Annotated[int, typer.Option("--count")] = 5,
+    file: Annotated[Path | None, typer.Option("--file")] = None,
+    url: Annotated[str | None, typer.Option("--url")] = None,
+    db: DbOpt = None,
+    json_out: JsonOpt = False,
+) -> None:
+    importer = MemoryArenaImporter()
+    if file is not None:
+        tasks = importer.from_file(file, count)
+    elif url is not None:
+        tasks = importer.from_url(url, count)
+    else:
+        tasks = importer.from_subset(subset, count)
+    svc = services(db, require_key=False)
+    _store_benchmark_tasks(svc, tasks)
+    emit([t.model_dump() for t in tasks], json_out)
+
+
+def _store_benchmark_tasks(svc: OacsServices, tasks: list[BenchmarkTask]) -> None:
     for task in tasks:
         now = now_iso()
         svc.store.put_json(
@@ -680,12 +707,12 @@ def benchmark_generate(
                 "content_hash": hash_json(task.model_dump()),
             },
         )
-    emit([t.model_dump() for t in tasks], json_out)
 
 
 @benchmark_app.command("import")
 def benchmark_import(file: Path, db: DbOpt = None, json_out: JsonOpt = False) -> None:
     tasks = [BenchmarkTask(**item) for item in json.loads(file.read_text(encoding="utf-8"))]
+    _store_benchmark_tasks(services(db, require_key=False), tasks)
     emit([t.model_dump() for t in tasks], json_out)
 
 
@@ -708,6 +735,7 @@ def benchmark_download(url: str, checksum: str, json_out: JsonOpt = False) -> No
 def benchmark_run(
     mode: Annotated[str, typer.Option("--mode")],
     model: Annotated[str | None, typer.Option("--model")] = None,
+    provider: Annotated[str, typer.Option("--provider")] = "deterministic",
     actor: ActorOpt = None,
     db: DbOpt = None,
     json_out: JsonOpt = False,
@@ -717,7 +745,7 @@ def benchmark_run(
     tasks = [BenchmarkTask(**row["payload"]) for row in rows] or SyntheticTaskGenerator().generate(
         "memory_critical", 3
     )
-    run = MemoryCriticalBenchmark(svc.memory, svc.loop).run(tasks, mode, actor, model)
+    run = MemoryCriticalBenchmark(svc.memory, svc.loop).run(tasks, mode, actor, model, provider)
     now = now_iso()
     svc.store.put_json(
         "benchmark_runs",

@@ -14,6 +14,7 @@ htmlcov/
 *.db
 *.sqlite
 .oacs/
+.oacs*/
 .env
 *.key
 key.json
