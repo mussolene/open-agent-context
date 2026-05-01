@@ -1,8 +1,9 @@
 # Roadmap / Дорожная карта
 
 ## EN
-This roadmap tracks the OACS v0.1 draft standard and the Python reference
-implementation.
+This roadmap keeps the OACS v0.1 draft standard small. Core work must define
+memory, context, permissions, audit, and deterministic operation contracts.
+Reference adapters prove integration, but they do not expand the standard.
 
 ### Current Position: v0.2.5 Reference POC, scoped subagent memory
 - Done: OACS v0.1 draft terminology, schemas, encrypted SQLite memory,
@@ -41,14 +42,29 @@ implementation.
 - Current technical report:
   `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`.
 
-### v0.2
-- Add real embedding retrieval behind the memory search interface.
-- Add stricter JSON-only output handling for LM Studio prompts.
-- Add signed capsule export with verifiable checksum metadata.
-- Expand API tests for all registry and audit routes.
+### v0.2.6 - Memory Standard Hardening
+- Add `MemoryOperation` schema for observe, propose, commit, query, read,
+  correct, forget, blur, and sharpen.
+- Add `memory_call` schema for OACS-native memory operation traces.
+- Specify scope semantics: requested scope must be a subset of granted/resource
+  scope; wildcard access requires explicit `*`.
+- Specify audit requirements for memory read/query/write and context build/export.
+- Add deterministic conformance tests for capability-safe memory operations.
 
-### v0.3
-- Add a real MCP client execution adapter.
+### v0.2.7 - Context Capsule Integrity
+- Add signed capsule export with verifiable checksum metadata.
+- Tighten capsule import/export validation and compatibility notes.
+- Expand API tests for context, registry, and audit routes.
+
+### v0.2.8 - Retrieval Adapter Contract
+- Define a retrieval provider contract with policy-first filtering.
+- Keep deterministic lexical retrieval as the required baseline.
+- Define structured-evidence retrieval without benchmark-specific parsing.
+- Treat embeddings as optional adapters: disabled by default, no network by
+  default, and never part of core conformance.
+
+### v0.3 - Integration Adapters
+- Refine MCP binding model and add optional MCP client execution adapter.
 - Extend namespace/scope-aware capability constraints from memory/context to
   tools and skills.
 - Add audit chain verification commands.
@@ -61,12 +77,13 @@ implementation.
   RuleManifest, SkillManifest, ToolBinding, McpBinding, EvidenceRef, and
   AuditEvent.
 - Define compatibility guarantees and migration policy.
-- Provide backend conformance tests.
+- Provide backend and retrieval conformance tests.
 - Publish a reference benchmark pack and reproducibility report.
 
 ## RU
-Этот roadmap отслеживает OACS v0.1 draft standard и Python reference
-implementation.
+Этот roadmap удерживает OACS v0.1 draft standard небольшим. Core work должен
+определять memory, context, permissions, audit и deterministic operation
+contracts. Reference adapters доказывают интеграцию, но не расширяют стандарт.
 
 ### Текущая позиция: v0.2.5 Reference POC, scoped subagent memory
 - Готово: OACS v0.1 draft terminology, schemas, encrypted SQLite memory,
@@ -106,14 +123,31 @@ implementation.
 - Текущий technical report:
   `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`.
 
-### v0.2
-- Добавить real embedding retrieval за интерфейсом memory search.
-- Усилить JSON-only output handling для LM Studio prompts.
-- Добавить signed capsule export с проверяемой checksum metadata.
-- Расширить API tests для всех registry и audit routes.
+### v0.2.6 - Memory Standard Hardening
+- Добавить `MemoryOperation` schema для observe, propose, commit, query, read,
+  correct, forget, blur и sharpen.
+- Добавить `memory_call` schema для OACS-native traces операций памяти.
+- Зафиксировать scope semantics: requested scope должен быть subset of
+  granted/resource scope; wildcard access требует явного `*`.
+- Зафиксировать audit requirements для memory read/query/write и context
+  build/export.
+- Добавить deterministic conformance tests для capability-safe memory
+  operations.
 
-### v0.3
-- Добавить настоящий MCP client execution adapter.
+### v0.2.7 - Context Capsule Integrity
+- Добавить signed capsule export с проверяемой checksum metadata.
+- Усилить capsule import/export validation и compatibility notes.
+- Расширить API tests для context, registry и audit routes.
+
+### v0.2.8 - Retrieval Adapter Contract
+- Определить retrieval provider contract с policy-first filtering.
+- Оставить deterministic lexical retrieval обязательным baseline.
+- Определить structured-evidence retrieval без benchmark-specific parsing.
+- Считать embeddings optional adapters: disabled by default, no network by
+  default и не часть core conformance.
+
+### v0.3 - Integration Adapters
+- Уточнить MCP binding model и добавить optional MCP client execution adapter.
 - Расширить namespace/scope-aware capability constraints с memory/context на
   tools и skills.
 - Добавить команды проверки audit chain.
@@ -126,5 +160,5 @@ implementation.
   RuleManifest, SkillManifest, ToolBinding, McpBinding, EvidenceRef и
   AuditEvent.
 - Зафиксировать compatibility guarantees и migration policy.
-- Добавить backend conformance tests.
+- Добавить backend и retrieval conformance tests.
 - Опубликовать reference benchmark pack и reproducibility report.

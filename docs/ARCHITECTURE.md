@@ -1,7 +1,11 @@
 # Architecture / Архитектура
 
 ## EN
-The POC is layered:
+The POC separates the draft standard from reference adapters. The standard is
+the memory/context contract; adapters prove that the contract can be embedded in
+existing agent stacks.
+
+The reference implementation is layered:
 
 1. Schemas and typed models.
 2. Thin `StorageBackend` protocol with SQLite as the reference backend and
@@ -15,7 +19,11 @@ The POC is layered:
 Modules are intentionally small and framework-agnostic below CLI/API.
 
 ## RU
-POC построен слоями:
+POC разделяет draft standard и reference adapters. Standard - это
+memory/context contract; adapters доказывают, что contract можно встроить в
+существующие agent stacks.
+
+Reference implementation построена слоями:
 
 1. Схемы и типизированные модели.
 2. Тонкий `StorageBackend` protocol с SQLite как reference backend и

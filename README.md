@@ -9,6 +9,10 @@ OACS is not a replacement for MCP. MCP describes tool/server interoperability.
 OACS describes how an agent assembles and governs context before a model or MCP
 tool is used.
 
+It is also not an agent framework, model backend, vector database, or benchmark
+harness. Those systems can sit above or beside OACS and call its memory,
+context, capability, and audit operations.
+
 ### Standard Draft vs Reference Implementation
 
 - **OACS v0.1 draft spec:** terminology, lifecycle, capsule format, security
@@ -108,9 +112,10 @@ optional PQ libraries are absent.
 ### Limitations
 
 This is a local POC, not a hosted multi-tenant system. MCP execution is modeled
-through typed bindings and imported tool metadata. Vector search is pluggable,
-with deterministic lexical search implemented by default. Tiny tasks can show
-OACS overhead; medium and long memory tasks are the current strength.
+through typed bindings and imported tool metadata. Retrieval is pluggable, but
+deterministic lexical/structured retrieval is the baseline. Embeddings are
+optional adapters, not a core requirement. Tiny tasks can show OACS overhead;
+medium and long memory tasks are the current strength.
 
 ## RU
 OACS - локальный proof-of-concept открытого нижнего слоя агентского контекста:
@@ -119,6 +124,10 @@ memory loop. CLI называется `acs` - Agent Context Shell.
 
 OACS не заменяет MCP. MCP описывает совместимость tools/server. OACS описывает,
 как агент собирает и контролирует контекст до вызова модели или MCP tool.
+
+Также это не agent framework, model backend, vector database или benchmark
+harness. Такие системы могут находиться выше или рядом с OACS и вызывать его
+memory, context, capability и audit operations.
 
 ### Draft стандарта и reference implementation
 
@@ -219,6 +228,7 @@ integration point для key wrapping; если optional PQ libraries отсут
 ### Ограничения
 
 Это локальный POC, не hosted multi-tenant service. MCP execution представлен
-typed bindings и импортированной metadata. Vector search расширяемый; по
-умолчанию реализован deterministic lexical search. Tiny tasks могут показывать
-OACS overhead; medium и long memory tasks сейчас являются сильной стороной.
+typed bindings и импортированной metadata. Retrieval расширяемый, но baseline -
+deterministic lexical/structured retrieval. Embeddings являются optional
+adapters, а не core requirement. Tiny tasks могут показывать OACS overhead;
+medium и long memory tasks сейчас являются сильной стороной.
