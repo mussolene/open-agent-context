@@ -4,6 +4,11 @@
 This roadmap is for OACS v0.1 draft and the Python reference implementation.
 
 ### v0.2
+- Dogfood OACS under its own development and benchmark workflows: memory,
+  context, evidence, and audit operations should be usable as deterministic
+  MCP-like tools.
+- Promote `oacs_memory_tool_loop` into the general MemoryLoopEngine with
+  structured intent, memory query/read, evidence extraction, and deepening.
 - Add a storage backend protocol and keep SQLite as the reference backend.
 - Add real embedding retrieval behind the memory search interface.
 - Add stricter JSON-only output handling for LM Studio prompts.
@@ -29,6 +34,11 @@ This roadmap is for OACS v0.1 draft and the Python reference implementation.
 Этот roadmap относится к OACS v0.1 draft и Python reference implementation.
 
 ### v0.2
+- Использовать OACS под капотом собственной разработки и benchmark workflows:
+  memory, context, evidence и audit operations должны работать как
+  deterministic MCP-like tools.
+- Перенести `oacs_memory_tool_loop` в общий MemoryLoopEngine со structured
+  intent, memory query/read, evidence extraction и deepening.
 - Добавить protocol для storage backend и оставить SQLite reference backend.
 - Добавить real embedding retrieval за интерфейсом memory search.
 - Усилить JSON-only output handling для LM Studio prompts.

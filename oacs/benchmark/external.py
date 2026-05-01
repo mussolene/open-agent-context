@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
@@ -91,9 +92,9 @@ class MemoryArenaImporter:
         for index, answer in enumerate(previous_answers):
             setup_memories.append(
                 {
-                        "memory_type": "episode",
-                        "depth": 1,
-                        "scope": [f"memoryarena:{row_id}"],
+                    "memory_type": "episode",
+                    "depth": 1,
+                    "scope": [f"memoryarena:{row_id}"],
                     "text": (
                         f"MemoryArena group_travel_planner row {row_id} prior participant "
                         f"{index + 1} request:\n{questions[index]}\nExact accepted plan:\n"
@@ -146,23 +147,37 @@ def _requested_slot_strings(value: Any, question: str) -> Iterable[str]:
         for key in ("breakfast", "lunch", "dinner", "accommodation", "attraction", "transportation")
         if key in question.lower()
     }
+    requested_days = _requested_days(question)
     if not requested:
         yield from _strings(value)
         return
-    yield from _strings_for_keys(value, requested)
+    yield from _strings_for_keys(value, requested, requested_days)
 
 
-def _strings_for_keys(value: Any, requested: set[str]) -> Iterable[str]:
+def _strings_for_keys(value: Any, requested: set[str], requested_days: set[int]) -> Iterable[str]:
     if isinstance(value, dict):
+        day = value.get("days")
+        if requested_days and isinstance(day, int) and day not in requested_days:
+            return
         for key, child in value.items():
             if str(key).lower() in requested:
                 yield from _strings(child)
             elif isinstance(child, dict | list):
-                yield from _strings_for_keys(child, requested)
+                yield from _strings_for_keys(child, requested, requested_days)
         return
     if isinstance(value, list):
         for child in value:
-            yield from _strings_for_keys(child, requested)
+            yield from _strings_for_keys(child, requested, requested_days)
+
+
+def _requested_days(question: str) -> set[int]:
+    question_lower = question.lower()
+    mapping = {"first": 1, "second": 2, "third": 3, "1": 1, "2": 2, "3": 3}
+    return {
+        day
+        for word, day in mapping.items()
+        if re.search(rf"\b{re.escape(word)}[- ]day\b|\bday {re.escape(word)}\b", question_lower)
+    }
 
 
 def _strings(value: Any) -> Iterable[str]:

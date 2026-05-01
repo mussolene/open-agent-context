@@ -7,6 +7,7 @@ from oacs.benchmark.scorer import score_answer
 from oacs.llm.lmstudio import LMStudioClient
 from oacs.llm.prompts import BASELINE_SYSTEM, OACS_SYSTEM, build_oacs_prompt
 from oacs.loop.engine import MemoryLoopEngine
+from oacs.loop.memory_tools import DeterministicMemoryToolLoop
 from oacs.memory.service import MemoryService
 
 
@@ -27,28 +28,20 @@ class MemoryCriticalBenchmark:
         for task in tasks:
             scope = _task_scope(task)
             prompt_tokens = 0
+            tool_metrics: dict[str, object] = {}
             if mode == "oacs_memory_loop":
-                for setup in task.setup_memories:
-                    mem = self.memory.propose(
-                        str(setup["memory_type"]),
-                        int(str(setup["depth"])),
-                        str(setup["text"]),
-                        actor_id,
-                        setup.get("scope", ["project"]),  # type: ignore[arg-type]
-                    )
-                    if mem.depth >= 3:
-                        mem = self.memory.sharpen(mem.id, "synthetic_benchmark_evidence", actor_id)
-                    if setup.get("status") == "superseded":
-                        self.memory.commit(mem.id, actor_id)
-                        self.memory.deprecate(mem.id, actor_id)
-                    else:
-                        self.memory.commit(mem.id, actor_id)
+                self._seed_memories(task, actor_id)
                 if provider == "lmstudio":
                     answer, prompt_tokens = self._run_oacs_lmstudio(task, actor_id, model, scope)
                 else:
                     loop_result = self.loop.run(task.user_prompt, actor_id, scope=scope)
                     answer = loop_result.final_answer
                     prompt_tokens = estimate_tokens(task.user_prompt)
+            elif mode == "oacs_memory_tool_loop":
+                self._seed_memories(task, actor_id)
+                answer, prompt_tokens, tool_metrics = self._run_memory_tool_loop(
+                    task, actor_id, model, scope, provider
+                )
             elif mode == "baseline_full_context":
                 prompt = _full_context_prompt(task)
                 prompt_tokens = estimate_tokens(prompt)
@@ -74,6 +67,7 @@ class MemoryCriticalBenchmark:
                     "prompt_tokens_estimated": prompt_tokens,
                     "output_tokens_estimated": output_tokens,
                     "tokens_estimated": prompt_tokens + output_tokens,
+                    **tool_metrics,
                 }
             )
             results.append(result)
@@ -96,8 +90,27 @@ class MemoryCriticalBenchmark:
                 ),
                 "tokens_estimated": total_tokens,
                 "score_per_1k_tokens": round((avg * len(results)) / max(1, total_tokens) * 1000, 4),
+                "tool_operations": sum(int(str(r.get("tool_operations", 0))) for r in results),
+                "evidence_items": sum(int(str(r.get("evidence_items", 0))) for r in results),
             },
         )
+
+    def _seed_memories(self, task: BenchmarkTask, actor_id: str | None) -> None:
+        for setup in task.setup_memories:
+            mem = self.memory.propose(
+                str(setup["memory_type"]),
+                int(str(setup["depth"])),
+                str(setup["text"]),
+                actor_id,
+                setup.get("scope", ["project"]),  # type: ignore[arg-type]
+            )
+            if mem.depth >= 3:
+                mem = self.memory.sharpen(mem.id, "synthetic_benchmark_evidence", actor_id)
+            if setup.get("status") == "superseded":
+                self.memory.commit(mem.id, actor_id)
+                self.memory.deprecate(mem.id, actor_id)
+            else:
+                self.memory.commit(mem.id, actor_id)
 
     def _run_oacs_lmstudio(
         self, task: BenchmarkTask, actor_id: str | None, model: str | None, scope: list[str]
@@ -113,6 +126,32 @@ class MemoryCriticalBenchmark:
         ]
         prompt = build_oacs_prompt(task.user_prompt, capsule, memories)
         return _lmstudio_client(task, model).chat(prompt, OACS_SYSTEM), estimate_tokens(prompt)
+
+    def _run_memory_tool_loop(
+        self,
+        task: BenchmarkTask,
+        actor_id: str | None,
+        model: str | None,
+        scope: list[str],
+        provider: str,
+    ) -> tuple[str, int, dict[str, object]]:
+        memories = self.memory.query(task.user_prompt, actor_id, scope)
+        tool_result = DeterministicMemoryToolLoop().build_prompt(task.user_prompt, memories)
+        prompt_tokens = estimate_tokens(tool_result.prompt)
+        if provider == "lmstudio":
+            model_answer = _lmstudio_client(task, model).chat(tool_result.prompt, OACS_SYSTEM)
+            if tool_result.answer:
+                answer = f"OACS tool answer: {tool_result.answer}\nModel response: {model_answer}"
+            else:
+                answer = model_answer
+        else:
+            answer = tool_result.answer or tool_result.prompt
+        return answer, prompt_tokens, {
+            "tool_operations": len(tool_result.operations),
+            "evidence_items": len(tool_result.evidence),
+            "evidence_values": [item.value for item in tool_result.evidence],
+            "answered_deterministically": tool_result.answered_deterministically,
+        }
 
 
 def _task_scope(task: BenchmarkTask) -> list[str]:

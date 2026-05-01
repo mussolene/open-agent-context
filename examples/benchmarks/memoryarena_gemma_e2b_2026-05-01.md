@@ -12,28 +12,29 @@ Modes:
 - `baseline_no_memory`: current task only.
 - `baseline_full_context`: raw prior context plus current task.
 - `oacs_memory_loop`: scoped OACS memories plus Context Capsule prompt.
+- `oacs_memory_tool_loop`: scoped OACS memories plus deterministic MCP-like
+  memory operations that extract participant/day/slot evidence before prompting.
 
 Estimated tokens use a deterministic character-based approximation, not a
 model tokenizer.
 
 | Mode | Avg score | Exact success | Prompt tokens | Output tokens | Total tokens | Score / 1k tokens |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| `baseline_no_memory` | 1.0 | 0/5 | 711 | 2419 | 3130 | 1.5974 |
-| `baseline_full_context` | 4.2 | 4/5 | 5355 | 2498 | 7853 | 2.6741 |
-| `oacs_memory_loop` | 2.6 | 2/5 | 6431 | 2041 | 8472 | 1.5345 |
+| `baseline_no_memory` | 1.0 | 0/5 | 711 | 2522 | 3233 | 1.5466 |
+| `baseline_full_context` | 4.2 | 4/5 | 5355 | 2405 | 7760 | 2.7062 |
+| `oacs_memory_loop` | 1.8 | 1/5 | 6431 | 1989 | 8420 | 1.0689 |
+| `oacs_memory_tool_loop` | 5.0 | 5/5 | 2536 | 2743 | 5279 | 4.7357 |
 
 Interpretation:
 
-- OACS improves over current-task-only prompting: +1.6 average score and +2 exact
-  successes.
-- OACS is worse than raw full-context prompting on this small 5-task sample:
-  -1.6 average score, -2 exact successes, and +619 estimated tokens.
-- This means the current OACS POC proves scoped memory helps small-context
-  prompting, but it does not yet prove that the current capsule prompt beats a
-  short raw full-context baseline when the full context fits comfortably.
-- The next benchmark step must test longer histories where raw full context
-  grows beyond the practical context budget, and must make the OACS prompt more
-  selective than the current memory text inclusion.
+- The basic `oacs_memory_loop` is not enough; it still behaves like broad
+  context injection and underperforms raw full context here.
+- The `oacs_memory_tool_loop` is the intended OACS shape: deterministic memory
+  operations first, compact evidence prompt second.
+- `oacs_memory_tool_loop` beats raw full context on this sample: +0.8 average
+  score, +1 exact success, and -2481 estimated total tokens.
+- This supports the roadmap direction: OACS should be a thin memory-tool layer
+  under agents, not just a memory database or prompt stuffing helper.
 
 Reproduction:
 
@@ -63,6 +64,12 @@ acs benchmark run \
   --provider lmstudio \
   --model google/gemma-4-e2b \
   --json
+acs benchmark run \
+  --db ./.oacs-memoryarena/oacs.db \
+  --mode oacs_memory_tool_loop \
+  --provider lmstudio \
+  --model google/gemma-4-e2b \
+  --json
 ```
 
 ## RU
@@ -77,24 +84,26 @@ acs benchmark run \
 - `baseline_no_memory`: только текущая задача.
 - `baseline_full_context`: сырой предыдущий контекст плюс текущая задача.
 - `oacs_memory_loop`: scoped OACS memories плюс Context Capsule prompt.
+- `oacs_memory_tool_loop`: scoped OACS memories плюс deterministic MCP-like
+  memory operations, которые извлекают participant/day/slot evidence до prompt.
 
 Оценка tokens использует детерминированную character-based approximation, а не
 tokenizer конкретной модели.
 
 | Режим | Avg score | Exact success | Prompt tokens | Output tokens | Total tokens | Score / 1k tokens |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| `baseline_no_memory` | 1.0 | 0/5 | 711 | 2419 | 3130 | 1.5974 |
-| `baseline_full_context` | 4.2 | 4/5 | 5355 | 2498 | 7853 | 2.6741 |
-| `oacs_memory_loop` | 2.6 | 2/5 | 6431 | 2041 | 8472 | 1.5345 |
+| `baseline_no_memory` | 1.0 | 0/5 | 711 | 2522 | 3233 | 1.5466 |
+| `baseline_full_context` | 4.2 | 4/5 | 5355 | 2405 | 7760 | 2.7062 |
+| `oacs_memory_loop` | 1.8 | 1/5 | 6431 | 1989 | 8420 | 1.0689 |
+| `oacs_memory_tool_loop` | 5.0 | 5/5 | 2536 | 2743 | 5279 | 4.7357 |
 
 Вывод:
 
-- OACS лучше режима “только текущая задача”: +1.6 среднего score и +2 exact
-  successes.
-- OACS хуже сырого full-context baseline на этой небольшой выборке: -1.6 среднего
-  score, -2 exact successes и +619 estimated tokens.
-- Значит текущий POC доказывает пользу scoped memory против малого контекста, но
-  пока не доказывает преимущество текущего capsule prompt над коротким raw
-  full-context baseline, когда весь контекст помещается.
-- Следующий шаг benchmark: длинные истории, где raw full context выходит за
-  практический budget, и более селективный OACS prompt без лишнего memory text.
+- Базовый `oacs_memory_loop` недостаточен: он всё ещё похож на broad context
+  injection и здесь проигрывает raw full context.
+- `oacs_memory_tool_loop` соответствует целевой форме OACS: сначала
+  deterministic memory operations, затем компактный evidence prompt.
+- `oacs_memory_tool_loop` выигрывает у raw full context на этой выборке: +0.8
+  среднего score, +1 exact success и -2481 estimated total tokens.
+- Это поддерживает roadmap: OACS должен быть тонким memory-tool layer под
+  агентами, а не только memory database или prompt stuffing helper.
