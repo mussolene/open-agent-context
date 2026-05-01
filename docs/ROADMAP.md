@@ -4,7 +4,7 @@
 This roadmap tracks the OACS v0.1 draft standard and the Python reference
 implementation.
 
-### Current Position: v0.2.3 Reference POC, adaptive context policy
+### Current Position: v0.2.4 Reference POC, storage backend protocol
 - Done: OACS v0.1 draft terminology, schemas, encrypted SQLite memory,
   ContextCapsule, CLI/API, rules/skills/tools/MCP registries, basic memory loop,
   memory_calls, and public benchmark adapters.
@@ -34,11 +34,12 @@ implementation.
 - Done: adaptive context policy added so tiny low-pressure tasks can use compact
   capsules, while structured evidence and medium/large contexts use
   `memory_calls`.
+- Done: thin `StorageBackend` protocol added with SQLite kept as the reference
+  backend.
 - Current technical report:
   `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`.
 
 ### v0.2
-- Add a storage backend protocol and keep SQLite as the reference backend.
 - Add real embedding retrieval behind the memory search interface.
 - Add stricter JSON-only output handling for LM Studio prompts.
 - Add signed capsule export with verifiable checksum metadata.
@@ -64,7 +65,7 @@ implementation.
 Этот roadmap отслеживает OACS v0.1 draft standard и Python reference
 implementation.
 
-### Текущая позиция: v0.2.3 Reference POC, adaptive context policy
+### Текущая позиция: v0.2.4 Reference POC, storage backend protocol
 - Готово: OACS v0.1 draft terminology, schemas, encrypted SQLite memory,
   ContextCapsule, CLI/API, rules/skills/tools/MCP registries, базовый memory
   loop, memory_calls и public benchmark adapters.
@@ -95,11 +96,12 @@ implementation.
 - Готово: добавлена adaptive context policy: tiny low-pressure tasks могут
   использовать compact capsules, а structured evidence и medium/large contexts
   используют `memory_calls`.
+- Готово: добавлен тонкий `StorageBackend` protocol, SQLite остаётся reference
+  backend.
 - Текущий technical report:
   `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`.
 
 ### v0.2
-- Добавить protocol для storage backend и оставить SQLite reference backend.
 - Добавить real embedding retrieval за интерфейсом memory search.
 - Усилить JSON-only output handling для LM Studio prompts.
 - Добавить signed capsule export с проверяемой checksum metadata.

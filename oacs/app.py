@@ -13,6 +13,7 @@ from oacs.loop.engine import MemoryLoopEngine
 from oacs.memory.service import MemoryService
 from oacs.rules.engine import RuleEngine
 from oacs.skills.registry import SkillRegistry
+from oacs.storage.backend import StorageBackend
 from oacs.storage.repositories import Repository
 from oacs.storage.sqlite import SQLiteStore
 from oacs.tools.mcp import McpRegistry
@@ -22,7 +23,7 @@ from oacs.tools.registry import ToolRegistry
 @dataclass
 class OacsServices:
     config: OacsConfig
-    store: SQLiteStore
+    store: StorageBackend
     key_provider: LocalPassphraseKeyProvider
     actors: ActorService
     capabilities: CapabilityService

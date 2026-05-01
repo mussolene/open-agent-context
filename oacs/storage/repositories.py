@@ -3,11 +3,11 @@ from __future__ import annotations
 from typing import Any
 
 from oacs.core.errors import NotFound
-from oacs.storage.sqlite import SQLiteStore
+from oacs.storage.backend import StorageBackend
 
 
 class Repository:
-    def __init__(self, store: SQLiteStore, table: str):
+    def __init__(self, store: StorageBackend, table: str):
         self.store = store
         self.table = table
 
@@ -23,3 +23,6 @@ class Repository:
 
     def list(self, where: str = "", params: tuple[Any, ...] = ()) -> list[dict[str, Any]]:
         return self.store.list(self.table, where, params)
+
+    def delete(self, record_id: str) -> None:
+        self.store.delete(self.table, record_id)

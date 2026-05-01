@@ -16,6 +16,8 @@ tool is used.
 - **Python reference implementation:** local `oacs` package, `acs` CLI, FastAPI
   API, SQLite backend, encryption layer, registries, memory loop, and benchmark
   runner.
+  Storage goes through a thin `StorageBackend` protocol; SQLite is the bundled
+  reference backend.
 
 The draft can change before v1.0. See `docs/COMPATIBILITY.md` for breaking
 change policy.
@@ -125,6 +127,8 @@ OACS не заменяет MCP. MCP описывает совместимост�
 - **Python reference implementation:** локальный пакет `oacs`, CLI `acs`,
   FastAPI API, SQLite backend, encryption layer, registries, memory loop и
   benchmark runner.
+  Storage идёт через тонкий `StorageBackend` protocol; SQLite является
+  bundled reference backend.
 
 До v1.0 draft может меняться. Compatibility policy описана в
 `docs/COMPATIBILITY.md`.

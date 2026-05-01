@@ -21,6 +21,9 @@ Non-breaking changes before v1.0 include:
 - Fixing behavior that previously returned success without durable state.
 - Adding new storage or retrieval backends behind existing interfaces.
 
+The `StorageBackend` protocol is still draft-level before v1.0 and may evolve;
+SQLite remains the reference backend for compatibility checks.
+
 At v1.0, the project should publish stable schemas, migration rules, and backend
 conformance tests.
 
@@ -44,6 +47,9 @@ Non-breaking changes до v1.0:
 - Усиление validation для invalid data.
 - Исправление поведения, которое раньше возвращало success без durable state.
 - Добавление новых storage или retrieval backends за существующими interfaces.
+
+`StorageBackend` protocol до v1.0 остаётся draft-level и может меняться; SQLite
+остаётся reference backend для compatibility checks.
 
 К v1.0 проект должен опубликовать stable schemas, migration rules и backend
 conformance tests.

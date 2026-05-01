@@ -14,12 +14,13 @@ carry structured evidence items. This is not a new standard entity; it is the
 current compatibility path for turning external traces into evidence-backed
 memory without teaching the generic memory loop source-specific text formats.
 
-Reference implementation v0.2.3 includes `memory_calls` as a backend-independent
+Reference implementation v0.2.4 includes `memory_calls` as a backend-independent
 operation trace for memory work in the general MemoryLoopEngine, CLI, API, and
 benchmark runner, with adaptive context policy deciding between compact capsule
 and memory-call paths. Native model `tool_calls` may be used by a future
 adapter, but OACS does not require backend tool-calling support to query, read,
-extract evidence, audit, or build capsules.
+extract evidence, audit, or build capsules. Storage is accessed through a thin
+`StorageBackend` protocol, with SQLite as the reference backend.
 
 This document is a draft standard contract, not a final standard. The Python
 package in this repository is the reference implementation for the draft.
@@ -42,12 +43,13 @@ evidence items внутри `MemoryRecord.content`. Это не новая су�
 текущий compatibility path для преобразования внешних traces в evidence-backed
 memory без обучения generic memory loop source-specific text formats.
 
-Reference implementation v0.2.3 включает `memory_calls` как backend-independent
+Reference implementation v0.2.4 включает `memory_calls` как backend-independent
 operation trace для работы с памятью в общем MemoryLoopEngine, CLI, API и
 benchmark runner, а adaptive context policy выбирает между compact capsule и
 memory-call paths. Native model `tool_calls` может использоваться будущим
 adapter, но OACS не требует backend tool-calling support для query, read,
-evidence extraction, audit или context capsule build.
+evidence extraction, audit или context capsule build. Storage доступен через
+тонкий `StorageBackend` protocol, SQLite остаётся reference backend.
 
 Этот документ является draft-контрактом стандарта, а не финальным стандартом.
 Python package в этом репозитории — reference implementation для draft.
