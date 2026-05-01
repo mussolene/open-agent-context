@@ -84,5 +84,7 @@ MemoryArena group-travel adapter не использует natural-language slot
 однозначен по structured answer overlap, записывает typed `memory_selectors` и
 пропускает неоднозначные строки вместо угадывания по фразам вроде "same place".
 
-Current technical report:
-`examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`.
+Current technical reports:
+
+- `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`
+- `examples/benchmarks/full_context_gemma_e2b_2026-05-02.md`
