@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"EvidenceRef","type":"object","required":["id","kind","uri","content_hash"],"properties":{"id":{"type":"string"},"kind":{"type":"string"},"uri":{"type":"string"},"content_hash":{"type":"string"},"sensitive":{"type":"boolean"}}}
