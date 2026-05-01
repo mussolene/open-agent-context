@@ -14,7 +14,7 @@ carry structured evidence items. This is not a new standard entity; it is the
 current compatibility path for turning external traces into evidence-backed
 memory without teaching the generic memory loop source-specific text formats.
 
-Reference implementation v0.2.0 adds `memory_calls` as a backend-independent
+Reference implementation v0.2.1 includes `memory_calls` as a backend-independent
 operation trace for memory work. Native model `tool_calls` may be used by a
 future adapter, but OACS does not require backend tool-calling support to query,
 read, extract evidence, audit, or build capsules.
@@ -40,7 +40,7 @@ evidence items внутри `MemoryRecord.content`. Это не новая су�
 текущий compatibility path для преобразования внешних traces в evidence-backed
 memory без обучения generic memory loop source-specific text formats.
 
-Reference implementation v0.2.0 добавляет `memory_calls` как backend-independent
+Reference implementation v0.2.1 включает `memory_calls` как backend-independent
 operation trace для работы с памятью. Native model `tool_calls` может
 использоваться будущим adapter, но OACS не требует backend tool-calling support
 для query, read, evidence extraction, audit или context capsule build.

@@ -1,8 +1,9 @@
 # Compatibility Policy / Политика совместимости
 
 ## EN
-OACS v0.1 is a draft. Until v1.0, compatibility is best-effort and the project
-may make breaking changes when they improve correctness, security, or clarity.
+OACS v0.1 draft is not stable. Until v1.0, compatibility is best-effort and the
+project may make breaking changes when they improve correctness, security, or
+clarity.
 
 Breaking changes before v1.0 include:
 - Removing or renaming a public CLI command or API endpoint.
@@ -24,9 +25,9 @@ At v1.0, the project should publish stable schemas, migration rules, and backend
 conformance tests.
 
 ## RU
-OACS v0.1 является draft. До v1.0 совместимость best-effort, и проект может
-делать breaking changes, если это улучшает корректность, безопасность или
-ясность.
+OACS v0.1 draft не является стабильным стандартом. До v1.0 совместимость
+best-effort, и проект может делать breaking changes, если это улучшает
+корректность, безопасность или ясность.
 
 Breaking changes до v1.0:
 - Удаление или переименование public CLI command или API endpoint.
