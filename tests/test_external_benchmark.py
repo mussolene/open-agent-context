@@ -100,3 +100,50 @@ def test_memory_tool_loop_extracts_exact_scoped_evidence(svc):
     assert result["evidence_items"] == 1
     assert result["prompt_tokens_estimated"] > len(task.user_prompt) // 4
     assert run.summary["tokens_estimated"] == result["tokens_estimated"]
+
+
+def test_memoryarena_importer_skips_constraint_only_question_until_memory_reuse():
+    row = {
+        "id": 10,
+        "base_person": {"name": "Jennifer", "daily_plans": []},
+        "questions": [
+            "I am Eric. I need dinner.",
+            "I am Maria. For dinner on the second day, I want a new BBQ place.",
+            "I am Zoe. For lunch on the first day, I'd like to join Eric.",
+        ],
+        "answers": [
+            [{"days": 1, "lunch": "Known Lunch, Testville"}],
+            [{"days": 2, "dinner": "New Constraint Dinner, Testville"}],
+            [{"days": 1, "lunch": "Known Lunch, Testville"}],
+        ],
+    }
+
+    task = MemoryArenaImporter().from_rows([row], 1)[0]
+
+    assert task.rubric["question_index"] == 2
+    assert task.expected_facts == ["Known Lunch, Testville"]
+
+
+def test_memoryarena_importer_treats_stay_as_accommodation():
+    row = {
+        "id": 11,
+        "base_person": {"name": "Jennifer", "daily_plans": []},
+        "questions": [
+            "I am Amelia. I need accommodation.",
+            "I am Maria. On the second day, I want to stay at the same place as Amelia.",
+        ],
+        "answers": [
+            [
+                {"days": 1, "accommodation": "Wrong Stay, Testville"},
+                {"days": 2, "accommodation": "Correct Stay, Testville"},
+            ],
+            [
+                {"days": 1, "accommodation": "Wrong Stay, Testville"},
+                {"days": 2, "accommodation": "Correct Stay, Testville"},
+            ],
+        ],
+    }
+
+    task = MemoryArenaImporter().from_rows([row], 1)[0]
+
+    assert task.expected_facts == ["Correct Stay, Testville"]

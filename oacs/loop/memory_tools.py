@@ -7,7 +7,15 @@ from typing import Any
 
 from oacs.memory.models import MemoryRecord
 
-SLOTS = ("breakfast", "lunch", "dinner", "accommodation", "attraction", "transportation")
+SLOT_ALIASES = {
+    "breakfast": ("breakfast",),
+    "lunch": ("lunch",),
+    "dinner": ("dinner",),
+    "accommodation": ("accommodation", "stay", "same place"),
+    "attraction": ("attraction",),
+    "transportation": ("transportation", "flight", "self-driving"),
+}
+SLOTS = tuple(SLOT_ALIASES)
 DAY_WORDS = {"first": 1, "second": 2, "third": 3, "1": 1, "2": 2, "3": 3}
 
 
@@ -70,7 +78,11 @@ class DeterministicMemoryToolLoop:
 
 def parse_memory_intent(task: str) -> dict[str, object]:
     task_lower = task.lower()
-    slots = [slot for slot in SLOTS if slot in task_lower]
+    slots = [
+        slot
+        for slot, aliases in SLOT_ALIASES.items()
+        if any(alias in task_lower for alias in aliases)
+    ]
     days = sorted(
         {
             day

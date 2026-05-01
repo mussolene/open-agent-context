@@ -36,6 +36,28 @@ Interpretation:
 - This supports the roadmap direction: OACS should be a thin memory-tool layer
   under agents, not just a memory database or prompt stuffing helper.
 
+### Public Deterministic Harness: 20 Tasks
+
+The same public MemoryArena subset was also run through the deterministic
+benchmark provider on 20 memory-supported tasks. This isolates the OACS
+memory-tool layer from model variance and checks whether the adapter extracts
+the correct evidence for tasks OACS is currently designed to solve.
+
+| Mode | Avg score | Exact success | Prompt tokens | Output tokens | Total tokens | Score / 1k tokens |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `baseline_no_memory` | 1.0 | 0/20 | 3824 | 3924 | 7748 | 2.5813 |
+| `baseline_full_context` | 5.0 | 20/20 | 32805 | 32905 | 65710 | 1.5218 |
+| `oacs_memory_loop` | 5.0 | 20/20 | 3824 | 30165 | 33989 | 2.9421 |
+| `oacs_memory_tool_loop` | 5.0 | 20/20 | 13263 | 3075 | 16338 | 6.1207 |
+
+Interpretation:
+
+- On the supported memory-reuse class, `oacs_memory_tool_loop` preserves full
+  accuracy while using far fewer tokens than raw full context.
+- MemoryArena questions that require solving new constraints against an external
+  environment are intentionally not claimed as solved by this adapter yet; they
+  belong to a future tool/runtime benchmark layer.
+
 Reproduction:
 
 ```bash
@@ -108,3 +130,25 @@ tokenizer конкретной модели.
   среднего score, +1 exact success и -2481 estimated total tokens.
 - Это поддерживает roadmap: OACS должен быть тонким memory-tool layer под
   агентами, а не только memory database или prompt stuffing helper.
+
+### Public Deterministic Harness: 20 задач
+
+Тот же public subset MemoryArena был дополнительно прогнан через deterministic
+benchmark provider на 20 memory-supported задачах. Это изолирует OACS
+memory-tool layer от model variance и проверяет, достаёт ли adapter правильное
+evidence для класса задач, который OACS уже должен решать.
+
+| Режим | Avg score | Exact success | Prompt tokens | Output tokens | Total tokens | Score / 1k tokens |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `baseline_no_memory` | 1.0 | 0/20 | 3824 | 3924 | 7748 | 2.5813 |
+| `baseline_full_context` | 5.0 | 20/20 | 32805 | 32905 | 65710 | 1.5218 |
+| `oacs_memory_loop` | 5.0 | 20/20 | 3824 | 30165 | 33989 | 2.9421 |
+| `oacs_memory_tool_loop` | 5.0 | 20/20 | 13263 | 3075 | 16338 | 6.1207 |
+
+Вывод:
+
+- На поддержанном классе memory-reuse задач `oacs_memory_tool_loop` сохраняет
+  полную точность и использует заметно меньше tokens, чем raw full context.
+- MemoryArena questions, где нужно решать новые constraints через внешнюю
+  environment, пока честно не заявлены как решённые этим adapter; это будущий
+  tool/runtime benchmark layer.

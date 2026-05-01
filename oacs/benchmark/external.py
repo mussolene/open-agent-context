@@ -10,6 +10,15 @@ import httpx
 
 from oacs.benchmark.models import BenchmarkTask
 
+SLOT_ALIASES = {
+    "breakfast": ("breakfast",),
+    "lunch": ("lunch",),
+    "dinner": ("dinner",),
+    "accommodation": ("accommodation", "stay", "same place"),
+    "attraction": ("attraction",),
+    "transportation": ("transportation", "flight", "self-driving"),
+}
+
 MEMORYARENA_URLS = {
     "group_travel_planner": (
         "https://huggingface.co/datasets/ZexueHe/memoryarena/resolve/main/"
@@ -69,14 +78,12 @@ class MemoryArenaImporter:
         if not isinstance(questions, list) or not isinstance(answers, list) or len(questions) < 2:
             return None
 
-        question_index = 1
         row_id = str(row.get("id", "unknown"))
-        previous_answers = answers[:question_index]
-        current_answer = answers[question_index]
-        current_question = str(questions[question_index])
-        expected = _expected_facts(previous_answers, current_answer, current_question)
-        if not expected:
+        selected = _select_memory_supported_question(questions, answers)
+        if selected is None:
             return None
+        question_index, expected = selected
+        previous_answers = answers[:question_index]
 
         setup_memories = [
             {
@@ -135,17 +142,26 @@ def _expected_facts(
         for value in current_strings
         if value in previous_strings and _is_specific_expected_fact(value)
     ]
-    candidates = overlaps or [
-        value for value in current_strings if _is_specific_expected_fact(value)
-    ]
-    return sorted(candidates, key=len, reverse=True)[:3]
+    return sorted(overlaps, key=len, reverse=True)[:3]
+
+
+def _select_memory_supported_question(
+    questions: list[Any], answers: list[Any]
+) -> tuple[int, list[str]] | None:
+    for question_index in range(1, min(len(questions), len(answers))):
+        expected = _expected_facts(
+            answers[:question_index], answers[question_index], str(questions[question_index])
+        )
+        if expected:
+            return question_index, expected
+    return None
 
 
 def _requested_slot_strings(value: Any, question: str) -> Iterable[str]:
     requested = {
         key
-        for key in ("breakfast", "lunch", "dinner", "accommodation", "attraction", "transportation")
-        if key in question.lower()
+        for key, aliases in SLOT_ALIASES.items()
+        if any(alias in question.lower() for alias in aliases)
     }
     requested_days = _requested_days(question)
     if not requested:

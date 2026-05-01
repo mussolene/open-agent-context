@@ -3,6 +3,24 @@
 ## EN
 This roadmap is for OACS v0.1 draft and the Python reference implementation.
 
+### Current Position: v0.1.1 Reference POC
+- Done: OACS v0.1 draft terminology, schemas, encrypted SQLite memory,
+  ContextCapsule, CLI/API, rules/skills/tools/MCP registries, basic memory loop,
+  and MemoryArena `group_travel_planner` adapter.
+- Done: `oacs_memory_tool_loop` dogfoods OACS as a deterministic memory-tool
+  layer under benchmark execution: intent classification, scoped memory query,
+  structured evidence extraction, compact prompt, and token/evidence metrics.
+- Proven on public data: MemoryArena `group_travel_planner` first 5 tasks with
+  `google/gemma-4-e2b`, where `oacs_memory_tool_loop` beats current-task-only,
+  raw full context, and broad capsule prompting.
+- Proven on public deterministic harness: MemoryArena `group_travel_planner`
+  20 memory-supported tasks, where `oacs_memory_tool_loop` reaches 20/20 exact
+  success with lower token use than raw full context.
+- In progress: promote benchmark-local memory tools into the general
+  MemoryLoopEngine and expose the same operations as stable OACS tool calls.
+- Not done yet: public adapters for MemoryArena `progressive_search`,
+  MemoryArena `bundled_shopping`, PERMA, and AMA-Bench.
+
 ### v0.2
 - Dogfood OACS under its own development and benchmark workflows: memory,
   context, evidence, and audit operations should be usable as deterministic
@@ -32,6 +50,25 @@ This roadmap is for OACS v0.1 draft and the Python reference implementation.
 
 ## RU
 Этот roadmap относится к OACS v0.1 draft и Python reference implementation.
+
+### Текущая позиция: v0.1.1 Reference POC
+- Готово: OACS v0.1 draft terminology, schemas, encrypted SQLite memory,
+  ContextCapsule, CLI/API, rules/skills/tools/MCP registries, базовый memory
+  loop и adapter для MemoryArena `group_travel_planner`.
+- Готово: `oacs_memory_tool_loop` использует OACS под капотом benchmark
+  execution как deterministic memory-tool layer: intent classification, scoped
+  memory query, structured evidence extraction, compact prompt и
+  token/evidence metrics.
+- Доказано на public data: первые 5 задач MemoryArena `group_travel_planner` с
+  `google/gemma-4-e2b`, где `oacs_memory_tool_loop` выигрывает у current-task-only,
+  raw full context и broad capsule prompting.
+- Доказано на public deterministic harness: 20 memory-supported задач MemoryArena
+  `group_travel_planner`, где `oacs_memory_tool_loop` достигает 20/20 exact
+  success с меньшим token use, чем raw full context.
+- В работе: перенести benchmark-local memory tools в общий MemoryLoopEngine и
+  открыть те же операции как stable OACS tool calls.
+- Ещё не готово: public adapters для MemoryArena `progressive_search`,
+  MemoryArena `bundled_shopping`, PERMA и AMA-Bench.
 
 ### v0.2
 - Использовать OACS под капотом собственной разработки и benchmark workflows:
