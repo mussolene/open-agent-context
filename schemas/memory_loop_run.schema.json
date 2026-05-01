@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MemoryLoopRun",
+  "type": "object",
+  "required": [
+    "final_answer",
+    "context_capsule_id",
+    "memories_used",
+    "memory_calls",
+    "evidence",
+    "operation_metrics"
+  ],
+  "properties": {
+    "final_answer": {"type": "string"},
+    "context_capsule_id": {"type": "string"},
+    "intent": {"type": "object"},
+    "memories_used": {"type": "array", "items": {"type": "string"}},
+    "tools_used": {"type": "array", "items": {"type": "string"}},
+    "rules_applied": {"type": "array", "items": {"type": "string"}},
+    "proposed_memories": {"type": "array", "items": {"type": "string"}},
+    "committed_memories": {"type": "array", "items": {"type": "string"}},
+    "audit_trail": {"type": "array", "items": {"type": "string"}},
+    "memory_calls": {
+      "type": "array",
+      "items": {"$ref": "memory_call.schema.json"}
+    },
+    "evidence": {"type": "array", "items": {"type": "object"}},
+    "model_prompt": {"type": ["string", "null"]},
+    "context_policy": {"type": "object"},
+    "operation_metrics": {"type": "object"}
+  },
+  "additionalProperties": false
+}

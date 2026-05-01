@@ -1,1 +1,25 @@
-{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"CapabilityGrant","type":"object","required":["id","subject_actor_id","issuer_actor_id","allowed_operations","status"],"properties":{"id":{"type":"string"},"subject_actor_id":{"type":"string"},"issuer_actor_id":{"type":"string"},"scope":{"type":"array","items":{"type":"string"}},"allowed_operations":{"type":"array","items":{"type":"string"}},"denied_operations":{"type":"array","items":{"type":"string"}},"memory_depth_allowed":{"type":"integer"},"namespaces_allowed":{"type":"array","items":{"type":"string"}},"tools_allowed":{"type":"array","items":{"type":"string"}},"skills_allowed":{"type":"array","items":{"type":"string"}},"expires_at":{"type":["string","null"]},"status":{"type":"string"}}}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CapabilityGrant",
+  "type": "object",
+  "required": ["id", "subject_actor_id", "issuer_actor_id", "allowed_operations", "status"],
+  "properties": {
+    "id": {"type": "string"},
+    "subject_actor_id": {"type": "string"},
+    "issuer_actor_id": {"type": "string"},
+    "scope": {
+      "type": "array",
+      "description": "Requested operation scope must be a subset of this array. Empty scope matches only empty operation scope. Wildcard access requires explicit '*'.",
+      "items": {"type": "string"}
+    },
+    "allowed_operations": {"type": "array", "items": {"type": "string"}},
+    "denied_operations": {"type": "array", "items": {"type": "string"}},
+    "memory_depth_allowed": {"type": "integer", "minimum": 0, "maximum": 5},
+    "namespaces_allowed": {"type": "array", "items": {"type": "string"}},
+    "tools_allowed": {"type": "array", "items": {"type": "string"}},
+    "skills_allowed": {"type": "array", "items": {"type": "string"}},
+    "expires_at": {"type": ["string", "null"]},
+    "signature": {"type": ["string", "null"]},
+    "status": {"type": "string"}
+  }
+}

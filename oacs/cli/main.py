@@ -308,14 +308,19 @@ def memory_correct(
     json_out: JsonOpt = False,
 ) -> None:
     svc = services(db)
-    emit(svc.memory.correct(memory_id, text, actor).model_dump(), json_out)
+    mem = svc.memory.correct(memory_id, text, actor)
+    svc.audit.record("memory.correct", actor, mem.id)
+    emit(mem.model_dump(), json_out)
 
 
 @memory_app.command("deprecate")
 def memory_deprecate(
     memory_id: str, actor: ActorOpt = None, db: DbOpt = None, json_out: JsonOpt = False
 ) -> None:
-    emit(services(db).memory.deprecate(memory_id, actor).model_dump(), json_out)
+    svc = services(db)
+    mem = svc.memory.deprecate(memory_id, actor)
+    svc.audit.record("memory.deprecate", actor, mem.id)
+    emit(mem.model_dump(), json_out)
 
 
 @memory_app.command("supersede")
@@ -326,21 +331,30 @@ def memory_supersede(
     db: DbOpt = None,
     json_out: JsonOpt = False,
 ) -> None:
-    emit(services(db).memory.supersede(memory_id, replacement_id, actor).model_dump(), json_out)
+    svc = services(db)
+    mem = svc.memory.supersede(memory_id, replacement_id, actor)
+    svc.audit.record("memory.supersede", actor, mem.id)
+    emit(mem.model_dump(), json_out)
 
 
 @memory_app.command("forget")
 def memory_forget(
     memory_id: str, actor: ActorOpt = None, db: DbOpt = None, json_out: JsonOpt = False
 ) -> None:
-    emit(services(db).memory.forget(memory_id, actor).model_dump(), json_out)
+    svc = services(db)
+    mem = svc.memory.forget(memory_id, actor)
+    svc.audit.record("memory.forget", actor, mem.id)
+    emit(mem.model_dump(), json_out)
 
 
 @memory_app.command("blur")
 def memory_blur(
     memory_id: str, actor: ActorOpt = None, db: DbOpt = None, json_out: JsonOpt = False
 ) -> None:
-    emit(services(db).memory.blur(memory_id, actor).model_dump(), json_out)
+    svc = services(db)
+    mem = svc.memory.blur(memory_id, actor)
+    svc.audit.record("memory.blur", actor, mem.id)
+    emit(mem.model_dump(), json_out)
 
 
 @memory_app.command("sharpen")
@@ -351,7 +365,10 @@ def memory_sharpen(
     db: DbOpt = None,
     json_out: JsonOpt = False,
 ) -> None:
-    emit(services(db).memory.sharpen(memory_id, evidence_ref, actor).model_dump(), json_out)
+    svc = services(db)
+    mem = svc.memory.sharpen(memory_id, evidence_ref, actor)
+    svc.audit.record("memory.sharpen", actor, mem.id)
+    emit(mem.model_dump(), json_out)
 
 
 @memory_app.command("audit")
@@ -361,7 +378,10 @@ def memory_audit(db: DbOpt = None, json_out: JsonOpt = False) -> None:
 
 @memory_app.command("export")
 def memory_export(actor: ActorOpt = None, db: DbOpt = None, json_out: JsonOpt = False) -> None:
-    emit(services(db).memory.export_all(actor), json_out)
+    svc = services(db)
+    result = svc.memory.export_all(actor)
+    svc.audit.record("memory.export", actor, None, {"count": len(result)})
+    emit(result, json_out)
 
 
 @memory_app.command("import")
@@ -383,6 +403,7 @@ def memory_import(
         )
         for item in data
     ]
+    svc.audit.record("memory.import", actor, None, {"count": len(imported)})
     emit([m.model_dump() for m in imported], json_out)
 
 
@@ -396,16 +417,20 @@ def context_build(
     db: DbOpt = None,
     json_out: JsonOpt = False,
 ) -> None:
-    emit(
-        services(db).context.build(intent, actor, agent, scope or [], budget).model_dump(), json_out
-    )
+    svc = services(db)
+    capsule = svc.context.build(intent, actor, agent, scope or [], budget)
+    svc.audit.record("context.build", actor, capsule.id)
+    emit(capsule.model_dump(), json_out)
 
 
 @context_app.command("explain")
 def context_explain(
     capsule_id: str, actor: ActorOpt = None, db: DbOpt = None, json_out: JsonOpt = False
 ) -> None:
-    emit(services(db).context.explain(capsule_id, actor), json_out)
+    svc = services(db)
+    result = svc.context.explain(capsule_id, actor)
+    svc.audit.record("context.explain", actor, capsule_id)
+    emit(result, json_out)
 
 
 @context_app.command("reduce")
@@ -417,28 +442,39 @@ def context_reduce(
     json_out: JsonOpt = False,
 ) -> None:
     svc = services(db)
-    emit(reduce_capsule(svc.context.read(capsule_id, actor), max_memories).model_dump(), json_out)
+    capsule = reduce_capsule(svc.context.read(capsule_id, actor), max_memories)
+    svc.audit.record("context.reduce", actor, capsule_id)
+    emit(capsule.model_dump(), json_out)
 
 
 @context_app.command("expand")
 def context_expand(
     capsule_id: str, actor: ActorOpt = None, db: DbOpt = None, json_out: JsonOpt = False
 ) -> None:
-    emit(services(db).context.read(capsule_id, actor).model_dump(), json_out)
+    svc = services(db)
+    capsule = svc.context.read(capsule_id, actor)
+    svc.audit.record("context.expand", actor, capsule_id)
+    emit(capsule.model_dump(), json_out)
 
 
 @context_app.command("lock")
 def context_lock(
     capsule_id: str, actor: ActorOpt = None, db: DbOpt = None, json_out: JsonOpt = False
 ) -> None:
-    emit(services(db).context.set_status(capsule_id, actor, "locked"), json_out)
+    svc = services(db)
+    result = svc.context.set_status(capsule_id, actor, "locked")
+    svc.audit.record("context.lock", actor, capsule_id)
+    emit(result, json_out)
 
 
 @context_app.command("export")
 def context_export(
     capsule_id: str, actor: ActorOpt = None, db: DbOpt = None, json_out: JsonOpt = False
 ) -> None:
-    emit(services(db).context.read(capsule_id, actor).model_dump(), json_out)
+    svc = services(db)
+    capsule = svc.context.read(capsule_id, actor)
+    svc.audit.record("context.export", actor, capsule_id)
+    emit(capsule.model_dump(), json_out)
 
 
 @context_app.command("import")
@@ -448,9 +484,9 @@ def context_import(
     db: DbOpt = None,
     json_out: JsonOpt = False,
 ) -> None:
-    capsule = services(db).context.import_capsule(
-        json.loads(file.read_text(encoding="utf-8")), actor
-    )
+    svc = services(db)
+    capsule = svc.context.import_capsule(json.loads(file.read_text(encoding="utf-8")), actor)
+    svc.audit.record("context.import", actor, capsule.id)
     emit(capsule.model_dump(), json_out)
 
 

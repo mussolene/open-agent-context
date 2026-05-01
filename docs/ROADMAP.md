@@ -50,13 +50,14 @@ Reference adapters prove integration, but they do not expand the standard.
   scoring stays inside validation adapters.
 - Done: `StorageBackend` no longer exposes SQL fragments; selectors are
   filters, order, and limit.
-- Remaining: add `MemoryOperation` schema for observe, propose, commit, query, read,
+- Done: add `MemoryOperation` schema for observe, propose, commit, query, read,
   correct, forget, blur, and sharpen.
-- Remaining: add `memory_call` schema for OACS-native memory operation traces.
-- Remaining: specify scope semantics: requested scope must be a subset of granted/resource
+- Done: add `ContextOperation` and `MemoryLoopRun` schemas for context and loop traces.
+- Done: add `memory_call` schema for OACS-native memory operation traces.
+- Done: specify scope semantics: requested scope must be a subset of granted/resource
   scope; wildcard access requires explicit `*`.
-- Remaining: specify audit requirements for memory read/query/write and context build/export.
-- Remaining: add deterministic conformance tests for capability-safe memory operations.
+- Done: specify audit requirements for memory read/query/write and context build/export.
+- Done: add deterministic conformance tests for capability-safe memory operations.
 
 ### v0.2.7 - Context Capsule Integrity
 - Add signed capsule export with verifiable checksum metadata.
@@ -137,14 +138,15 @@ contracts. Reference adapters доказывают интеграцию, но н
   scoring остаётся внутри validation adapters.
 - Готово: `StorageBackend` больше не раскрывает SQL fragments; selectors - это
   filters, order и limit.
-- Осталось: добавить `MemoryOperation` schema для observe, propose, commit, query, read,
+- Готово: добавить `MemoryOperation` schema для observe, propose, commit, query, read,
   correct, forget, blur и sharpen.
-- Осталось: добавить `memory_call` schema для OACS-native traces операций памяти.
-- Осталось: зафиксировать scope semantics: requested scope должен быть subset of
+- Готово: добавить `ContextOperation` и `MemoryLoopRun` schemas для context и loop traces.
+- Готово: добавить `memory_call` schema для OACS-native traces операций памяти.
+- Готово: зафиксировать scope semantics: requested scope должен быть subset of
   granted/resource scope; wildcard access требует явного `*`.
-- Осталось: зафиксировать audit requirements для memory read/query/write и context
+- Готово: зафиксировать audit requirements для memory read/query/write и context
   build/export.
-- Осталось: добавить deterministic conformance tests для capability-safe memory
+- Готово: добавить deterministic conformance tests для capability-safe memory
   operations.
 
 ### v0.2.7 - Context Capsule Integrity

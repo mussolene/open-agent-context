@@ -70,8 +70,8 @@ class PolicyEngine:
 
     @staticmethod
     def _scope_matches(scope: Sequence[str] | None, grant_scope: Sequence[str]) -> bool:
-        if not grant_scope or "*" in grant_scope:
+        if "*" in grant_scope:
             return True
         if not scope:
-            return False
+            return not grant_scope
         return set(scope).issubset(set(grant_scope))

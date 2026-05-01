@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MemoryCall",
+  "type": "object",
+  "required": ["id", "op", "status", "arguments", "result"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^mcall_[A-Za-z0-9_]+$"},
+    "op": {
+      "type": "string",
+      "enum": [
+        "memory.query",
+        "memory.query.deepen",
+        "memory.read",
+        "memory.extract_evidence"
+      ]
+    },
+    "status": {"type": "string", "enum": ["completed", "denied", "failed"]},
+    "arguments": {"type": "object"},
+    "result": {"type": "object"}
+  },
+  "additionalProperties": false
+}

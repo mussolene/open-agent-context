@@ -20,6 +20,11 @@ on compact capsules, uses `memory_calls` for structured evidence and
 medium/large contexts, and keeps deepening explicit, caller-configurable, and
 filtered by the actor's scoped memory grants.
 
+`memory_call` is a trace object, not model output. Its schema is
+`schemas/memory_call.schema.json`; `MemoryLoopRun` is
+`schemas/memory_loop_run.schema.json`. `memory.read` call results expose memory
+ids, depth, lifecycle status, and content hashes, not plaintext content.
+
 ## RU
 Memory loop выполняет: observe -> classify intent -> retrieve memory -> build
 capsule -> apply rules -> select skills/tools -> act -> evaluate -> propose
@@ -39,3 +44,8 @@ selectors интерпретируют typed evidence dimensions. Adaptive conte
 `memory_calls` для structured evidence и medium/large contexts, а deepening
 остаётся явным, управляемым caller configuration и filtered через scoped memory
 grants actor.
+
+`memory_call` - trace object, а не model output. Его schema:
+`schemas/memory_call.schema.json`; `MemoryLoopRun` описан в
+`schemas/memory_loop_run.schema.json`. Результаты `memory.read` call раскрывают
+memory ids, depth, lifecycle status и content hashes, но не plaintext content.

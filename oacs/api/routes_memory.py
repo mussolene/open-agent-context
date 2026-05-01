@@ -4,6 +4,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 from oacs.app import services
+from oacs.core.errors import AccessDenied
 
 router = APIRouter(prefix="/v1")
 
@@ -69,42 +70,58 @@ def commit(req: dict[str, str | None]) -> dict[str, object]:
 @router.post("/memory/query")
 def query(req: MemoryQuery) -> list[dict[str, object]]:
     svc = services()
-    result = svc.memory.query(req.query, req.actor_id, req.scope)
-    svc.audit.record("memory.query", req.actor_id)
+    try:
+        result = svc.memory.query(req.query, req.actor_id, req.scope)
+    except AccessDenied as exc:
+        svc.audit.record("memory.query", req.actor_id, None, {"status": "denied"})
+        raise exc
+    svc.audit.record("memory.query", req.actor_id, None, {"status": "completed"})
     return [m.model_dump() for m in result]
 
 
 @router.get("/memory/{memory_id}")
 def read(memory_id: str, actor_id: str | None = None) -> dict[str, object]:
     svc = services()
-    mem = svc.memory.read(memory_id, actor_id)
-    svc.audit.record("memory.read", actor_id, mem.id)
+    try:
+        mem = svc.memory.read(memory_id, actor_id)
+    except AccessDenied as exc:
+        svc.audit.record("memory.read", actor_id, memory_id, {"status": "denied"})
+        raise exc
+    svc.audit.record("memory.read", actor_id, mem.id, {"status": "completed"})
     return mem.model_dump()
 
 
 @router.post("/memory/{memory_id}/correct")
 def correct(memory_id: str, req: MemoryWrite) -> dict[str, object]:
-    return services().memory.correct(memory_id, req.text, req.actor_id).model_dump()
+    svc = services()
+    mem = svc.memory.correct(memory_id, req.text, req.actor_id)
+    svc.audit.record("memory.correct", req.actor_id, mem.id)
+    return mem.model_dump()
 
 
 @router.post("/memory/{memory_id}/forget")
 def forget(memory_id: str, req: dict[str, str | None]) -> dict[str, object]:
-    return services().memory.forget(memory_id, req.get("actor_id")).model_dump()
+    svc = services()
+    mem = svc.memory.forget(memory_id, req.get("actor_id"))
+    svc.audit.record("memory.forget", req.get("actor_id"), mem.id)
+    return mem.model_dump()
 
 
 @router.post("/memory/blur")
 def blur(req: dict[str, str | None]) -> dict[str, object]:
-    return services().memory.blur(str(req["memory_id"]), req.get("actor_id")).model_dump()
+    svc = services()
+    mem = svc.memory.blur(str(req["memory_id"]), req.get("actor_id"))
+    svc.audit.record("memory.blur", req.get("actor_id"), mem.id)
+    return mem.model_dump()
 
 
 @router.post("/memory/sharpen")
 def sharpen(req: dict[str, str | None]) -> dict[str, object]:
-    return (
-        services()
-        .memory.sharpen(
-            str(req["memory_id"]),
-            str(req["evidence_ref"]),
-            req.get("actor_id"),
-        )
-        .model_dump()
+    svc = services()
+    mem = svc.memory.sharpen(
+        str(req["memory_id"]),
+        str(req["evidence_ref"]),
+        req.get("actor_id"),
     )
+    svc.audit.record("memory.sharpen", req.get("actor_id"), mem.id)
+    return mem.model_dump()

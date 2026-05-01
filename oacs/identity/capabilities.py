@@ -89,7 +89,7 @@ class CapabilityService:
             issuer_actor_id=issuer_actor_id,
             allowed_operations=allowed_operations,
             denied_operations=denied_operations or [],
-            scope=scope or [],
+            scope=scope if scope is not None else ["*"],
             memory_depth_allowed=memory_depth_allowed,
             namespaces_allowed=namespaces_allowed or ["default"],
             expires_at=expires_at,

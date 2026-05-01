@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ContextOperation",
+  "type": "object",
+  "required": ["id", "operation", "status", "actor_id", "created_at"],
+  "properties": {
+    "id": {"type": "string"},
+    "operation": {
+      "type": "string",
+      "enum": [
+        "context.build",
+        "context.explain",
+        "context.reduce",
+        "context.expand",
+        "context.lock",
+        "context.export",
+        "context.import"
+      ]
+    },
+    "status": {"type": "string", "enum": ["requested", "completed", "denied", "failed"]},
+    "actor_id": {"type": ["string", "null"]},
+    "agent_id": {"type": ["string", "null"]},
+    "capsule_id": {"type": ["string", "null"]},
+    "scope": {"type": "array", "items": {"type": "string"}},
+    "token_budget": {"type": ["integer", "null"]},
+    "arguments": {"type": "object"},
+    "result": {"type": "object"},
+    "audit_event_id": {"type": ["string", "null"]},
+    "created_at": {"type": "string"}
+  },
+  "additionalProperties": false
+}

@@ -4,6 +4,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 from oacs.app import services
+from oacs.core.errors import AccessDenied
 
 router = APIRouter(prefix="/v1")
 
@@ -18,16 +19,28 @@ class ContextBuild(BaseModel):
 
 @router.post("/context/build")
 def build(req: ContextBuild) -> dict[str, object]:
-    return (
-        services()
-        .context.build(req.intent, req.actor_id, req.agent_id, req.scope, req.token_budget)
-        .model_dump()
-    )
+    svc = services()
+    try:
+        capsule = svc.context.build(
+            req.intent, req.actor_id, req.agent_id, req.scope, req.token_budget
+        )
+    except AccessDenied as exc:
+        svc.audit.record("context.build", req.actor_id, None, {"status": "denied"})
+        raise exc
+    svc.audit.record("context.build", req.actor_id, capsule.id)
+    return capsule.model_dump()
 
 
 @router.get("/context/{capsule_id}")
 def get_context(capsule_id: str, actor_id: str | None = None) -> dict[str, object]:
-    return services().context.read(capsule_id, actor_id).model_dump()
+    svc = services()
+    try:
+        capsule = svc.context.read(capsule_id, actor_id)
+    except AccessDenied as exc:
+        svc.audit.record("context.export", actor_id, capsule_id, {"status": "denied"})
+        raise exc
+    svc.audit.record("context.export", actor_id, capsule.id, {"status": "completed"})
+    return capsule.model_dump()
 
 
 @router.post("/context/validate")
@@ -38,21 +51,26 @@ def validate_context(req: dict[str, object]) -> dict[str, object]:
 @router.post("/context/import")
 def import_context(req: dict[str, object]) -> dict[str, object]:
     actor_id = req.pop("actor_id", None)
-    return (
-        services()
-        .context.import_capsule(req, actor_id if isinstance(actor_id, str) else None)
-        .model_dump()
-    )
+    svc = services()
+    capsule = svc.context.import_capsule(req, actor_id if isinstance(actor_id, str) else None)
+    svc.audit.record("context.import", actor_id if isinstance(actor_id, str) else None, capsule.id)
+    return capsule.model_dump()
 
 
 @router.post("/context/{capsule_id}/lock")
 def lock_context(capsule_id: str, req: dict[str, str | None]) -> dict[str, object]:
-    return services().context.set_status(capsule_id, req.get("actor_id"), "locked")
+    svc = services()
+    result = svc.context.set_status(capsule_id, req.get("actor_id"), "locked")
+    svc.audit.record("context.lock", req.get("actor_id"), capsule_id)
+    return result
 
 
 @router.post("/context/{capsule_id}/explain")
 def explain(capsule_id: str, req: dict[str, str | None]) -> dict[str, object]:
-    return services().context.explain(capsule_id, req.get("actor_id"))
+    svc = services()
+    result = svc.context.explain(capsule_id, req.get("actor_id"))
+    svc.audit.record("context.explain", req.get("actor_id"), capsule_id)
+    return result
 
 
 @router.post("/capsules/{capsule_id}/grant")
