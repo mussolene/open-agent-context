@@ -24,6 +24,10 @@ Non-breaking changes before v1.0 include:
 The `StorageBackend` protocol is still draft-level before v1.0 and may evolve;
 SQLite remains the reference backend for compatibility checks.
 
+Scoped memory grants are part of the v0.2 reference implementation. Before
+v1.0, exact grant matching rules may tighten, but broadening access without an
+explicit grant is considered a compatibility and security regression.
+
 At v1.0, the project should publish stable schemas, migration rules, and backend
 conformance tests.
 
@@ -50,6 +54,10 @@ Non-breaking changes до v1.0:
 
 `StorageBackend` protocol до v1.0 остаётся draft-level и может меняться; SQLite
 остаётся reference backend для compatibility checks.
+
+Scoped memory grants являются частью v0.2 reference implementation. До v1.0
+точные правила matching могут ужесточаться, но расширение доступа без явного
+grant считается compatibility и security regression.
 
 К v1.0 проект должен опубликовать stable schemas, migration rules и backend
 conformance tests.

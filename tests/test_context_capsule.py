@@ -34,3 +34,17 @@ def test_context_capsule_rejects_bad_checksum(svc):
         assert "checksum" in str(exc)
     else:
         raise AssertionError("tampered capsule passed validation")
+
+
+def test_context_build_respects_subagent_shared_memory_scope(svc):
+    actor = svc.actors.create("agent", "CapsuleSubagent")
+    svc.capabilities.grant_shared_memory(actor.id, "system", ["task:allowed"])
+    allowed = svc.memory.propose("fact", 2, "allowed capsule memory", None, ["task:allowed"])
+    denied = svc.memory.propose("fact", 2, "denied capsule memory", None, ["task:other"])
+    svc.memory.commit(allowed.id, None)
+    svc.memory.commit(denied.id, None)
+
+    capsule = svc.context.build("capsule memory", actor.id, scope=["task:allowed"])
+
+    assert allowed.id in capsule.included_memories
+    assert denied.id not in capsule.included_memories

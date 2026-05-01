@@ -4,7 +4,7 @@
 This roadmap tracks the OACS v0.1 draft standard and the Python reference
 implementation.
 
-### Current Position: v0.2.4 Reference POC, storage backend protocol
+### Current Position: v0.2.5 Reference POC, scoped subagent memory
 - Done: OACS v0.1 draft terminology, schemas, encrypted SQLite memory,
   ContextCapsule, CLI/API, rules/skills/tools/MCP registries, basic memory loop,
   memory_calls, and public benchmark adapters.
@@ -36,6 +36,10 @@ implementation.
   `memory_calls`.
 - Done: thin `StorageBackend` protocol added with SQLite kept as the reference
   backend.
+- Done: capability-scoped shared memory added for subagents through
+  `CapabilityGrant.scope`, `namespaces_allowed`, and `memory_depth_allowed`.
+- Done: formal repo proof-loop adapter added through `acs repo proof-capture`,
+  `proof-context`, and `proof-status`.
 - Current technical report:
   `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`.
 
@@ -47,7 +51,8 @@ implementation.
 
 ### v0.3
 - Add a real MCP client execution adapter.
-- Add namespace/scope-aware capability constraints for tools and skills.
+- Extend namespace/scope-aware capability constraints from memory/context to
+  tools and skills.
 - Add audit chain verification commands.
 - Add task pack import/download with schema and checksum validation.
 - Add larger benchmark suites with real LM Studio mode reporting and native
@@ -65,7 +70,7 @@ implementation.
 Этот roadmap отслеживает OACS v0.1 draft standard и Python reference
 implementation.
 
-### Текущая позиция: v0.2.4 Reference POC, storage backend protocol
+### Текущая позиция: v0.2.5 Reference POC, scoped subagent memory
 - Готово: OACS v0.1 draft terminology, schemas, encrypted SQLite memory,
   ContextCapsule, CLI/API, rules/skills/tools/MCP registries, базовый memory
   loop, memory_calls и public benchmark adapters.
@@ -98,6 +103,10 @@ implementation.
   используют `memory_calls`.
 - Готово: добавлен тонкий `StorageBackend` protocol, SQLite остаётся reference
   backend.
+- Готово: capability-scoped shared memory добавлена для subagents через
+  `CapabilityGrant.scope`, `namespaces_allowed` и `memory_depth_allowed`.
+- Готово: formal repo proof-loop adapter добавлен через `acs repo
+  proof-capture`, `proof-context` и `proof-status`.
 - Текущий technical report:
   `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`.
 
@@ -109,7 +118,8 @@ implementation.
 
 ### v0.3
 - Добавить настоящий MCP client execution adapter.
-- Добавить namespace/scope-aware capability constraints для tools и skills.
+- Расширить namespace/scope-aware capability constraints с memory/context на
+  tools и skills.
 - Добавить команды проверки audit chain.
 - Добавить import/download task packs с schema и checksum validation.
 - Расширить benchmark suites с real LM Studio mode reporting и native harness

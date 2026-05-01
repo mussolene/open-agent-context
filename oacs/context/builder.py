@@ -39,17 +39,20 @@ class ContextBuilder:
         agent_id: str | None = None,
         scope: list[str] | None = None,
         token_budget: int = 4000,
+        task_id: str | None = None,
     ) -> ContextCapsule:
-        self.policy.require(actor_id, "context.build")
-        memories = self.memory.query(intent, actor_id, scope or [])
+        requested_scope = scope or []
+        self.policy.require(actor_id, "context.build", scope=requested_scope, namespace="default")
+        memories = self.memory.query(intent, actor_id, requested_scope)
         rules = self.rules.check("context.build", {"memories": [m.model_dump() for m in memories]})
         skills = self.skills.list()
         tools = self.tools.list()
         capsule = ContextCapsule(
             purpose=intent,
+            task_id=task_id,
             actor_id=actor_id,
             agent_id=agent_id,
-            scope=scope or [],
+            scope=requested_scope,
             token_budget=token_budget,
             included_memories=[m.id for m in memories],
             included_rules=[r.rule_id for r in rules],

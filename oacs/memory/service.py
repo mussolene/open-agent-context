@@ -22,8 +22,9 @@ class MemoryService:
     def observe(
         self, text: str, actor_id: str | None, scope: list[str] | None = None
     ) -> MemoryRecord:
-        self.policy.require(actor_id, "memory.observe", 0)
-        return self._create("trace", 0, text, "observed", actor_id, scope or [])
+        write_scope = scope or []
+        self.policy.require(actor_id, "memory.observe", 0, write_scope, "default")
+        return self._create("trace", 0, text, "observed", actor_id, write_scope)
 
     def propose(
         self,
@@ -34,14 +35,15 @@ class MemoryService:
         scope: list[str] | None = None,
         evidence: list[EvidenceItem | dict[str, object]] | None = None,
     ) -> MemoryRecord:
-        self.policy.require(actor_id, "memory.propose", depth)
+        write_scope = scope or []
+        self.policy.require(actor_id, "memory.propose", depth, write_scope, "default")
         return self._create(
-            memory_type, depth, text, "candidate", actor_id, scope or [], evidence=evidence
+            memory_type, depth, text, "candidate", actor_id, write_scope, evidence=evidence
         )
 
     def commit(self, memory_id: str, actor_id: str | None) -> MemoryRecord:
-        self.policy.require(actor_id, "memory.commit")
         mem = self.read(memory_id, actor_id)
+        self.policy.require(actor_id, "memory.commit", mem.depth, mem.scope, mem.namespace)
         if mem.depth >= 3 and not mem.evidence_refs:
             raise ValidationFailure("D3-D5 memory requires sharpening evidence before commit")
         return self._transition(mem, "active")
@@ -49,53 +51,69 @@ class MemoryService:
     def query(
         self, query: str, actor_id: str | None, scope: list[str] | None = None
     ) -> list[MemoryRecord]:
-        self.policy.require(actor_id, "memory.query")
-        memories = [
-            self._decrypt(row)
-            for row in self.repo.list("WHERE status='active' AND lifecycle_status='active'")
-        ]
-        if scope:
-            memories = [m for m in memories if set(scope) & set(m.scope)]
+        requested_scope = scope or []
+        self.policy.require(actor_id, "memory.query", scope=requested_scope, namespace="default")
+        rows = self.repo.list("WHERE status='active' AND lifecycle_status='active'")
+        memories = []
+        for row in rows:
+            row_scope = row["scope"]
+            row_namespace = str(row["namespace"])
+            row_depth = int(str(row["depth"]))
+            if requested_scope and not set(requested_scope).issubset(set(row_scope)):
+                continue
+            if not self.policy.allows(
+                actor_id, "memory.read", row_depth, row_scope, row_namespace
+            ):
+                continue
+            memories.append(self._decrypt(row))
         return rank_memories(query, memories)
 
     def read(self, memory_id: str, actor_id: str | None) -> MemoryRecord:
         row = self.repo.get(memory_id)
         if row["lifecycle_status"] == "forgotten":
             raise NotFound(f"memory is forgotten: {memory_id}")
+        self.policy.require(
+            actor_id,
+            "memory.read",
+            int(str(row["depth"])),
+            row["scope"],
+            str(row["namespace"]),
+        )
         mem = self._decrypt(row)
-        self.policy.require(actor_id, "memory.read", mem.depth)
         return mem
 
     def correct(self, memory_id: str, text: str, actor_id: str | None) -> MemoryRecord:
-        self.policy.require(actor_id, "memory.correct")
         old = self.read(memory_id, actor_id)
+        self.policy.require(actor_id, "memory.correct", old.depth, old.scope, old.namespace)
         old = self._transition(old, "superseded")
         return self._create(old.memory_type, old.depth, text, "active", actor_id, old.scope, old.id)
 
     def deprecate(self, memory_id: str, actor_id: str | None) -> MemoryRecord:
-        self.policy.require(actor_id, "memory.correct")
-        return self._transition(self.read(memory_id, actor_id), "deprecated")
+        mem = self.read(memory_id, actor_id)
+        self.policy.require(actor_id, "memory.correct", mem.depth, mem.scope, mem.namespace)
+        return self._transition(mem, "deprecated")
 
     def supersede(self, memory_id: str, replacement_id: str, actor_id: str | None) -> MemoryRecord:
-        self.policy.require(actor_id, "memory.correct")
         mem = self.read(memory_id, actor_id)
+        self.policy.require(actor_id, "memory.correct", mem.depth, mem.scope, mem.namespace)
         mem.supersedes = replacement_id
         return self._transition(mem, "superseded")
 
     def forget(self, memory_id: str, actor_id: str | None) -> MemoryRecord:
-        self.policy.require(actor_id, "memory.forget")
-        return self._transition(self.read(memory_id, actor_id), "forgotten")
+        mem = self.read(memory_id, actor_id)
+        self.policy.require(actor_id, "memory.forget", mem.depth, mem.scope, mem.namespace)
+        return self._transition(mem, "forgotten")
 
     def blur(self, memory_id: str, actor_id: str | None) -> MemoryRecord:
-        self.policy.require(actor_id, "memory.correct")
         mem = self.read(memory_id, actor_id)
+        self.policy.require(actor_id, "memory.correct", mem.depth, mem.scope, mem.namespace)
         mem.depth = min(5, mem.depth + 1)
         mem.content.confidence = min(mem.content.confidence, 0.5)
         return self._save(mem)
 
     def sharpen(self, memory_id: str, evidence_ref: str, actor_id: str | None) -> MemoryRecord:
-        self.policy.require(actor_id, "memory.correct")
         mem = self.read(memory_id, actor_id)
+        self.policy.require(actor_id, "memory.correct", mem.depth, mem.scope, mem.namespace)
         mem.depth = max(0, min(mem.depth, 2))
         if evidence_ref not in mem.evidence_refs:
             mem.evidence_refs.append(evidence_ref)

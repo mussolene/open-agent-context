@@ -10,6 +10,10 @@ stored locally for development and removed with `acs key lock`.
 
 Audit events store operation metadata and hashes, not secret content.
 
+Subagent memory sharing uses normal `CapabilityGrant` records. Non-bootstrap
+actors must have matching operation, scope, namespace, and depth grants before
+they can query, read, or build capsules from shared memory.
+
 ## RU
 POC закрывает риски: хранение памяти в открытом виде, случайные утечки
 capability, скрытые записи памяти, использование fuzzy memory как факта и
@@ -20,3 +24,7 @@ Payload памяти и capsules шифруются AEAD. Локальный pas
 и удаляется через `acs key lock`.
 
 Audit events содержат metadata и хэши, но не секретный контент.
+
+Shared memory для subagents использует обычные `CapabilityGrant` records.
+Non-bootstrap actors должны иметь matching operation, scope, namespace и depth
+grants перед query, read или build capsules из shared memory.

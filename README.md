@@ -74,10 +74,19 @@ acs repo capture --task "tighten memory_calls" \
   --summary "Removed benchmark-specific shortcuts and kept selector metadata typed." --json
 
 acs repo context --task "continue OACS development" --json
+
+acs repo proof-capture --task-id "roadmap-iteration" --phase build \
+  --summary "Implemented the next bounded proof-loop phase." --json
+
+acs repo proof-context --task-id "roadmap-iteration" --json
+acs repo proof-status --task-id "roadmap-iteration" --json
 ```
 
 `repo capture` stores a committed D1 episode with git state and structured
 evidence. `repo context` builds an explainable capsule over the repo scope.
+`repo proof-*` is the formal proof-loop adapter: it scopes memory and capsules
+to `repo:<name>` plus `task:<id>`, so subagents can receive explicit shared
+memory through capability grants instead of hidden conversation history.
 
 ### LM Studio
 
@@ -185,10 +194,19 @@ acs repo capture --task "tighten memory_calls" \
   --summary "Removed benchmark-specific shortcuts and kept selector metadata typed." --json
 
 acs repo context --task "continue OACS development" --json
+
+acs repo proof-capture --task-id "roadmap-iteration" --phase build \
+  --summary "Implemented the next bounded proof-loop phase." --json
+
+acs repo proof-context --task-id "roadmap-iteration" --json
+acs repo proof-status --task-id "roadmap-iteration" --json
 ```
 
 `repo capture` сохраняет committed D1 episode с git state и structured evidence.
 `repo context` строит explainable capsule по repo scope.
+`repo proof-*` - формальный adapter для proof-loop: он ограничивает memory и
+capsules областями `repo:<name>` и `task:<id>`, чтобы subagents получали явную
+shared memory через capability grants, а не скрытую историю диалога.
 
 ### LM Studio
 

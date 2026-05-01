@@ -80,16 +80,50 @@ class CapabilityService:
         allowed_operations: list[str],
         scope: list[str] | None = None,
         memory_depth_allowed: int = 2,
+        namespaces_allowed: list[str] | None = None,
+        denied_operations: list[str] | None = None,
+        expires_at: str | None = None,
     ) -> CapabilityGrant:
         grant = CapabilityGrant(
             subject_actor_id=subject_actor_id,
             issuer_actor_id=issuer_actor_id,
             allowed_operations=allowed_operations,
+            denied_operations=denied_operations or [],
             scope=scope or [],
             memory_depth_allowed=memory_depth_allowed,
+            namespaces_allowed=namespaces_allowed or ["default"],
+            expires_at=expires_at,
         )
         self.repo.save(grant.to_record())
         return grant
+
+    def grant_shared_memory(
+        self,
+        subject_actor_id: str,
+        issuer_actor_id: str,
+        scope: list[str],
+        memory_depth_allowed: int = 2,
+        namespaces_allowed: list[str] | None = None,
+        expires_at: str | None = None,
+        allowed_operations: list[str] | None = None,
+    ) -> CapabilityGrant:
+        return self.grant(
+            subject_actor_id=subject_actor_id,
+            issuer_actor_id=issuer_actor_id,
+            allowed_operations=allowed_operations
+            or [
+                "memory.observe",
+                "memory.propose",
+                "memory.query",
+                "memory.read",
+                "context.build",
+                "context.export",
+            ],
+            scope=scope,
+            memory_depth_allowed=memory_depth_allowed,
+            namespaces_allowed=namespaces_allowed or ["default"],
+            expires_at=expires_at,
+        )
 
     def for_actor(self, actor_id: str) -> list[CapabilityGrant]:
         rows = self.repo.list("WHERE subject_actor_id=? AND status='active'", (actor_id,))
@@ -122,10 +156,46 @@ class CapabilityService:
 def builtin_capabilities() -> list[CapabilityDefinition]:
     return [
         CapabilityDefinition(
+            id="cap_memory_observe",
+            name="memory_observe",
+            operation="memory.observe",
+            description="Allows writing raw trace observations into granted memory scopes.",
+        ),
+        CapabilityDefinition(
+            id="cap_memory_propose",
+            name="memory_propose",
+            operation="memory.propose",
+            description="Allows proposing candidate memory inside granted scopes.",
+        ),
+        CapabilityDefinition(
+            id="cap_memory_commit",
+            name="memory_commit",
+            operation="memory.commit",
+            description="Allows committing candidate memory inside granted scopes.",
+        ),
+        CapabilityDefinition(
+            id="cap_memory_query",
+            name="memory_query",
+            operation="memory.query",
+            description="Allows querying active memory inside granted scopes.",
+        ),
+        CapabilityDefinition(
             id="cap_memory_read",
             name="memory_read",
             operation="memory.read",
             description="Allows reading confirmed memory up to the granted depth.",
+        ),
+        CapabilityDefinition(
+            id="cap_memory_correct",
+            name="memory_correct",
+            operation="memory.correct",
+            description="Allows correcting, blurring, sharpening, or deprecating granted memory.",
+        ),
+        CapabilityDefinition(
+            id="cap_memory_forget",
+            name="memory_forget",
+            operation="memory.forget",
+            description="Allows forgetting memory inside granted scopes.",
         ),
         CapabilityDefinition(
             id="cap_context_build",
@@ -138,5 +208,11 @@ def builtin_capabilities() -> list[CapabilityDefinition]:
             name="context_export",
             operation="context.export",
             description="Allows exporting a context capsule after policy checks.",
+        ),
+        CapabilityDefinition(
+            id="cap_shared_memory",
+            name="shared_memory",
+            operation="memory.query,memory.read,context.build,context.export",
+            description="Allows scoped subagent memory and context access.",
         ),
     ]

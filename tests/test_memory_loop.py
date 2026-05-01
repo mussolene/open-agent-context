@@ -90,3 +90,30 @@ def test_memory_loop_deepens_when_scoped_capsule_has_no_evidence(svc):
     ]
     assert result.evidence[0]["value"] == "make beta-report"
     assert result.answered_deterministically is True
+
+
+def test_memory_loop_deepening_respects_subagent_scope(svc):
+    actor = svc.actors.create("agent", "DeepeningSubagent")
+    svc.capabilities.grant_shared_memory(actor.id, "system", ["project"])
+    mem = svc.memory.propose(
+        "fact",
+        2,
+        "Org-only Gamma reports use make gamma-report.",
+        None,
+        ["org"],
+        evidence=[
+            {
+                "evidence_kind": "procedure",
+                "claim": "Gamma report command",
+                "value": "make gamma-report",
+                "slot": "evidence",
+                "confidence": 1.0,
+            }
+        ],
+    )
+    svc.memory.commit(mem.id, None)
+
+    result = svc.loop.run("How do I generate the Gamma report?", actor.id, scope=["project"])
+
+    assert mem.id not in result.memories_used
+    assert result.answered_deterministically is False

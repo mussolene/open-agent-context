@@ -161,6 +161,8 @@ class MemoryLoopEngine:
     ) -> list[MemoryRecord]:
         if not scope:
             return memories
+        if actor_id not in (None, "", "system"):
+            return memories
         deepened = self.memory.query(user_request, actor_id, [])
         seen = {memory.id for memory in memories}
         return memories + [memory for memory in deepened if memory.id not in seen]
