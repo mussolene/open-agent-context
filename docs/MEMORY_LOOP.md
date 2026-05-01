@@ -8,7 +8,7 @@ memory -> policy check -> commit/discard -> audit.
 The POC uses deterministic local behavior by default and can call LM Studio when
 explicitly configured.
 
-In v0.2.5, memory operations can be represented as `memory_calls`. A
+In v0.2.6, memory operations can be represented as `memory_calls`. A
 `memory_call` is similar in shape to a model tool call, but it is executed by
 OACS rather than delegated to backend-specific tool-calling support.
 `MemoryLoopEngine`, CLI `acs loop run`, API `/v1/loop/run`, and the reference
@@ -28,7 +28,7 @@ memory -> policy check -> commit/discard -> audit.
 По умолчанию POC детерминированный и локальный; LM Studio вызывается только при
 явной настройке.
 
-В v0.2.5 memory operations могут быть представлены как `memory_calls`.
+В v0.2.6 memory operations могут быть представлены как `memory_calls`.
 `memory_call` похож по форме на model tool call, но выполняется OACS, а не
 backend-specific tool-calling support. `MemoryLoopEngine`, CLI `acs loop run`,
 API `/v1/loop/run` и reference benchmark могут emit calls например

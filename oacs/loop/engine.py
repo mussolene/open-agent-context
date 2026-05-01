@@ -31,9 +31,8 @@ class MemoryLoopResult(BaseModel):
     memory_calls: list[dict[str, object]] = Field(default_factory=list)
     evidence: list[dict[str, object]] = Field(default_factory=list)
     model_prompt: str | None = None
-    answered_deterministically: bool = False
     context_policy: dict[str, object] = Field(default_factory=dict)
-    benchmark_metrics: dict[str, object] = Field(default_factory=dict)
+    operation_metrics: dict[str, object] = Field(default_factory=dict)
 
 
 class MemoryLoopEngine:
@@ -64,8 +63,6 @@ class MemoryLoopEngine:
         memory_call_payload: list[dict[str, object]] = []
         evidence_payload: list[dict[str, object]] = []
         model_prompt: str | None = None
-        answered_deterministically = False
-        deterministic_answer: str | None = None
         if context_policy.use_memory_calls:
             call_result = DeterministicMemoryCallLoop(include_read=True).build_prompt(
                 user_request, memories
@@ -110,19 +107,20 @@ class MemoryLoopEngine:
             memory_call_payload = [memory_call_to_dict(call) for call in call_result.memory_calls]
             evidence_payload = [item_to_dict(item) for item in call_result.evidence]
             model_prompt = call_result.prompt
-            answered_deterministically = call_result.answered_deterministically
-            deterministic_answer = call_result.answer
         facts = [
             m.content.text for m in memories if m.depth <= 2 and m.lifecycle_status == "active"
         ]
         hypotheses = [m.content.text for m in memories if m.depth >= 3]
         answer_parts = []
-        if deterministic_answer:
-            answer_parts.append(deterministic_answer)
-        elif facts:
+        if facts:
             answer_parts.append("Relevant facts: " + " ".join(facts))
         if hypotheses:
             answer_parts.append("Hypotheses only: " + " ".join(hypotheses))
+        if evidence_payload:
+            answer_parts.append(
+                "Selected evidence: "
+                + " ".join(str(item.get("value", "")) for item in evidence_payload)
+            )
         answer_parts.append(f"Task: {user_request}")
         proposed = self.memory.propose(
             "episode", 1, f"Task handled: {user_request}", actor_id, scope or []
@@ -138,14 +136,13 @@ class MemoryLoopEngine:
             memory_calls=memory_call_payload,
             evidence=evidence_payload,
             model_prompt=model_prompt,
-            answered_deterministically=answered_deterministically,
             context_policy={
                 "name": context_policy.name,
                 "use_memory_calls": context_policy.use_memory_calls,
                 "allow_deepening": context_policy.allow_deepening,
                 "reason": context_policy.reason,
             },
-            benchmark_metrics={
+            operation_metrics={
                 "tokens_estimated": len(" ".join(answer_parts).split()),
                 "memory_calls_count": len(memory_call_payload),
                 "evidence_items": len(evidence_payload),

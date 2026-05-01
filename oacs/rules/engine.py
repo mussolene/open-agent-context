@@ -25,7 +25,8 @@ class RuleEngine:
     def list(self) -> list[RuleManifest]:
         self.ensure_builtin()
         return [
-            RuleManifest(**row) for row in self.repo.list("WHERE status='active' ORDER BY priority")
+            RuleManifest(**row)
+            for row in self.repo.list(filters={"status": "active"}, order_by=[("priority", "asc")])
         ]
 
     def check(

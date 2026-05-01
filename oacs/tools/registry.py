@@ -50,7 +50,10 @@ class ToolRegistry:
 
     def list(self) -> list[ToolBinding]:
         self.ensure_builtin()
-        return [ToolBinding(**row["manifest"]) for row in self.repo.list("WHERE status='active'")]
+        return [
+            ToolBinding(**row["manifest"])
+            for row in self.repo.list(filters={"status": "active"})
+        ]
 
     def inspect(self, tool_id: str) -> ToolBinding:
         for tool in self.list():

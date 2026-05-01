@@ -15,7 +15,6 @@ def builtin_skills() -> list[SkillManifest]:
         SkillManifest(id="skill_memory_critical_solver", name="memory_critical_solver"),
         SkillManifest(id="skill_contradiction_resolver", name="contradiction_resolver"),
         SkillManifest(id="skill_task_trace_distiller", name="task_trace_distiller"),
-        SkillManifest(id="skill_benchmark_solver", name="benchmark_solver"),
     ]
 
 
@@ -58,7 +57,10 @@ class SkillRegistry:
 
     def list(self) -> list[SkillManifest]:
         self.ensure_builtin()
-        return [SkillManifest(**row["manifest"]) for row in self.repo.list("WHERE status='active'")]
+        return [
+            SkillManifest(**row["manifest"])
+            for row in self.repo.list(filters={"status": "active"})
+        ]
 
     def inspect(self, skill_id: str) -> SkillManifest:
         for skill in self.list():

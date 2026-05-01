@@ -126,7 +126,7 @@ class CapabilityService:
         )
 
     def for_actor(self, actor_id: str) -> list[CapabilityGrant]:
-        rows = self.repo.list("WHERE subject_actor_id=? AND status='active'", (actor_id,))
+        rows = self.repo.list(filters={"subject_actor_id": actor_id, "status": "active"})
         return [CapabilityGrant(**row) for row in rows]
 
     def ensure_builtin_definitions(self) -> None:
@@ -143,7 +143,9 @@ class CapabilityService:
             return builtin_capabilities()
         return [
             CapabilityDefinition(**row["definition"])
-            for row in self.definitions_repo.list("WHERE status='active' ORDER BY operation")
+            for row in self.definitions_repo.list(
+                filters={"status": "active"}, order_by=[("operation", "asc")]
+            )
         ]
 
     def inspect_definition(self, capability_id: str) -> CapabilityDefinition:

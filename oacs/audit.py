@@ -17,7 +17,7 @@ class AuditService:
         target_id: str | None = None,
         metadata: dict[str, object] | None = None,
     ) -> dict[str, object]:
-        previous = self.repo.list("ORDER BY created_at DESC LIMIT 1")
+        previous = self.repo.list(order_by=[("created_at", "desc")], limit=1)
         previous_hash = previous[0]["content_hash"] if previous else None
         event: dict[str, object] = {
             "id": new_id("aud"),
@@ -37,4 +37,4 @@ class AuditService:
         return event
 
     def list(self) -> list[dict[str, object]]:
-        return self.repo.list("ORDER BY created_at")
+        return self.repo.list(order_by=[("created_at", "asc")])

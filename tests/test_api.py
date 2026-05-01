@@ -65,4 +65,4 @@ def test_api_loop_run_returns_memory_calls(db, monkeypatch):
     payload = response.json()
     assert payload["memory_calls"][0]["op"] == "memory.query"
     assert payload["memory_calls"][1]["op"] == "memory.read"
-    assert payload["benchmark_metrics"]["memory_calls_count"] == 3
+    assert payload["operation_metrics"]["memory_calls_count"] == 3

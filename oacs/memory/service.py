@@ -53,7 +53,7 @@ class MemoryService:
     ) -> list[MemoryRecord]:
         requested_scope = scope or []
         self.policy.require(actor_id, "memory.query", scope=requested_scope, namespace="default")
-        rows = self.repo.list("WHERE status='active' AND lifecycle_status='active'")
+        rows = self.repo.list(filters={"status": "active", "lifecycle_status": "active"})
         memories = []
         for row in rows:
             row_scope = row["scope"]

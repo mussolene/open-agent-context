@@ -27,8 +27,6 @@ class MemoryCallLoopResult:
     memory_calls: list[MemoryCall]
     evidence: list[MemoryCallEvidence]
     prompt: str
-    answered_deterministically: bool = False
-    answer: str | None = None
 
 
 class DeterministicMemoryCallLoop:
@@ -103,15 +101,12 @@ class DeterministicMemoryCallLoop:
                 },
             )
         )
-        deterministic_answer = _deterministic_answer(task, evidence)
         prompt = build_memory_call_prompt(task, intent, memory_calls, evidence)
         return MemoryCallLoopResult(
             intent=intent,
             memory_calls=memory_calls,
             evidence=evidence,
             prompt=prompt,
-            answered_deterministically=deterministic_answer is not None,
-            answer=deterministic_answer,
         )
 
 
@@ -144,19 +139,6 @@ def build_memory_call_prompt(
             'Return JSON: {"answer":"...","used_evidence":[],"confidence":0.0,'
             '"needs_clarification":false,"policy_notes":[]}',
         ]
-    )
-
-
-def _deterministic_answer(task: str, evidence: list[MemoryCallEvidence]) -> str | None:
-    if not evidence:
-        return None
-    values = ", ".join(dict.fromkeys(item.value for item in evidence))
-    return (
-        '{"answer":'
-        + json.dumps(values, ensure_ascii=False)
-        + ',"used_evidence":'
-        + json.dumps([item.memory_id for item in evidence], ensure_ascii=False)
-        + ',"confidence":0.9,"needs_clarification":false,"policy_notes":[]}'
     )
 
 

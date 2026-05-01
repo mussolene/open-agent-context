@@ -8,7 +8,7 @@ from oacs.benchmark.selectors import MemoryArenaTravelSelector
 from oacs.llm.lmstudio import LMStudioClient
 from oacs.llm.prompts import BASELINE_SYSTEM, OACS_SYSTEM, build_oacs_prompt
 from oacs.loop.engine import MemoryLoopEngine
-from oacs.loop.evidence_selectors import EvidenceSelector
+from oacs.loop.evidence_selectors import EvidenceSelector, MemoryCallEvidence
 from oacs.loop.memory_calls import DeterministicMemoryCallLoop, memory_call_to_dict
 from oacs.memory.service import MemoryService
 
@@ -158,18 +158,14 @@ class MemoryCriticalBenchmark:
         prompt_tokens = estimate_tokens(call_result.prompt)
         if provider == "lmstudio":
             model_answer = _lmstudio_client(task, model).chat(call_result.prompt, OACS_SYSTEM)
-            if call_result.answer:
-                answer = f"OACS memory answer: {call_result.answer}\nModel response: {model_answer}"
-            else:
-                answer = model_answer
+            answer = model_answer
         else:
-            answer = call_result.answer or call_result.prompt
+            answer = _deterministic_benchmark_answer(call_result.evidence) or call_result.prompt
         return answer, prompt_tokens, {
             "memory_calls": [memory_call_to_dict(call) for call in call_result.memory_calls],
             "memory_calls_count": len(call_result.memory_calls),
             "evidence_items": len(call_result.evidence),
             "evidence_values": [item.value for item in call_result.evidence],
-            "answered_deterministically": call_result.answered_deterministically,
         }
 
 
@@ -212,6 +208,20 @@ def _full_context_prompt(task: BenchmarkTask) -> str:
 def estimate_tokens(text: str) -> int:
     # Deterministic approximation for local reports; avoids tokenizer-specific dependencies.
     return max(1, (len(text) + 3) // 4)
+
+
+def _deterministic_benchmark_answer(evidence: list[MemoryCallEvidence]) -> str | None:
+    values = [item.value for item in evidence if item.value]
+    if not values:
+        return None
+    unique_values = list(dict.fromkeys(values))
+    return (
+        '{"answer":'
+        + json.dumps(", ".join(unique_values), ensure_ascii=False)
+        + ',"used_evidence":'
+        + json.dumps([item.memory_id for item in evidence], ensure_ascii=False)
+        + ',"confidence":0.9,"needs_clarification":false,"policy_notes":[]}'
+    )
 
 
 def _baseline_memory_view(memory: dict[str, object]) -> dict[str, object]:

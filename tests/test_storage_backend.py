@@ -25,13 +25,18 @@ class InMemoryBackend:
         return dict(record) if record is not None else None
 
     def list(
-        self, table: str, where: str = "", params: tuple[Any, ...] = ()
+        self,
+        table: str,
+        filters: dict[str, Any] | None = None,
+        order_by: list[tuple[str, str]] | None = None,
+        limit: int | None = None,
     ) -> list[dict[str, Any]]:
-        if where or params:
-            raise AssertionError(
-                "test backend intentionally covers repository-level semantics only"
-            )
-        return [dict(record) for record in self.tables.setdefault(table, {}).values()]
+        rows = [dict(record) for record in self.tables.setdefault(table, {}).values()]
+        for key, value in (filters or {}).items():
+            rows = [row for row in rows if row.get(key) == value]
+        for key, direction in reversed(order_by or []):
+            rows.sort(key=lambda row: row.get(key), reverse=direction == "desc")
+        return rows[:limit] if limit is not None else rows
 
     def delete(self, table: str, record_id: str) -> None:
         self.tables.setdefault(table, {}).pop(record_id, None)
@@ -81,7 +86,7 @@ def test_sqlite_store_implements_storage_backend_protocol(tmp_path) -> None:
     repo = Repository(backend, "task_traces")
 
     assert repo.get("trace_1")["payload"] == {"nested": ["ok"]}
-    assert repo.list("WHERE status=?", ("active",))[0]["id"] == "trace_1"
+    assert repo.list(filters={"status": "active"})[0]["id"] == "trace_1"
 
     repo.delete("trace_1")
     assert backend.get("task_traces", "trace_1") is None

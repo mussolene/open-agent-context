@@ -6,6 +6,28 @@ from pathlib import Path
 from typing import Any
 
 from oacs.core.json import dumps, loads
+from oacs.storage.backend import OrderBy
+
+_ALLOWED_TABLES = {
+    "actors",
+    "agents",
+    "capability_grants",
+    "capability_definitions",
+    "memory_records",
+    "memory_embeddings",
+    "context_capsules",
+    "rules",
+    "skills",
+    "tools",
+    "mcp_bindings",
+    "evidence_refs",
+    "audit_events",
+    "task_traces",
+    "experience_traces",
+    "benchmark_tasks",
+    "benchmark_runs",
+    "key_metadata",
+}
 
 
 class SQLiteStore:
@@ -25,7 +47,10 @@ class SQLiteStore:
             conn.commit()
 
     def put_json(self, table: str, record: dict[str, Any]) -> None:
+        _validate_identifier(table, _ALLOWED_TABLES, "table")
         cols = list(record)
+        for col in cols:
+            _validate_identifier(col, set(cols), "column")
         placeholders = ",".join("?" for _ in cols)
         updates = ",".join(f"{col}=excluded.{col}" for col in cols if col != "id")
         sql = (
@@ -38,19 +63,47 @@ class SQLiteStore:
             conn.commit()
 
     def get(self, table: str, record_id: str) -> dict[str, Any] | None:
+        _validate_identifier(table, _ALLOWED_TABLES, "table")
         with closing(self.connect()) as conn:
             row = conn.execute(f"SELECT * FROM {table} WHERE id=?", (record_id,)).fetchone()
         return normalize_row(row) if row else None
 
     def list(
-        self, table: str, where: str = "", params: tuple[Any, ...] = ()
+        self,
+        table: str,
+        filters: dict[str, Any] | None = None,
+        order_by: list[OrderBy] | None = None,
+        limit: int | None = None,
     ) -> list[dict[str, Any]]:
-        sql = f"SELECT * FROM {table} {where}"
+        _validate_identifier(table, _ALLOWED_TABLES, "table")
+        filters = filters or {}
+        clauses: list[str] = []
+        values: list[Any] = []
+        for column, value in filters.items():
+            _validate_identifier(column, None, "column")
+            clauses.append(f"{column}=?")
+            values.append(dumps(value) if isinstance(value, (dict, list)) else value)
+        sql = f"SELECT * FROM {table}"
+        if clauses:
+            sql += " WHERE " + " AND ".join(clauses)
+        if order_by:
+            order_parts: list[str] = []
+            for column, direction in order_by:
+                _validate_identifier(column, None, "column")
+                sql_direction = "DESC" if direction == "desc" else "ASC"
+                order_parts.append(f"{column} {sql_direction}")
+            sql += " ORDER BY " + ", ".join(order_parts)
+        if limit is not None:
+            if limit < 0:
+                raise ValueError("limit must be non-negative")
+            sql += " LIMIT ?"
+            values.append(limit)
         with closing(self.connect()) as conn:
-            rows = conn.execute(sql, params).fetchall()
+            rows = conn.execute(sql, tuple(values)).fetchall()
         return [normalize_row(row) for row in rows]
 
     def delete(self, table: str, record_id: str) -> None:
+        _validate_identifier(table, _ALLOWED_TABLES, "table")
         with closing(self.connect()) as conn:
             conn.execute(f"DELETE FROM {table} WHERE id=?", (record_id,))
             conn.commit()
@@ -63,6 +116,15 @@ def normalize_row(row: sqlite3.Row) -> dict[str, Any]:
             with suppress(Exception):
                 out[key] = loads(value)
     return out
+
+
+def _validate_identifier(
+    value: str, allowed: set[str] | None = None, label: str = "identifier"
+) -> None:
+    if not value.replace("_", "").isalnum() or not value[:1].isalpha():
+        raise ValueError(f"invalid {label}: {value}")
+    if allowed is not None and value not in allowed:
+        raise ValueError(f"unknown {label}: {value}")
 
 
 SCHEMA = """

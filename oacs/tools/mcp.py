@@ -64,7 +64,10 @@ class McpRegistry:
         return binding
 
     def list(self) -> list[McpBinding]:
-        return [McpBinding(**row["manifest"]) for row in self.repo.list("WHERE status='active'")]
+        return [
+            McpBinding(**row["manifest"])
+            for row in self.repo.list(filters={"status": "active"})
+        ]
 
     def inspect(self, binding_id: str) -> McpBinding:
         for binding in self.list():

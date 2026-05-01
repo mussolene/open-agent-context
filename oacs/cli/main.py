@@ -209,7 +209,7 @@ def capability_grants(actor: ActorOpt = None, db: DbOpt = None, json_out: JsonOp
     if actor:
         grants = [grant.model_dump() for grant in svc.capabilities.for_actor(actor)]
     else:
-        grants = svc.store.list("capability_grants", "ORDER BY created_at")
+        grants = svc.store.list("capability_grants", order_by=[("created_at", "asc")])
     emit(grants, json_out)
 
 
@@ -591,7 +591,7 @@ def capsule_revoke(
     svc.context.read(capsule_id, actor)
     revoked = 0
     for grant in svc.store.list(
-        "capability_grants", "WHERE subject_actor_id=? AND status='active'", (subject,)
+        "capability_grants", filters={"subject_actor_id": subject, "status": "active"}
     ):
         if "context.export" in grant["allowed_operations"] or "*" in grant["allowed_operations"]:
             grant["status"] = "revoked"
@@ -916,7 +916,7 @@ def benchmark_run(
     json_out: JsonOpt = False,
 ) -> None:
     svc = services(db)
-    rows = svc.store.list("benchmark_tasks", "WHERE status='active'")
+    rows = svc.store.list("benchmark_tasks", filters={"status": "active"})
     tasks = [BenchmarkTask(**row["payload"]) for row in rows] or SyntheticTaskGenerator().generate(
         "memory_critical", 3
     )
@@ -943,7 +943,7 @@ def benchmark_run(
 @benchmark_app.command("compare")
 def benchmark_compare(db: DbOpt = None, json_out: JsonOpt = False) -> None:
     svc = services(db, require_key=False)
-    rows = svc.store.list("benchmark_runs", "ORDER BY created_at")
+    rows = svc.store.list("benchmark_runs", order_by=[("created_at", "asc")])
     baseline, oacs_run = select_comparison_runs(rows)
     emit(compare_runs(baseline, oacs_run), json_out)
 

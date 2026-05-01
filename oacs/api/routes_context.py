@@ -70,8 +70,7 @@ def revoke(capsule_id: str, req: dict[str, str]) -> dict[str, object]:
     revoked = 0
     for grant in svc.store.list(
         "capability_grants",
-        "WHERE subject_actor_id=? AND status='active'",
-        (req["subject_actor_id"],),
+        filters={"subject_actor_id": req["subject_actor_id"], "status": "active"},
     ):
         if "context.export" in grant["allowed_operations"] or "*" in grant["allowed_operations"]:
             grant["status"] = "revoked"

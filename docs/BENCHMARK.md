@@ -1,15 +1,20 @@
-# Benchmark / Benchmark
+# Benchmark Validation / Benchmark Validation
 
 ## EN
+Benchmarks are validation fixtures for the OACS v0.1 draft memory/context
+contract. They are not the standard itself and they are not intended to replace
+native public benchmark harnesses.
+
 The benchmark compares:
 
 - `baseline_no_memory`: the model receives only the current task.
 - `baseline_full_context`: the model receives raw prior task context plus the current task.
 - `oacs_memory_loop`: OACS commits scoped memory, builds a Context Capsule, and prompts
   the model with governed context.
-- `oacs_memory_call_loop`: OACS commits scoped memory, executes deterministic
+- `oacs_memory_call_loop`: OACS commits scoped memory, records deterministic
   `memory_calls`, extracts structured evidence, and gives the model a compact
-  evidence prompt.
+  evidence prompt. Benchmark-only deterministic scoring lives in this adapter,
+  not in the core memory loop.
 
 Synthetic tasks are local and deterministic. External adapters are thin import
 layers for checking OACS memory/context compatibility, not a replacement for the
@@ -27,15 +32,20 @@ unambiguous from structured answer overlap, writes typed `memory_selectors`, and
 skips ambiguous rows instead of guessing from phrases such as "same place".
 
 ## RU
+Benchmarks - это validation fixtures для OACS v0.1 draft memory/context
+contract. Они не являются самим стандартом и не заменяют native public benchmark
+harnesses.
+
 Benchmark сравнивает:
 
 - `baseline_no_memory`: модель получает только текущую задачу.
 - `baseline_full_context`: модель получает сырой предыдущий контекст и текущую задачу.
 - `oacs_memory_loop`: OACS записывает scoped memory, строит Context Capsule и даёт
   модели управляемый контекст.
-- `oacs_memory_call_loop`: OACS записывает scoped memory, выполняет
+- `oacs_memory_call_loop`: OACS записывает scoped memory, фиксирует
   deterministic `memory_calls`, извлекает structured evidence и даёт модели
-  компактный evidence prompt.
+  compact evidence prompt. Benchmark-only deterministic scoring находится в
+  этом adapter, а не в core memory loop.
 
 Синтетические задачи локальные и детерминированные. External adapters являются
 тонкими import layers для проверки OACS memory/context compatibility, а не

@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from oacs.core.errors import NotFound
-from oacs.storage.backend import StorageBackend
+from oacs.storage.backend import OrderBy, StorageBackend
 
 
 class Repository:
@@ -21,8 +21,13 @@ class Repository:
             raise NotFound(f"{self.table} record not found: {record_id}")
         return record
 
-    def list(self, where: str = "", params: tuple[Any, ...] = ()) -> list[dict[str, Any]]:
-        return self.store.list(self.table, where, params)
+    def list(
+        self,
+        filters: dict[str, Any] | None = None,
+        order_by: list[OrderBy] | None = None,
+        limit: int | None = None,
+    ) -> list[dict[str, Any]]:
+        return self.store.list(self.table, filters, order_by, limit)
 
     def delete(self, record_id: str) -> None:
         self.store.delete(self.table, record_id)

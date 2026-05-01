@@ -42,4 +42,4 @@ class ActorService:
         return actor
 
     def list(self) -> list[Actor]:
-        return [Actor(**row) for row in self.repo.list("ORDER BY created_at")]
+        return [Actor(**row) for row in self.repo.list(order_by=[("created_at", "asc")])]

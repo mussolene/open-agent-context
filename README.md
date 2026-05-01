@@ -18,8 +18,8 @@ context, capability, and audit operations.
 - **OACS v0.1 draft spec:** terminology, lifecycle, capsule format, security
   model, and JSON contracts in `docs/` and `schemas/`.
 - **Python reference implementation:** local `oacs` package, `acs` CLI, FastAPI
-  API, SQLite backend, encryption layer, registries, memory loop, and benchmark
-  runner.
+  API, SQLite backend, encryption layer, registries, memory loop, and validation
+  adapters.
   Storage goes through a thin `StorageBackend` protocol; SQLite is the bundled
   reference backend.
 
@@ -52,7 +52,10 @@ acs memory query --query "Alpha report" --scope project --json
 acs context build --intent answer_project_question --scope project --budget 4000 --json
 ```
 
-### Benchmark Proof
+Expected result: `memory query` returns the committed procedure and
+`context build` returns a `ctx_...` capsule with that memory included.
+
+### Validation Adapters
 
 ```bash
 acs benchmark generate --suite memory_critical --count 20 --json
@@ -61,17 +64,18 @@ acs benchmark run --mode oacs_memory_call_loop --json
 acs benchmark compare --json
 ```
 
-`oacs_memory_call_loop` executes deterministic OACS `memory_calls` such as
-`memory.query` and `memory.extract_evidence`. The full call trace stays
-machine-readable in benchmark results; the model prompt receives only a compact
-projection plus selected evidence.
+Benchmarks are validation fixtures for the memory/context contract, not the
+purpose of OACS. `oacs_memory_call_loop` records deterministic OACS
+`memory_calls` such as `memory.query` and `memory.extract_evidence`; benchmark
+scoring stays in the benchmark adapter.
 
 Current technical report:
 `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`.
 
-### Repo Dogfood
+### Development Dogfood
 
-Use OACS as a development memory layer for this repository:
+Optional local dogfood uses generic OACS memory/context operations for this
+repository. It is not part of the standard surface:
 
 ```bash
 acs repo capture --task "tighten memory_calls" \
@@ -80,8 +84,8 @@ acs repo capture --task "tighten memory_calls" \
 acs repo context --task "continue OACS development" --json
 ```
 
-`repo capture` stores a committed D1 episode with git state and structured
-evidence. `repo context` builds an explainable capsule over the repo scope.
+`repo capture` stores a committed D1 episode. `repo context` builds an
+explainable capsule over the repo scope.
 
 ### LM Studio
 
@@ -135,7 +139,7 @@ memory, context, capability и audit operations.
   model и JSON contracts в `docs/` и `schemas/`.
 - **Python reference implementation:** локальный пакет `oacs`, CLI `acs`,
   FastAPI API, SQLite backend, encryption layer, registries, memory loop и
-  benchmark runner.
+  validation adapters.
   Storage идёт через тонкий `StorageBackend` protocol; SQLite является
   bundled reference backend.
 
@@ -168,7 +172,10 @@ acs memory query --query "Alpha отчёты" --scope project --json
 acs context build --intent answer_project_question --scope project --budget 4000 --json
 ```
 
-### Benchmark proof
+Ожидаемый результат: `memory query` возвращает committed procedure, а
+`context build` возвращает capsule `ctx_...` с этой memory внутри.
+
+### Validation adapters
 
 ```bash
 acs benchmark generate --suite memory_critical --count 20 --json
@@ -177,17 +184,18 @@ acs benchmark run --mode oacs_memory_call_loop --json
 acs benchmark compare --json
 ```
 
-`oacs_memory_call_loop` выполняет deterministic OACS `memory_calls`, например
-`memory.query` и `memory.extract_evidence`. Полный trace остаётся
-machine-readable в benchmark results; в prompt модели попадает compact
-projection и selected evidence.
+Benchmarks - это validation fixtures для memory/context contract, а не цель
+OACS. `oacs_memory_call_loop` записывает deterministic OACS `memory_calls`,
+например `memory.query` и `memory.extract_evidence`; scoring остаётся в
+benchmark adapter.
 
 Текущий technical report:
 `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`.
 
-### Repo dogfood
+### Development dogfood
 
-Используйте OACS как development memory layer для этого репозитория:
+Optional local dogfood использует generic OACS memory/context operations для
+этого репозитория. Это не часть standard surface:
 
 ```bash
 acs repo capture --task "tighten memory_calls" \
@@ -196,8 +204,8 @@ acs repo capture --task "tighten memory_calls" \
 acs repo context --task "continue OACS development" --json
 ```
 
-`repo capture` сохраняет committed D1 episode с git state и structured evidence.
-`repo context` строит explainable capsule по repo scope.
+`repo capture` сохраняет committed D1 episode. `repo context` строит explainable
+capsule по repo scope.
 
 ### LM Studio
 

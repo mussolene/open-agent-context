@@ -15,7 +15,7 @@ def test_memory_loop_returns_capsule_and_proposal(svc):
         "memory.read",
         "memory.extract_evidence",
     ]
-    assert result.benchmark_metrics["memory_calls_count"] == 3
+    assert result.operation_metrics["memory_calls_count"] == 3
 
 
 def test_memory_loop_can_disable_memory_calls(svc):
@@ -58,7 +58,7 @@ def test_memory_loop_short_circuits_exact_evidence_even_for_tiny_task(svc):
     result = svc.loop.run("Alpha?", None, scope=["project"], token_budget=500)
     assert result.context_policy["name"] == "memory_calls"
     assert result.context_policy["reason"] == "structured_evidence_available"
-    assert result.answered_deterministically is True
+    assert result.operation_metrics["evidence_items"] == 1
     assert "make report-safe" in result.final_answer
 
 
@@ -89,7 +89,7 @@ def test_memory_loop_deepens_when_scoped_capsule_has_no_evidence(svc):
         "memory.query.deepen",
     ]
     assert result.evidence[0]["value"] == "make beta-report"
-    assert result.answered_deterministically is True
+    assert result.operation_metrics["evidence_items"] == 1
 
 
 def test_memory_loop_deepening_respects_subagent_scope(svc):
@@ -116,4 +116,4 @@ def test_memory_loop_deepening_respects_subagent_scope(svc):
     result = svc.loop.run("How do I generate the Gamma report?", actor.id, scope=["project"])
 
     assert mem.id not in result.memories_used
-    assert result.answered_deterministically is False
+    assert result.operation_metrics["evidence_items"] == 0

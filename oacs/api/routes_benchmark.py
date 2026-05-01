@@ -42,7 +42,7 @@ def generate(req: dict[str, object]) -> list[dict[str, object]]:
 @router.post("/benchmark/run")
 def run(req: dict[str, object]) -> dict[str, object]:
     svc = services()
-    rows = svc.store.list("benchmark_tasks", "WHERE status='active'")
+    rows = svc.store.list("benchmark_tasks", filters={"status": "active"})
     tasks = [BenchmarkTask(**row["payload"]) for row in rows] or SyntheticTaskGenerator().generate(
         "memory_critical", 3
     )
@@ -72,6 +72,8 @@ def run(req: dict[str, object]) -> dict[str, object]:
 
 @router.post("/benchmark/compare")
 def compare() -> dict[str, object]:
-    rows = services(require_key=False).store.list("benchmark_runs", "ORDER BY created_at")
+    rows = services(require_key=False).store.list(
+        "benchmark_runs", order_by=[("created_at", "asc")]
+    )
     baseline, oacs_run = select_comparison_runs(rows)
     return compare_runs(baseline, oacs_run)

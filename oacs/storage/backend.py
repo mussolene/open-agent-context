@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from typing import Any, Protocol
+from typing import Any, Literal, Protocol
+
+SortDirection = Literal["asc", "desc"]
+OrderBy = tuple[str, SortDirection]
 
 
 class StorageBackend(Protocol):
@@ -16,13 +19,13 @@ class StorageBackend(Protocol):
         """Return one record by id, or None when absent."""
 
     def list(
-        self, table: str, where: str = "", params: tuple[Any, ...] = ()
+        self,
+        table: str,
+        filters: dict[str, Any] | None = None,
+        order_by: list[OrderBy] | None = None,
+        limit: int | None = None,
     ) -> list[dict[str, Any]]:
-        """Return records from a table.
-
-        SQLite remains the reference backend, so the optional where/params surface
-        intentionally preserves the current SQL-fragment compatibility path.
-        """
+        """Return records from a table through backend-neutral selectors."""
 
     def delete(self, table: str, record_id: str) -> None:
         """Delete a record by id if it exists."""
