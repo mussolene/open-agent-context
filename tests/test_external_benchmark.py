@@ -182,6 +182,72 @@ def test_memoryarena_progressive_search_ignores_summary_marker():
     assert task.expected_facts == ["Tulsidas Balaram"]
 
 
+def test_memoryarena_progressive_search_accepts_name_aliases():
+    row = {
+        "id": 16,
+        "questions": ["Who received the donation?", "Who appeared on TV later?"],
+        "answers": [
+            "The recipient was **John Daniel delos Santos**.",
+            "Exact Answer: Daniel Delos Santos (also written as John Daniel delos Santos)",
+        ],
+    }
+
+    task = MemoryArenaImporter().from_rows([row], 1, subset="progressive_search")[0]
+
+    assert "Daniel Delos Santos" in task.expected_facts
+    assert "John Daniel delos Santos" in task.expected_facts
+
+
+def test_memory_tool_loop_extracts_progressive_search_evidence(svc):
+    row = {
+        "id": 14,
+        "questions": ["Who owns a business?", "Who owns a business and graduated in Abuja?"],
+        "answers": [
+            "The answer is **Ihuoma Sonia Uche**.",
+            "The full name is **Ihuoma Sonia Uche**.",
+        ],
+    }
+    task = MemoryArenaImporter().from_rows([row], 1, subset="progressive_search")[0]
+
+    run = MemoryCriticalBenchmark(svc.memory, svc.loop).run(
+        [task], "oacs_memory_tool_loop", None
+    )
+    result = run.task_results[0]
+
+    assert result["exact_success"] is True
+    assert result["used_required_fact"] is True
+    assert result["evidence_items"] == 1
+    assert "Ihuoma Sonia Uche" in str(result["answer"])
+    assert result["prompt_tokens_estimated"] > len(task.user_prompt) // 4
+
+
+def test_memory_tool_loop_focuses_progressive_search_on_latest_evidence(svc):
+    row = {
+        "id": 15,
+        "questions": [
+            "Who is the candidate?",
+            "Who is the candidate after adding the Abuja clue?",
+            "Who is the final candidate after every clue?",
+        ],
+        "answers": [
+            "The candidate might be **Wrong Candidate**.",
+            "The accumulated answer is **Correct Candidate**.",
+            "Exact Answer: Correct Candidate",
+        ],
+    }
+    task = MemoryArenaImporter().from_rows([row], 1, subset="progressive_search")[0]
+
+    run = MemoryCriticalBenchmark(svc.memory, svc.loop).run(
+        [task], "oacs_memory_tool_loop", None
+    )
+    result = run.task_results[0]
+
+    assert result["exact_success"] is True
+    assert result["evidence_items"] == 1
+    assert result["evidence_values"] == ["The accumulated answer is **Correct Candidate**."]
+    assert "Wrong Candidate" not in str(result["answer"])
+
+
 def test_ama_bench_importer_maps_trajectory_qa_to_oacs_task():
     row = {
         "episode_id": 42,
@@ -208,3 +274,34 @@ def test_ama_bench_importer_maps_trajectory_qa_to_oacs_task():
     assert task.rubric["source"] == "AMA-bench/AMA-bench"
     assert task.setup_memories[0]["memory_type"] == "trace"
     assert task.setup_memories[1]["memory_type"] == "episode"
+
+
+def test_memory_tool_loop_extracts_ama_evidence(svc):
+    row = {
+        "episode_id": 43,
+        "task": "Grid puzzle",
+        "trajectory": [
+            {"turn_idx": 0, "action": "down", "observation": "state A"},
+            {"turn_idx": 1, "action": "up", "observation": "state B"},
+        ],
+        "qa_pairs": [
+            {
+                "question": "Which action reversed the previous move?",
+                "answer": (
+                    "The `up` action at Step 8 is the direct inverse of the "
+                    "`down` action at Step 7."
+                ),
+            }
+        ],
+    }
+    task = AmaBenchImporter().from_rows([row], 1)[0]
+
+    run = MemoryCriticalBenchmark(svc.memory, svc.loop).run(
+        [task], "oacs_memory_tool_loop", None
+    )
+    result = run.task_results[0]
+
+    assert result["exact_success"] is True
+    assert result["used_required_fact"] is True
+    assert result["evidence_items"] == 1
+    assert "up` action at Step 8" in str(result["answer"])

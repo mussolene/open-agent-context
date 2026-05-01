@@ -41,3 +41,6 @@ facts, superseded memory, clarification, JSON validity, estimated prompt/output
 tokens, использованную память, memory-tool operations, evidence items и audit
 events. Token estimates являются deterministic approximations, а не
 tokenizer-specific counts.
+
+Latest public adapter token report:
+`examples/benchmarks/public_memory_adapters_2026-05-01.md`.

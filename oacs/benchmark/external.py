@@ -168,7 +168,7 @@ class MemoryArenaImporter:
                 "Answer the final accumulated query.\n\n"
                 f"Dataset row: {row_id}\nCurrent request:\n{questions[-1]}"
             ),
-            expected_facts=expected[:1],
+            expected_facts=expected[:3],
             rubric={
                 "max_score": 5,
                 "source": "ZexueHe/memoryarena",
@@ -367,18 +367,29 @@ def _subset_from_url(url: str) -> str:
 def _proper_name_candidates(text: str) -> list[str]:
     exact = re.findall(r"Exact Answer:\s*([^\n]+)", text, flags=re.IGNORECASE)
     if exact:
-        return [exact[0].strip(" .,:;*")]
+        return _name_variants(exact[0].strip(" .,:;*"))
     criteria = re.findall(r"criteria match[^.]*with\s+\*\*([^*]{3,80})\*\*", text, re.IGNORECASE)
     if criteria:
-        return [criteria[0].strip(" .,:;*")]
+        return _name_variants(criteria[0].strip(" .,:;*"))
     marked = re.findall(r"\*\*([^*]{3,80})\*\*", text)
     candidates = marked or re.findall(r"\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})\b", text)
     result: list[str] = []
     for candidate in candidates:
         cleaned = candidate.strip(" .,:;")
         if cleaned and cleaned not in result and cleaned.lower() not in _GENERIC_NAME_MARKERS:
-            result.append(cleaned)
+            result.extend(item for item in _name_variants(cleaned) if item not in result)
     return result
+
+
+def _name_variants(value: str) -> list[str]:
+    variants = [value]
+    base = re.sub(r"\s*\([^)]*\)\s*$", "", value).strip()
+    if base and base != value:
+        variants.append(base)
+    alias = re.search(r"\b(?:also written as|also referred to as)\s+([^;)]+)", value, re.I)
+    if alias:
+        variants.append(alias.group(1).strip())
+    return list(dict.fromkeys(variants))
 
 
 _GENERIC_NAME_MARKERS = {

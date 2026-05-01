@@ -14,6 +14,7 @@ SLOT_ALIASES = {
     "accommodation": ("accommodation", "stay", "same place"),
     "attraction": ("attraction",),
     "transportation": ("transportation", "flight", "self-driving"),
+    "evidence": ("accepted answer", "evidence answer", "trajectory answer"),
 }
 SLOTS = tuple(SLOT_ALIASES)
 DAY_WORDS = {"first": 1, "second": 2, "third": 3, "1": 1, "2": 2, "3": 3}
@@ -148,7 +149,7 @@ def extract_evidence(
                     focused.append(evidence)
                 else:
                     broad.append(evidence)
-    return _dedupe_evidence(focused or broad)
+    return _focus_generic_evidence(_dedupe_evidence(focused or broad))
 
 
 def build_tool_evidence_prompt(
@@ -196,6 +197,15 @@ def _parse_memory(memory: MemoryRecord) -> tuple[str | None, list[Any], str] | N
                 participant = name
             if isinstance(plan, list):
                 return participant, plan, memory.id
+    for marker in ("Accepted answer:\n", "AMA-Bench evidence answer:\n"):
+        if marker in text:
+            payload = text.split(marker, 1)[1].strip()
+            if _specific_value(payload):
+                day = _generic_memory_order(text)
+                plan = {"evidence": payload}
+                if day is not None:
+                    plan["days"] = day
+                return participant, [plan], memory.id
     return None
 
 
@@ -267,6 +277,23 @@ def _dedupe_evidence(items: list[MemoryToolEvidence], limit: int = 12) -> list[M
         if len(result) >= limit:
             break
     return result
+
+
+def _focus_generic_evidence(items: list[MemoryToolEvidence]) -> list[MemoryToolEvidence]:
+    generic = [item for item in items if item.slot == "evidence"]
+    structured = [item for item in items if item.slot != "evidence"]
+    if not generic:
+        return items
+    ordered = [item for item in generic if item.day is not None]
+    if ordered:
+        latest = max(ordered, key=lambda item: item.day or 0)
+        return structured + [latest]
+    return structured + generic[:3]
+
+
+def _generic_memory_order(text: str) -> int | None:
+    match = re.search(r"\bprior question (\d+)\b", text)
+    return int(match.group(1)) + 1 if match else None
 
 
 def _deterministic_answer(task: str, evidence: list[MemoryToolEvidence]) -> str | None:
