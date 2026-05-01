@@ -1,13 +1,24 @@
-# OACS — Open Agent Context Standard
+# OACS v0.1 draft — Open Agent Context Standard
 
 ## EN
-OACS is a local proof-of-concept for an open lower layer for agent context:
+OACS v0.1 draft is a local proof-of-concept for an open lower layer for agent context:
 memory, context capsules, rules, skills, tools, identity, capabilities, audit,
 and a memory loop. The CLI is `acs`, the Agent Context Shell.
 
 OACS is not a replacement for MCP. MCP describes tool/server interoperability.
 OACS describes how an agent assembles and governs context before a model or MCP
 tool is used.
+
+### Standard Draft vs Reference Implementation
+
+- **OACS v0.1 draft spec:** the terminology, lifecycle, capsule format,
+  security model, and JSON contracts documented in `docs/` and `schemas/`.
+- **Python reference implementation:** the local `oacs` package, `acs` CLI,
+  FastAPI API, SQLite backend, encryption layer, registries, memory loop, and
+  benchmark runner.
+
+The draft can change before v1.0. See `docs/COMPATIBILITY.md` for what counts
+as a breaking change.
 
 ### Quickstart
 
@@ -54,12 +65,23 @@ through typed bindings and imported tool metadata. Vector search is pluggable,
 with deterministic lexical search implemented by default.
 
 ## RU
-OACS — локальный proof-of-concept открытого нижнего слоя агентского контекста:
+OACS v0.1 draft — локальный proof-of-concept открытого нижнего слоя агентского контекста:
 memory, context capsules, rules, skills, tools, identity, capabilities, audit и
 memory loop. CLI называется `acs` — Agent Context Shell.
 
 OACS не заменяет MCP. MCP описывает совместимость tools/server. OACS описывает,
 как агент собирает и контролирует контекст до вызова модели или MCP tool.
+
+### Draft стандарта и reference implementation
+
+- **OACS v0.1 draft spec:** терминология, lifecycle, формат capsule,
+  security model и JSON contracts в `docs/` и `schemas/`.
+- **Python reference implementation:** локальный пакет `oacs`, CLI `acs`,
+  FastAPI API, SQLite backend, encryption layer, registries, memory loop и
+  benchmark runner.
+
+До v1.0 draft может меняться. Что считается breaking change, описано в
+`docs/COMPATIBILITY.md`.
 
 ### Быстрый старт
 
