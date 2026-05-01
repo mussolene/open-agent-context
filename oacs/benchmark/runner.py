@@ -103,6 +103,7 @@ class MemoryCriticalBenchmark:
                 str(setup["text"]),
                 actor_id,
                 setup.get("scope", ["project"]),  # type: ignore[arg-type]
+                evidence=setup.get("evidence"),  # type: ignore[arg-type]
             )
             if mem.depth >= 3:
                 mem = self.memory.sharpen(mem.id, "synthetic_benchmark_evidence", actor_id)
@@ -168,7 +169,8 @@ def _lmstudio_client(task: BenchmarkTask, model: str | None) -> LMStudioClient:
 
 def _full_context_prompt(task: BenchmarkTask) -> str:
     memories = "\n\n".join(
-        json.dumps(memory, ensure_ascii=False, sort_keys=True) for memory in task.setup_memories
+        json.dumps(_baseline_memory_view(memory), ensure_ascii=False, sort_keys=True)
+        for memory in task.setup_memories
     )
     return "\n".join(
         [
@@ -184,3 +186,7 @@ def _full_context_prompt(task: BenchmarkTask) -> str:
 def estimate_tokens(text: str) -> int:
     # Deterministic approximation for local reports; avoids tokenizer-specific dependencies.
     return max(1, (len(text) + 3) // 4)
+
+
+def _baseline_memory_view(memory: dict[str, object]) -> dict[str, object]:
+    return {key: value for key, value in memory.items() if key != "evidence"}

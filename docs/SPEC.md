@@ -9,6 +9,11 @@ Core records: Actor, Agent, Identity, CapabilityGrant, MemoryRecord,
 ContextCapsule, RuleManifest, SkillManifest, ToolBinding, McpBinding,
 EvidenceRef, AuditEvent, TaskTrace, ExperienceTrace, MemoryLoopRun.
 
+Reference implementation note: OACS v0.1 draft allows `MemoryRecord.content` to
+carry structured evidence items. This is not a new standard entity; it is the
+current compatibility path for turning external traces into evidence-backed
+memory without teaching the generic memory loop source-specific text formats.
+
 This document is a draft standard contract, not a final standard. The Python
 package in this repository is the reference implementation for the draft.
 
@@ -24,6 +29,11 @@ Context Capsule, собранную из задачи, намерения, об�
 Основные записи: Actor, Agent, Identity, CapabilityGrant, MemoryRecord,
 ContextCapsule, RuleManifest, SkillManifest, ToolBinding, McpBinding,
 EvidenceRef, AuditEvent, TaskTrace, ExperienceTrace, MemoryLoopRun.
+
+Примечание reference implementation: OACS v0.1 draft допускает structured
+evidence items внутри `MemoryRecord.content`. Это не новая сущность стандарта, а
+текущий compatibility path для преобразования внешних traces в evidence-backed
+memory без обучения generic memory loop source-specific text formats.
 
 Этот документ является draft-контрактом стандарта, а не финальным стандартом.
 Python package в этом репозитории — reference implementation для draft.

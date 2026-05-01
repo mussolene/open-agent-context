@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass
-from typing import Any
 
 from oacs.memory.models import MemoryRecord
 
@@ -14,7 +13,7 @@ SLOT_ALIASES = {
     "accommodation": ("accommodation", "stay", "same place"),
     "attraction": ("attraction",),
     "transportation": ("transportation", "flight", "self-driving"),
-    "evidence": ("accepted answer", "evidence answer", "trajectory answer"),
+    "evidence": ("evidence", "answer", "marker", "claim", "procedure", "command"),
 }
 SLOTS = tuple(SLOT_ALIASES)
 DAY_WORDS = {"first": 1, "second": 2, "third": 3, "1": 1, "2": 2, "3": 3}
@@ -28,6 +27,7 @@ class MemoryToolEvidence:
     slot: str
     value: str
     reason: str
+    order: int | None = None
 
 
 @dataclass(frozen=True)
@@ -122,33 +122,21 @@ def extract_evidence(
     referenced = (
         {str(name) for name in raw_referenced} if isinstance(raw_referenced, list) else set()
     )
-    parsed = [_parse_memory(mem) for mem in memories]
     focused: list[MemoryToolEvidence] = []
     broad: list[MemoryToolEvidence] = []
-    for item in parsed:
-        if item is None:
-            continue
-        participant, plan, memory_id = item
-        for day_plan in plan:
-            if not isinstance(day_plan, dict):
-                continue
-            day = _day_number(day_plan.get("days"))
-            for slot in requested_slots:
-                value = day_plan.get(slot)
-                if not isinstance(value, str) or not _specific_value(value):
-                    continue
-                evidence = MemoryToolEvidence(
-                    memory_id=memory_id,
-                    participant=participant,
-                    day=day,
-                    slot=slot,
-                    value=value,
-                    reason=_reason(participant, day, slot, referenced, requested_days),
-                )
-                if _is_focused(participant, day, slot, referenced, requested_days, requested_slots):
-                    focused.append(evidence)
-                else:
-                    broad.append(evidence)
+    for memory in memories:
+        for evidence in _structured_evidence(memory, requested_slots, referenced, requested_days):
+            if _is_focused(
+                evidence.participant,
+                evidence.day,
+                evidence.slot,
+                referenced,
+                requested_days,
+                requested_slots,
+            ):
+                focused.append(evidence)
+            else:
+                broad.append(evidence)
     return _focus_generic_evidence(_dedupe_evidence(focused or broad))
 
 
@@ -179,49 +167,31 @@ def build_tool_evidence_prompt(
     )
 
 
-def _parse_memory(memory: MemoryRecord) -> tuple[str | None, list[Any], str] | None:
-    text = memory.content.text
-    participant = _participant_from_text(text)
-    if "Exact accepted plan:\n" in text:
-        payload = text.split("Exact accepted plan:\n", 1)[1]
-        plan = _load_json(payload)
-        if isinstance(plan, list):
-            return participant, plan, memory.id
-    if "base plan:\n" in text:
-        payload = text.split("base plan:\n", 1)[1]
-        base = _load_json(payload)
-        if isinstance(base, dict):
-            plan = base.get("daily_plans")
-            name = base.get("name")
-            if isinstance(name, str):
-                participant = name
-            if isinstance(plan, list):
-                return participant, plan, memory.id
-    for marker in ("Accepted answer:\n", "AMA-Bench evidence answer:\n"):
-        if marker in text:
-            payload = text.split(marker, 1)[1].strip()
-            if _specific_value(payload):
-                day = _generic_memory_order(text)
-                plan = {"evidence": payload}
-                if day is not None:
-                    plan["days"] = day
-                return participant, [plan], memory.id
-    return None
-
-
-def _participant_from_text(text: str) -> str | None:
-    match = re.search(r"\bI am ([A-Z][a-z]+)\b", text)
-    if match:
-        return match.group(1)
-    name_match = re.search(r'"name"\s*:\s*"([^"]+)"', text)
-    return name_match.group(1) if name_match else None
-
-
-def _load_json(payload: str) -> Any:
-    try:
-        return json.loads(payload)
-    except json.JSONDecodeError:
-        return None
+def _structured_evidence(
+    memory: MemoryRecord,
+    requested_slots: set[str],
+    referenced: set[str],
+    requested_days: set[int],
+) -> list[MemoryToolEvidence]:
+    result: list[MemoryToolEvidence] = []
+    for item in memory.content.evidence:
+        slot = item.slot or "evidence"
+        if slot not in requested_slots and "evidence" not in requested_slots:
+            continue
+        if not _specific_value(item.value):
+            continue
+        result.append(
+            MemoryToolEvidence(
+                memory_id=memory.id,
+                participant=item.participant,
+                day=item.day,
+                slot=slot,
+                value=item.value,
+                reason=_reason(item.participant, item.day, slot, referenced, requested_days),
+                order=item.order,
+            )
+        )
+    return result
 
 
 def _specific_value(value: str) -> bool:
@@ -266,10 +236,10 @@ def _reason(
 
 
 def _dedupe_evidence(items: list[MemoryToolEvidence], limit: int = 12) -> list[MemoryToolEvidence]:
-    seen: set[tuple[str, str, int | None, str | None]] = set()
+    seen: set[tuple[str, str, int | None, str | None, int | None]] = set()
     result: list[MemoryToolEvidence] = []
     for item in items:
-        key = (item.value, item.slot, item.day, item.participant)
+        key = (item.value, item.slot, item.day, item.participant, item.order)
         if key in seen:
             continue
         seen.add(key)
@@ -284,16 +254,11 @@ def _focus_generic_evidence(items: list[MemoryToolEvidence]) -> list[MemoryToolE
     structured = [item for item in items if item.slot != "evidence"]
     if not generic:
         return items
-    ordered = [item for item in generic if item.day is not None]
+    ordered = [item for item in generic if item.order is not None]
     if ordered:
-        latest = max(ordered, key=lambda item: item.day or 0)
+        latest = max(ordered, key=lambda item: item.order or 0)
         return structured + [latest]
     return structured + generic[:3]
-
-
-def _generic_memory_order(text: str) -> int | None:
-    match = re.search(r"\bprior question (\d+)\b", text)
-    return int(match.group(1)) + 1 if match else None
 
 
 def _deterministic_answer(task: str, evidence: list[MemoryToolEvidence]) -> str | None:

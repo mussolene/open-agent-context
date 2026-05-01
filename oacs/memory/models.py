@@ -19,11 +19,27 @@ MemoryStatus = Literal[
 ]
 
 
+class EvidenceItem(BaseModel):
+    evidence_kind: str = "claim"
+    claim: str
+    value: str
+    source_ref: str | None = None
+    confidence: float = 1.0
+    depth: int | None = Field(default=None, ge=0, le=5)
+    scope: list[str] = Field(default_factory=list)
+    participant: str | None = None
+    day: int | None = None
+    slot: str = "evidence"
+    order: int | None = None
+    trajectory_step: int | None = None
+
+
 class MemoryContent(BaseModel):
     text: str
     kind: str = "fact"
     tags: list[str] = Field(default_factory=list)
     confidence: float = 1.0
+    evidence: list[EvidenceItem] = Field(default_factory=list)
 
 
 class MemoryRecord(BaseModel):

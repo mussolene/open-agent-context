@@ -25,43 +25,72 @@ class SyntheticTaskGenerator:
 
     def _task(self, task_type: str, index: int) -> BenchmarkTask:
         if task_type == "hidden_project_convention":
+            scope = [f"synthetic:{index}"]
             return BenchmarkTask(
                 type=task_type,
                 setup_memories=[
                     {
                         "memory_type": "procedure",
                         "depth": 2,
-                        "scope": ["project"],
+                        "scope": scope,
                         "text": (
                             "В проекте Alpha отчёты всегда генерируются через make report-safe."
                         ),
+                        "evidence": [
+                            {
+                                "evidence_kind": "procedure",
+                                "claim": "Active Alpha report generation command",
+                                "value": "make report-safe",
+                                "slot": "evidence",
+                                "confidence": 1.0,
+                            }
+                        ],
                     },
                     {
                         "memory_type": "procedure",
                         "depth": 2,
-                        "scope": ["project"],
+                        "scope": scope,
                         "text": "Раньше отчёты генерировались через python scripts/report.py.",
+                        "evidence": [
+                            {
+                                "evidence_kind": "procedure",
+                                "claim": "Superseded Alpha report generation command",
+                                "value": "python scripts/report.py",
+                                "slot": "evidence",
+                                "confidence": 1.0,
+                            }
+                        ],
                         "status": "superseded",
                     },
                 ],
                 user_prompt="Подскажи команду для генерации отчёта в Alpha.",
                 expected_facts=["make report-safe"],
                 forbidden_facts=["python scripts/report.py"],
-                rubric={"max_score": 5, "requires_memory": True},
+                rubric={"max_score": 5, "requires_memory": True, "scope": scope},
             )
         expected = f"memory-critical-fact-{index}"
+        scope = [f"synthetic:{index}"]
         return BenchmarkTask(
             type=task_type,
             setup_memories=[
                 {
                     "memory_type": "fact",
                     "depth": 2 if "fuzzy" not in task_type else 3,
-                    "scope": ["project"],
+                    "scope": scope,
                     "text": f"Required answer marker is {expected}.",
+                    "evidence": [
+                        {
+                            "evidence_kind": "fact",
+                            "claim": "Required answer marker",
+                            "value": expected,
+                            "slot": "evidence",
+                            "confidence": 0.9,
+                        }
+                    ],
                 }
             ],
             user_prompt=f"Solve task {index} using the project-specific marker.",
             expected_facts=[expected],
             forbidden_facts=[],
-            rubric={"max_score": 5, "requires_memory": True},
+            rubric={"max_score": 5, "requires_memory": True, "scope": scope},
         )

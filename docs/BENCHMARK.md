@@ -47,3 +47,6 @@ Latest public adapter token report:
 
 Latest real LM Studio `google/gemma-4-e2b` context-scale report:
 `examples/benchmarks/gemma_e2b_context_scale_2026-05-01.md`.
+
+Structured evidence refactor report:
+`examples/benchmarks/structured_evidence_refactor_2026-05-01.md`.

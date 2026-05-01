@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+from typing import Any, cast
+
 from oacs.core.errors import NotFound, ValidationFailure
 from oacs.core.json import dumps, hash_json, loads
 from oacs.core.time import now_iso
 from oacs.crypto.aead import decrypt_json_bytes, encrypt_json_bytes
 from oacs.identity.policy import PolicyEngine
 from oacs.memory.lifecycle import can_transition
-from oacs.memory.models import MemoryContent, MemoryRecord
+from oacs.memory.models import EvidenceItem, MemoryContent, MemoryRecord
 from oacs.memory.search import rank_memories
 from oacs.storage.repositories import Repository
 
@@ -30,9 +32,12 @@ class MemoryService:
         text: str,
         actor_id: str | None,
         scope: list[str] | None = None,
+        evidence: list[EvidenceItem | dict[str, object]] | None = None,
     ) -> MemoryRecord:
         self.policy.require(actor_id, "memory.propose", depth)
-        return self._create(memory_type, depth, text, "candidate", actor_id, scope or [])
+        return self._create(
+            memory_type, depth, text, "candidate", actor_id, scope or [], evidence=evidence
+        )
 
     def commit(self, memory_id: str, actor_id: str | None) -> MemoryRecord:
         self.policy.require(actor_id, "memory.commit")
@@ -110,14 +115,19 @@ class MemoryService:
         actor_id: str | None,
         scope: list[str],
         supersedes: str | None = None,
+        evidence: list[EvidenceItem | dict[str, object]] | None = None,
     ) -> MemoryRecord:
+        structured_evidence = [
+            item if isinstance(item, EvidenceItem) else EvidenceItem(**cast(dict[str, Any], item))
+            for item in (evidence or [])
+        ]
         mem = MemoryRecord(
             memory_type=memory_type,
             depth=depth,
             lifecycle_status=lifecycle_status,  # type: ignore[arg-type]
             scope=scope,
             owner_actor_id=actor_id,
-            content=MemoryContent(text=text, kind=memory_type),
+            content=MemoryContent(text=text, kind=memory_type, evidence=structured_evidence),
             supersedes=supersedes,
         )
         return self._save(mem)

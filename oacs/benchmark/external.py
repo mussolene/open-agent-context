@@ -109,6 +109,12 @@ class MemoryArenaImporter:
                     "memory_type": "episode",
                     "depth": 1,
                     "scope": [f"memoryarena:{row_id}"],
+                    "evidence": _travel_evidence_items(
+                        answer,
+                        row_id=row_id,
+                        participant=_participant_from_question(str(questions[index])),
+                        source_ref=f"memoryarena:{row_id}:answer:{index}",
+                    ),
                     "text": (
                         f"MemoryArena group_travel_planner row {row_id} prior participant "
                         f"{index + 1} request:\n{questions[index]}\nExact accepted plan:\n"
@@ -153,6 +159,17 @@ class MemoryArenaImporter:
                 "memory_type": "episode",
                 "depth": 1,
                 "scope": [f"memoryarena-progressive:{row_id}"],
+                "evidence": [
+                    {
+                        "evidence_kind": "accepted_answer",
+                        "claim": "Accepted answer for prior progressive search query",
+                        "value": str(answers[index]),
+                        "source_ref": f"memoryarena-progressive:{row_id}:answer:{index}",
+                        "confidence": 1.0,
+                        "slot": "evidence",
+                        "order": index + 1,
+                    }
+                ],
                 "text": (
                     f"MemoryArena progressive_search row {row_id} prior question {index}:\n"
                     f"{question}\nAccepted answer:\n{answers[index]}"
@@ -243,6 +260,16 @@ class AmaBenchImporter:
                 "memory_type": "episode",
                 "depth": 1,
                 "scope": [f"ama:{episode_id}"],
+                "evidence": [
+                    {
+                        "evidence_kind": "trajectory_answer",
+                        "claim": "Answer grounded in AMA-Bench trajectory",
+                        "value": answer,
+                        "source_ref": f"ama:{episode_id}:qa:0",
+                        "confidence": 1.0,
+                        "slot": "evidence",
+                    }
+                ],
                 "text": f"AMA-Bench evidence answer:\n{answer}",
             },
         ]
@@ -326,6 +353,40 @@ def _requested_days(question: str) -> set[int]:
         for word, day in mapping.items()
         if re.search(rf"\b{re.escape(word)}[- ]day\b|\bday {re.escape(word)}\b", question_lower)
     }
+
+
+def _travel_evidence_items(
+    answer: Any, row_id: str, participant: str | None, source_ref: str
+) -> list[dict[str, object]]:
+    items: list[dict[str, object]] = []
+    plans = answer if isinstance(answer, list) else [answer]
+    for plan in plans:
+        if not isinstance(plan, dict):
+            continue
+        day = plan.get("days")
+        for slot in SLOT_ALIASES:
+            value = plan.get(slot)
+            if isinstance(value, str) and _is_specific_expected_fact(value):
+                item: dict[str, object] = {
+                    "evidence_kind": "travel_plan_item",
+                    "claim": f"Accepted {slot} plan item",
+                    "value": value,
+                    "source_ref": source_ref,
+                    "confidence": 1.0,
+                    "scope": [f"memoryarena:{row_id}"],
+                    "slot": slot,
+                }
+                if isinstance(day, int):
+                    item["day"] = day
+                if participant:
+                    item["participant"] = participant
+                items.append(item)
+    return items
+
+
+def _participant_from_question(question: str) -> str | None:
+    match = re.search(r"\bI am ([A-Z][a-z]+)\b", question)
+    return match.group(1) if match else None
 
 
 def _strings(value: Any) -> Iterable[str]:

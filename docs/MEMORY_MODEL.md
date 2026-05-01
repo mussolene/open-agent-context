@@ -17,6 +17,25 @@ must sharpen fuzzy memory into evidence-backed memory.
 Lifecycle: observed -> candidate -> clarifying -> confirmed -> active ->
 deprecated -> superseded -> forgotten.
 
+### Structured Evidence
+
+`MemoryContent.evidence` is the reference implementation path for typed
+evidence attached to encrypted memory. It keeps adapter-specific parsing at the
+boundary and lets the generic memory-tool loop consume a stable shape:
+
+- `evidence_kind`
+- `claim`
+- `value`
+- `source_ref`
+- `confidence`
+- `scope`
+- optional dimensions such as `participant`, `day`, `slot`, `order`, and
+  `trajectory_step`
+
+Core memory tools must not depend on benchmark-specific text markers. Importers
+or adapters may parse external formats, but they must write structured evidence
+before generic retrieval and context building use it.
+
 ## RU
 Глубины:
 
@@ -33,3 +52,22 @@ D0-D2 могут поддерживать фактические ответы. D
 
 Жизненный цикл: observed -> candidate -> clarifying -> confirmed -> active ->
 deprecated -> superseded -> forgotten.
+
+### Structured Evidence
+
+`MemoryContent.evidence` — путь reference implementation для typed evidence,
+привязанного к encrypted memory. Он оставляет adapter-specific parsing на
+границе и даёт generic memory-tool loop стабильную форму:
+
+- `evidence_kind`
+- `claim`
+- `value`
+- `source_ref`
+- `confidence`
+- `scope`
+- optional dimensions: `participant`, `day`, `slot`, `order`,
+  `trajectory_step`
+
+Core memory tools не должны зависеть от benchmark-specific text markers.
+Importers или adapters могут парсить внешние форматы, но перед generic retrieval
+и context building они должны записывать structured evidence.
