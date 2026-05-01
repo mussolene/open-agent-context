@@ -26,7 +26,9 @@ prompt/output tokens, memory used, `memory_calls`, evidence items, and
 audit events. Token estimates are deterministic approximations, not
 model-tokenizer counts. In LM Studio mode, OACS records provider usage,
 latency, model, and finish reason when the OpenAI-compatible server returns
-those fields.
+those fields. LM Studio runs use stateless OpenAI-compatible chat completions:
+each request sends only the current `messages` payload, with no LM Studio UI
+chat window history or persistent conversation context.
 
 Task packs are imported through `benchmark_task_pack.schema.json`. Packs must
 carry an integrity checksum over canonical JSON excluding the integrity field.
@@ -66,7 +68,9 @@ tokens, использованную память, `memory_calls`, evidence item
 events. Token estimates являются deterministic approximations, а не
 tokenizer-specific counts. В LM Studio mode OACS записывает provider usage,
 latency, model и finish reason, если OpenAI-compatible server возвращает эти
-поля.
+поля. LM Studio runs используют stateless OpenAI-compatible chat completions:
+каждый request отправляет только текущий `messages` payload, без истории UI
+chat window LM Studio и без persistent conversation context.
 
 Task packs импортируются через `benchmark_task_pack.schema.json`. Packs должны
 содержать integrity checksum по canonical JSON без integrity field. Downloads

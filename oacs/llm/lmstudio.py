@@ -15,6 +15,7 @@ class ChatResult(BaseModel):
     finish_reason: str | None = None
     latency_ms: int
     base_url: str
+    stateless_chat_completions: bool = True
 
 
 class LMStudioClient:
@@ -73,6 +74,7 @@ class LMStudioClient:
             finish_reason=choice.get("finish_reason"),
             latency_ms=latency_ms,
             base_url=self.base_url,
+            stateless_chat_completions=True,
         )
 
     def structured_json(self, prompt: str, schema_hint: dict[str, Any]) -> str:

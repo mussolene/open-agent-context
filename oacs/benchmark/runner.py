@@ -120,6 +120,7 @@ class MemoryCriticalBenchmark:
                     int(str(r.get("memory_calls_count", 0))) for r in results
                 ),
                 "evidence_items": sum(int(str(r.get("evidence_items", 0))) for r in results),
+                "lmstudio_stateless_chat_completions": provider == "lmstudio",
                 "task_pack_ids": sorted(
                     {
                         str(task.rubric.get("task_pack_id"))
@@ -261,6 +262,7 @@ def _chat_metrics(chat: ChatResult) -> dict[str, object]:
         "lmstudio_finish_reason": chat.finish_reason,
         "lmstudio_latency_ms": chat.latency_ms,
         "lmstudio_base_url": chat.base_url,
+        "lmstudio_stateless_chat_completions": chat.stateless_chat_completions,
     }
 
 

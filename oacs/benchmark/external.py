@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import re
 from collections.abc import Iterable
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -40,7 +41,7 @@ class MemoryArenaImporter:
             for line in handle:
                 if line.strip():
                     rows.append(json.loads(line))
-                if len(rows) >= count:
+                if len(self.from_rows(rows, count, subset=subset)) >= count:
                     break
         return self.from_rows(rows, count, subset=subset)
 
@@ -53,7 +54,7 @@ class MemoryArenaImporter:
         for line in response.text.splitlines():
             if line.strip():
                 rows.append(json.loads(line))
-            if len(rows) >= count:
+            if len(self.from_rows(rows, count, subset=_subset_from_url(url))) >= count:
                 break
         return self.from_rows(rows, count, subset=_subset_from_url(url))
 
@@ -90,21 +91,35 @@ class MemoryArenaImporter:
             return None
 
         row_id = str(row.get("id", "unknown"))
-        selected = _select_memory_supported_question(questions, answers)
+        base_person = row.get("base_person", {})
+        selected = _select_memory_supported_question(questions, answers, base_person)
         if selected is None:
             return None
         question_index, expected = selected
         previous_answers = answers[:question_index]
-        memory_selectors = _memory_selectors(previous_answers, answers[question_index], expected)
+        memory_selectors = _memory_selectors(
+            previous_answers,
+            answers[question_index],
+            expected,
+            base_person=base_person,
+            questions=questions[:question_index],
+            current_question=str(questions[question_index]),
+        )
 
         setup_memories = [
             {
                 "memory_type": "episode",
                 "depth": 1,
                 "scope": [f"memoryarena:{row_id}"],
+                "evidence": _travel_evidence_items(
+                    _base_daily_plans(base_person),
+                    row_id=row_id,
+                    participant=_base_name(base_person),
+                    source_ref=f"memoryarena:{row_id}:base",
+                ),
                 "text": (
                     f"MemoryArena group_travel_planner row {row_id} base plan:\n"
-                    f"{json.dumps(row.get('base_person', {}), ensure_ascii=False)}"
+                    f"{json.dumps(base_person, ensure_ascii=False)}"
                 ),
             }
         ]
@@ -213,7 +228,7 @@ class AmaBenchImporter:
             for line in handle:
                 if line.strip():
                     rows.append(json.loads(line))
-                if len(rows) >= count:
+                if len(self.from_rows(rows, count)) >= count:
                     break
         return self.from_rows(rows, count)
 
@@ -226,7 +241,7 @@ class AmaBenchImporter:
         for line in response.text.splitlines():
             if line.strip():
                 rows.append(json.loads(line))
-            if len(rows) >= count:
+            if len(self.from_rows(rows, count)) >= count:
                 break
         return self.from_rows(rows, count)
 
@@ -299,7 +314,45 @@ class AmaBenchImporter:
         )
 
 
-def _expected_facts(previous_answers: list[Any], current_answer: Any) -> list[str]:
+@dataclass(frozen=True)
+class TravelReuseConstraint:
+    participant: str
+    slot: str
+    day: int | None
+
+
+def _expected_facts(
+    previous_answers: list[Any],
+    current_answer: Any,
+    current_question: str | None = None,
+    previous_questions: list[Any] | None = None,
+    base_person: object | None = None,
+) -> list[str]:
+    constraints = _travel_reuse_constraints(current_question or "")
+    if constraints:
+        participants = [
+            _participant_from_question(str(question)) or f"participant_{index + 1}"
+            for index, question in enumerate(previous_questions or [])
+        ]
+        sources: list[tuple[str | None, Any]] = [
+            (_base_name(base_person), _base_daily_plans(base_person))
+        ]
+        sources.extend(zip(participants, previous_answers, strict=False))
+        expected: list[str] = []
+        current_values = set(_strings_for_plan_fields(current_answer))
+        for constraint in constraints:
+            for participant, answer in sources:
+                if participant != constraint.participant:
+                    continue
+                for slot, day, value in _travel_plan_values(answer):
+                    if slot != constraint.slot:
+                        continue
+                    if constraint.day is not None and day != constraint.day:
+                        continue
+                    if value in current_values and _is_specific_expected_fact(value):
+                        expected.append(value)
+        return list(dict.fromkeys(expected))
+
     previous_strings = set(_strings(previous_answers))
     current_strings = list(dict.fromkeys(_strings_for_plan_fields(current_answer)))
     overlaps = [
@@ -313,10 +366,16 @@ def _expected_facts(previous_answers: list[Any], current_answer: Any) -> list[st
 
 
 def _select_memory_supported_question(
-    questions: list[Any], answers: list[Any]
+    questions: list[Any], answers: list[Any], base_person: object | None = None
 ) -> tuple[int, list[str]] | None:
     for question_index in range(1, min(len(questions), len(answers))):
-        expected = _expected_facts(answers[:question_index], answers[question_index])
+        expected = _expected_facts(
+            answers[:question_index],
+            answers[question_index],
+            current_question=str(questions[question_index]),
+            previous_questions=questions[:question_index],
+            base_person=base_person,
+        )
         if expected:
             return question_index, expected
     return None
@@ -336,23 +395,57 @@ def _strings_for_plan_fields(value: Any) -> Iterable[str]:
 
 
 def _memory_selectors(
-    previous_answers: list[Any], current_answer: Any, expected: list[str]
+    previous_answers: list[Any],
+    current_answer: Any,
+    expected: list[str],
+    base_person: object | None = None,
+    questions: list[Any] | None = None,
+    current_question: str | None = None,
 ) -> dict[str, object]:
     expected_set = set(expected)
+    constraints = _travel_reuse_constraints(current_question or "")
     selector_items: list[dict[str, object]] = []
+    sources: list[tuple[int, str | None, Any]] = [
+        (-1, _base_name(base_person), _base_daily_plans(base_person))
+    ]
+    participants = [
+        _participant_from_question(str(question)) or f"participant_{index + 1}"
+        for index, question in enumerate(questions or [])
+    ]
+    sources.extend(
+        (index, participant, answer)
+        for index, (participant, answer) in enumerate(
+            zip(participants, previous_answers, strict=False)
+        )
+    )
     for current_slot, _current_day, current_value in _travel_plan_values(current_answer):
         if current_value not in expected_set:
             continue
-        for index, previous_answer in enumerate(previous_answers):
+        for index, participant, previous_answer in sources:
+            matching_constraints = [
+                constraint
+                for constraint in constraints
+                if constraint.participant == participant and constraint.slot == current_slot
+            ]
+            if constraints and not matching_constraints:
+                continue
             for previous_slot, previous_day, previous_value in _travel_plan_values(previous_answer):
                 if previous_value == current_value:
+                    if matching_constraints and not any(
+                        constraint.day is None or constraint.day == previous_day
+                        for constraint in matching_constraints
+                    ):
+                        continue
                     selector: dict[str, object] = {
                         "slot": previous_slot or current_slot,
                         "source_index": index,
                     }
                     if previous_day is not None:
                         selector["day"] = previous_day
-                    selector_items.append(selector)
+                    if participant:
+                        selector["participant"] = participant
+                    if selector not in selector_items:
+                        selector_items.append(selector)
     slots = sorted({str(item["slot"]) for item in selector_items if item.get("slot")})
     days: list[int] = []
     for item in selector_items:
@@ -364,6 +457,13 @@ def _memory_selectors(
         "items": selector_items,
         "slots": slots,
         "days": days,
+        "participants": sorted(
+            {
+                str(item["participant"])
+                for item in selector_items
+                if isinstance(item.get("participant"), str)
+            }
+        ),
     }
 
 
@@ -412,6 +512,43 @@ def _travel_plan_values(value: Any) -> Iterable[tuple[str, int | None, str]]:
 def _participant_from_question(question: str) -> str | None:
     match = re.search(r"\bI am ([A-Z][a-z]+)\b", question)
     return match.group(1) if match else None
+
+
+def _travel_reuse_constraints(question: str) -> list[TravelReuseConstraint]:
+    constraints: list[TravelReuseConstraint] = []
+    for sentence in re.split(r"[\n.]+", question):
+        lower = sentence.lower()
+        if "join " not in lower and "same" not in lower and "share with " not in lower:
+            continue
+        names = re.findall(r"\b(?:join|as|with)\s+([A-Z][a-z]+)\b", sentence)
+        if not names:
+            continue
+        day = _day_from_text(lower)
+        for slot in TRAVEL_PLAN_FIELDS:
+            if slot not in lower:
+                continue
+            for name in names:
+                constraints.append(TravelReuseConstraint(name, slot, day))
+    return constraints
+
+
+def _day_from_text(text: str) -> int | None:
+    for value, day in {"first": 1, "second": 2, "third": 3}.items():
+        if f"{value} day" in text or f"{value}-day" in text:
+            return day
+    return None
+
+
+def _base_name(base_person: object | None) -> str | None:
+    if isinstance(base_person, dict) and isinstance(base_person.get("name"), str):
+        return str(base_person["name"])
+    return None
+
+
+def _base_daily_plans(base_person: object | None) -> list[object]:
+    if isinstance(base_person, dict) and isinstance(base_person.get("daily_plans"), list):
+        return list(base_person["daily_plans"])
+    return []
 
 
 def _strings(value: Any) -> Iterable[str]:

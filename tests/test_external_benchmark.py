@@ -40,7 +40,34 @@ def test_memoryarena_importer_builds_memory_dependent_task():
     assert task.setup_memories[1]["depth"] == 1
 
 
-def test_memoryarena_importer_skips_ambiguous_group_travel_overlap():
+def test_memoryarena_group_travel_first_public_rows_convert():
+    rows = [
+        {
+            "id": index,
+            "base_person": {
+                "name": "Base",
+                "daily_plans": [{"days": 1, "accommodation": f"Base Stay {index}"}],
+            },
+            "questions": [
+                "I am Eric. I need accommodation.",
+                "I am Emma. For accommodation on the first day, I'd like to join Eric.",
+            ],
+            "answers": [
+                [{"days": 1, "accommodation": f"Shared Stay {index}"}],
+                [{"days": 1, "accommodation": f"Shared Stay {index}"}],
+            ],
+        }
+        for index in range(1, 6)
+    ]
+
+    tasks = MemoryArenaImporter().from_rows(rows, 5, subset="group_travel_planner")
+
+    assert len(tasks) == 5
+    assert [task.rubric["row_id"] for task in tasks] == ["1", "2", "3", "4", "5"]
+    assert all(task.expected_facts for task in tasks)
+
+
+def test_memoryarena_importer_uses_explicit_join_slot_and_day():
     row = {
         "id": 8,
         "base_person": {"name": "Jennifer", "daily_plans": []},
@@ -60,9 +87,12 @@ def test_memoryarena_importer_skips_ambiguous_group_travel_overlap():
         ],
     }
 
-    tasks = MemoryArenaImporter().from_rows([row], 1)
+    task = MemoryArenaImporter().from_rows([row], 1)[0]
 
-    assert tasks == []
+    assert task.expected_facts == ["Correct Lunch, Testville"]
+    assert task.rubric["memory_selectors"]["slots"] == ["lunch"]
+    assert task.rubric["memory_selectors"]["days"] == [2]
+    assert task.rubric["memory_selectors"]["participants"] == ["Eric"]
 
 
 def test_memory_call_loop_extracts_exact_scoped_evidence(svc):

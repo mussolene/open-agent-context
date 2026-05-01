@@ -168,4 +168,6 @@ def test_lmstudio_usage_is_recorded_when_returned(db, monkeypatch) -> None:
 
     assert run.summary["prompt_tokens_estimated"] == 7
     assert run.summary["output_tokens_estimated"] == 3
+    assert run.summary["lmstudio_stateless_chat_completions"] is True
     assert run.task_results[0]["lmstudio_usage"]["total_tokens"] == 10
+    assert run.task_results[0]["lmstudio_stateless_chat_completions"] is True
