@@ -43,9 +43,23 @@ def get_context(capsule_id: str, actor_id: str | None = None) -> dict[str, objec
     return capsule.model_dump()
 
 
+@router.post("/context/{capsule_id}/export")
+def export_context(capsule_id: str, req: dict[str, str | None]) -> dict[str, object]:
+    svc = services()
+    actor_id = req.get("actor_id")
+    try:
+        exported = svc.context.export_capsule(capsule_id, actor_id)
+    except AccessDenied as exc:
+        svc.audit.record("context.export", actor_id, capsule_id, {"status": "denied"})
+        raise exc
+    svc.audit.record("context.export", actor_id, capsule_id, {"status": "completed"})
+    return exported.model_dump()
+
+
 @router.post("/context/validate")
 def validate_context(req: dict[str, object]) -> dict[str, object]:
-    return services(require_key=False).context.validate_payload(req)
+    requires_key = req.get("export_type") == "context_capsule_export"
+    return services(require_key=requires_key).context.validate_payload(req)
 
 
 @router.post("/context/import")

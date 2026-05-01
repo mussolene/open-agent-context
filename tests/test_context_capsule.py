@@ -24,6 +24,34 @@ def test_context_capsule_validate_import_round_trip(svc, tmp_path):
     assert svc.context.read(capsule.id, None).checksum == capsule.checksum
 
 
+def test_context_capsule_export_envelope_round_trip(svc):
+    capsule = svc.context.build("signed export", None, scope=["project"])
+
+    exported = svc.context.export_capsule(capsule.id, None)
+    validation = svc.context.validate_payload(exported.model_dump())
+    imported = svc.context.import_capsule(exported.model_dump(), None)
+
+    assert exported.export_type == "context_capsule_export"
+    assert exported.integrity.algorithm == "HMAC-SHA256"
+    assert exported.integrity.payload_checksum
+    assert exported.integrity.signature
+    assert validation["integrity"]["signature"] == exported.integrity.signature
+    assert imported.id == capsule.id
+
+
+def test_context_capsule_export_rejects_tampered_integrity(svc):
+    capsule = svc.context.build("tampered export", None, scope=["project"])
+    payload = svc.context.export_capsule(capsule.id, None).model_dump()
+    payload["capsule"]["purpose"] = "tampered"
+
+    try:
+        svc.context.validate_payload(payload)
+    except Exception as exc:
+        assert "checksum" in str(exc) or "signature" in str(exc)
+    else:
+        raise AssertionError("tampered capsule export passed validation")
+
+
 def test_context_capsule_rejects_bad_checksum(svc):
     capsule = svc.context.build("bad checksum", None, scope=["project"])
     payload = capsule.model_dump()

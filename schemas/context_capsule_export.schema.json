@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ContextCapsuleExport",
+  "type": "object",
+  "required": ["export_type", "version", "capsule", "integrity"],
+  "properties": {
+    "export_type": {"const": "context_capsule_export"},
+    "version": {"const": "0.1"},
+    "capsule": {
+      "type": "object",
+      "required": ["id", "version", "capsule_type", "purpose", "checksum"],
+      "properties": {
+        "id": {"type": "string"},
+        "version": {"const": "0.1"},
+        "capsule_type": {"const": "context_capsule"},
+        "purpose": {"type": "string"},
+        "checksum": {"type": "string"}
+      }
+    },
+    "integrity": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "algorithm",
+        "payload_checksum",
+        "signature",
+        "signed_at",
+        "key_ref"
+      ],
+      "properties": {
+        "schema_version": {"const": "0.1"},
+        "algorithm": {"const": "HMAC-SHA256"},
+        "payload_checksum": {"type": "string"},
+        "signature": {"type": "string"},
+        "signed_at": {"type": "string"},
+        "key_ref": {"type": "string"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

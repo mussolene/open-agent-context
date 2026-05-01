@@ -12,6 +12,9 @@ Breaking changes before v1.0 include:
 - Changing default capability policy from deny-by-default.
 - Changing encryption metadata format in a way that makes existing records unreadable.
 - Changing ContextCapsule checksum semantics.
+- Changing ContextCapsule export envelope or integrity metadata semantics,
+  including `integrity.payload_checksum`, `integrity.signature`, algorithm names,
+  or checksum canonicalization.
 - Changing benchmark scoring semantics.
 
 Non-breaking changes before v1.0 include:
@@ -20,6 +23,8 @@ Non-breaking changes before v1.0 include:
 - Tightening validation for invalid data.
 - Fixing behavior that previously returned success without durable state.
 - Adding new storage or retrieval backends behind existing interfaces.
+- Accepting both raw ContextCapsule JSON and `context_capsule_export` envelopes
+  on import/validation while preserving existing checksum behavior.
 
 The `StorageBackend` protocol is still draft-level before v1.0 and may evolve;
 SQLite remains the reference backend for compatibility checks.
@@ -43,6 +48,9 @@ Breaking changes до v1.0:
 - Изменение default capability policy с deny-by-default.
 - Изменение encryption metadata format так, что существующие records нельзя читать.
 - Изменение semantics checksum для ContextCapsule.
+- Изменение ContextCapsule export envelope или integrity metadata semantics,
+  включая `integrity.payload_checksum`, `integrity.signature`, algorithm names
+  или checksum canonicalization.
 - Изменение benchmark scoring semantics.
 
 Non-breaking changes до v1.0:
@@ -51,6 +59,8 @@ Non-breaking changes до v1.0:
 - Усиление validation для invalid data.
 - Исправление поведения, которое раньше возвращало success без durable state.
 - Добавление новых storage или retrieval backends за существующими interfaces.
+- Приём raw ContextCapsule JSON и `context_capsule_export` envelopes на
+  import/validation при сохранении текущего checksum behavior.
 
 `StorageBackend` protocol до v1.0 остаётся draft-level и может меняться; SQLite
 остаётся reference backend для compatibility checks.

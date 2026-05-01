@@ -2,13 +2,13 @@
 
 ## EN
 
-Status: OACS v0.2.6 reference implementation.
+Status: OACS v0.2.7 reference implementation.
 Date: 2026-05-01.
 Model: `google/gemma-4-e2b` through LM Studio OpenAI-compatible API.
 Tasks per suite: 5.
 Token metric: deterministic character-based estimate, not a model tokenizer.
 
-`oacs_memory_call_loop` is the OACS v0.2.6 benchmark mode for deterministic
+`oacs_memory_call_loop` is the OACS v0.2.7 benchmark mode for deterministic
 memory operations. It executes `memory_calls` (`memory.query`,
 `memory.extract_evidence`) and returns the full machine-readable call trace in
 benchmark results. The model prompt receives only a compact projection of the
@@ -83,13 +83,13 @@ unambiguous structured answer overlaps and skips ambiguous rows.
 
 ## RU
 
-Статус: OACS v0.2.6 reference implementation.
+Статус: OACS v0.2.7 reference implementation.
 Дата: 2026-05-01.
 Модель: `google/gemma-4-e2b` через LM Studio OpenAI-compatible API.
 Задач на suite: 5.
 Метрика tokens: deterministic character-based estimate, не tokenizer модели.
 
-`oacs_memory_call_loop` — benchmark mode OACS v0.2.6 для deterministic memory
+`oacs_memory_call_loop` — benchmark mode OACS v0.2.7 для deterministic memory
 operations. Он выполняет `memory_calls` (`memory.query`,
 `memory.extract_evidence`) и возвращает полный machine-readable call trace в
 benchmark results. В prompt модели попадает только компактная projection trace

@@ -472,7 +472,7 @@ def context_export(
     capsule_id: str, actor: ActorOpt = None, db: DbOpt = None, json_out: JsonOpt = False
 ) -> None:
     svc = services(db)
-    capsule = svc.context.read(capsule_id, actor)
+    capsule = svc.context.export_capsule(capsule_id, actor)
     svc.audit.record("context.export", actor, capsule_id)
     emit(capsule.model_dump(), json_out)
 
@@ -496,9 +496,9 @@ def context_validate(
     db: DbOpt = None,
     json_out: JsonOpt = False,
 ) -> None:
-    result = services(db, require_key=False).context.validate_payload(
-        json.loads(file.read_text(encoding="utf-8"))
-    )
+    payload = json.loads(file.read_text(encoding="utf-8"))
+    requires_key = payload.get("export_type") == "context_capsule_export"
+    result = services(db, require_key=requires_key).context.validate_payload(payload)
     emit(result, json_out)
 
 
@@ -586,7 +586,7 @@ def capsule_create(
 def capsule_inspect(
     capsule_id: str, actor: ActorOpt = None, db: DbOpt = None, json_out: JsonOpt = False
 ) -> None:
-    context_export(capsule_id, actor, db, json_out)
+    emit(services(db).context.read(capsule_id, actor).model_dump(), json_out)
 
 
 @capsule_app.command("mount")

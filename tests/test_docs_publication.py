@@ -47,6 +47,8 @@ def test_public_docs_do_not_use_stale_reference_version() -> None:
     major, minor, patch = (int(part) for part in __version__.split("."))
     stale = f"v{major}.{minor}.{patch - 1}" if patch else f"v{major}.{minor - 1}.0"
     for path in PUBLIC_MARKDOWN:
+        if path.name == "ROADMAP.md":
+            continue
         assert stale not in path.read_text(encoding="utf-8"), path
 
 

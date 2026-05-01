@@ -5,7 +5,7 @@ This roadmap keeps the OACS v0.1 draft standard small. Core work must define
 memory, context, permissions, audit, and deterministic operation contracts.
 Reference adapters prove integration, but they do not expand the standard.
 
-### Current Position: v0.2.6 Reference POC, memory/context hardening
+### Current Position: v0.2.7 Reference POC, context capsule integrity
 - Done: OACS v0.1 draft terminology, schemas, encrypted SQLite memory,
   ContextCapsule, CLI/API, rules/skills/tools/MCP registries, basic memory loop,
   memory_calls, validation adapters, and CI build checks.
@@ -60,9 +60,11 @@ Reference adapters prove integration, but they do not expand the standard.
 - Done: add deterministic conformance tests for capability-safe memory operations.
 
 ### v0.2.7 - Context Capsule Integrity
-- Add signed capsule export with verifiable checksum metadata.
-- Tighten capsule import/export validation and compatibility notes.
-- Expand API tests for context, registry, and audit routes.
+- Done: add `context_capsule_export` envelope with checksum and HMAC integrity
+  metadata. `integrity.signature` is a local HMAC tag, not a public-key digital
+  signature or third-party-verifiable signing claim.
+- Done: tighten capsule import/export validation and compatibility notes.
+- Done: expand API tests for context export/import validation and audit behavior.
 
 ### v0.2.8 - Retrieval Adapter Contract
 - Define a retrieval provider contract with policy-first filtering.
@@ -93,7 +95,7 @@ Reference adapters prove integration, but they do not expand the standard.
 определять memory, context, permissions, audit и deterministic operation
 contracts. Reference adapters доказывают интеграцию, но не расширяют стандарт.
 
-### Текущая позиция: v0.2.6 Reference POC, memory/context hardening
+### Текущая позиция: v0.2.7 Reference POC, context capsule integrity
 - Готово: OACS v0.1 draft terminology, schemas, encrypted SQLite memory,
   ContextCapsule, CLI/API, rules/skills/tools/MCP registries, базовый memory
   loop, memory_calls, validation adapters и CI build checks.
@@ -150,9 +152,11 @@ contracts. Reference adapters доказывают интеграцию, но н
   operations.
 
 ### v0.2.7 - Context Capsule Integrity
-- Добавить signed capsule export с проверяемой checksum metadata.
-- Усилить capsule import/export validation и compatibility notes.
-- Расширить API tests для context, registry и audit routes.
+- Готово: добавить `context_capsule_export` envelope с checksum и HMAC integrity
+  metadata. `integrity.signature` является local HMAC tag, а не public-key
+  digital signature и не third-party-verifiable signing claim.
+- Готово: усилить capsule import/export validation и compatibility notes.
+- Готово: расширить API tests для context export/import validation и audit behavior.
 
 ### v0.2.8 - Retrieval Adapter Contract
 - Определить retrieval provider contract с policy-first filtering.

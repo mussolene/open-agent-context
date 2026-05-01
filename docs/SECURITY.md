@@ -10,7 +10,14 @@ stored locally for development and removed with `acs key lock`.
 
 Audit events store operation metadata and hashes, not secret content.
 
-Required v0.2.6 audit events: memory query/read/write operations
+v0.2.7 capsule integrity is checksum- and MAC-based. Raw capsules carry a
+deterministic checksum for tamper detection. Export envelopes add
+`integrity.payload_checksum` and `integrity.signature`; despite the field name,
+`signature` is an HMAC-SHA256 tag using the local master key, not asymmetric
+cryptographic signing. It should not be documented as non-repudiation,
+certificate-backed identity, or third-party-verifiable provenance.
+
+Required audit events: memory query/read/write operations
 (`observe`, `propose`, `commit`, `correct`, `deprecate`, `supersede`, `forget`,
 `blur`, `sharpen`, `export`, `import`) and context build/export/import/explain/
 reduce/expand/lock. Audit metadata may include counts, ids, query hashes, and
@@ -32,7 +39,14 @@ Payload памяти и capsules шифруются AEAD. Локальный pas
 
 Audit events содержат metadata и хэши, но не секретный контент.
 
-Обязательные audit events v0.2.6: memory query/read/write operations
+Integrity capsules в v0.2.7 основана на checksum и MAC. Raw capsules содержат
+deterministic checksum для tamper detection. Export envelopes добавляют
+`integrity.payload_checksum` и `integrity.signature`; несмотря на имя поля,
+`signature` является HMAC-SHA256 tag на local master key, а не asymmetric
+cryptographic signing. Это нельзя описывать как non-repudiation,
+certificate-backed identity или third-party-verifiable provenance.
+
+Обязательные audit events: memory query/read/write operations
 (`observe`, `propose`, `commit`, `correct`, `deprecate`, `supersede`, `forget`,
 `blur`, `sharpen`, `export`, `import`) и context build/export/import/explain/
 reduce/expand/lock. Audit metadata может содержать counts, ids, query hashes и

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from oacs.context.capsule import ContextCapsule
+from oacs.context.capsule import ContextCapsule, ContextCapsuleExport
 from oacs.core.errors import NotFound
 from oacs.core.json import dumps, hash_json, loads
 from oacs.core.time import now_iso
@@ -83,6 +83,10 @@ class ContextBuilder:
         )
         return ContextCapsule(**payload)
 
+    def export_capsule(self, capsule_id: str, actor_id: str | None) -> ContextCapsuleExport:
+        capsule = self.read(capsule_id, actor_id)
+        return ContextCapsuleExport.create(capsule, self.master_key)
+
     def explain(self, capsule_id: str, actor_id: str | None) -> dict[str, object]:
         capsule = self.read(capsule_id, actor_id)
         return {
@@ -97,15 +101,35 @@ class ContextBuilder:
 
     def import_capsule(self, payload: dict[str, object], actor_id: str | None) -> ContextCapsule:
         self.policy.require(actor_id, "context.export")
-        capsule = ContextCapsule.model_validate(payload)
-        capsule.validate_checksum()
+        if payload.get("export_type") == "context_capsule_export":
+            export = ContextCapsuleExport.model_validate(payload)
+            export.validate_integrity(self.master_key)
+            capsule = export.capsule
+        else:
+            capsule = ContextCapsule.model_validate(payload)
+            capsule.validate_checksum()
         self._save(capsule)
         return capsule
 
     def validate_payload(self, payload: dict[str, object]) -> dict[str, object]:
+        if payload.get("export_type") == "context_capsule_export":
+            export = ContextCapsuleExport.model_validate(payload)
+            export.validate_integrity(self.master_key)
+            return {
+                "valid": True,
+                "id": export.capsule.id,
+                "version": export.version,
+                "export_type": export.export_type,
+                "integrity": export.integrity.model_dump(),
+            }
         capsule = ContextCapsule.model_validate(payload)
         capsule.validate_checksum()
-        return {"valid": True, "id": capsule.id, "version": capsule.version}
+        return {
+            "valid": True,
+            "id": capsule.id,
+            "version": capsule.version,
+            "export_type": "context_capsule",
+        }
 
     def set_status(self, capsule_id: str, actor_id: str | None, status: str) -> dict[str, object]:
         self.policy.require(actor_id, "context.export")
