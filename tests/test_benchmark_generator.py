@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from oacs.benchmark.generator import SyntheticTaskGenerator
+from oacs.benchmark.reports import compare_runs, select_comparison_runs
 from oacs.benchmark.runner import MemoryCriticalBenchmark
 
 
@@ -35,3 +36,21 @@ def test_unknown_benchmark_mode_is_rejected(svc):
         assert "unsupported benchmark mode" in str(exc)
     else:
         raise AssertionError("expected unsupported benchmark mode to fail")
+
+
+def test_compare_prefers_memory_call_loop_over_missing_oacs_loop(svc):
+    tasks = SyntheticTaskGenerator().generate("memory_critical", 1)
+    bench = MemoryCriticalBenchmark(svc.memory, svc.loop)
+    baseline = bench.run(tasks, "baseline_no_memory", None)
+    memory_calls = bench.run(tasks, "oacs_memory_call_loop", None)
+
+    selected_baseline, selected_oacs = select_comparison_runs(
+        [
+            {"mode": baseline.mode, "payload": baseline.model_dump()},
+            {"mode": memory_calls.mode, "payload": memory_calls.model_dump()},
+        ]
+    )
+    comparison = compare_runs(selected_baseline, selected_oacs)
+
+    assert selected_oacs.mode == "oacs_memory_call_loop"
+    assert comparison["improvement"] > 0

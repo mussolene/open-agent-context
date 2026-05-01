@@ -34,7 +34,8 @@ boundary and lets the generic memory-call loop consume a stable shape:
 
 Core memory_calls must not depend on benchmark-specific text markers. Importers
 or adapters may parse external formats, but they must write structured evidence
-before generic retrieval and context building use it.
+before generic retrieval and context building use it. Domain-specific evidence
+selection belongs in selector/adapters, not in the memory-call orchestrator.
 
 ## RU
 Глубины:
@@ -70,4 +71,6 @@ deprecated -> superseded -> forgotten.
 
 Core memory_calls не должны зависеть от benchmark-specific text markers.
 Importers или adapters могут парсить внешние форматы, но перед generic retrieval
-и context building они должны записывать structured evidence.
+и context building они должны записывать structured evidence. Domain-specific
+evidence selection должен жить в selector/adapters, а не в memory-call
+orchestrator.

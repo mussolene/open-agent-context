@@ -4,9 +4,11 @@ import json
 
 from oacs.benchmark.models import BenchmarkRun, BenchmarkTask
 from oacs.benchmark.scorer import score_answer
+from oacs.benchmark.selectors import MemoryArenaTravelSelector
 from oacs.llm.lmstudio import LMStudioClient
 from oacs.llm.prompts import BASELINE_SYSTEM, OACS_SYSTEM, build_oacs_prompt
 from oacs.loop.engine import MemoryLoopEngine
+from oacs.loop.evidence_selectors import EvidenceSelector
 from oacs.loop.memory_calls import DeterministicMemoryCallLoop, memory_call_to_dict
 from oacs.memory.service import MemoryService
 
@@ -149,7 +151,10 @@ class MemoryCriticalBenchmark:
         provider: str,
     ) -> tuple[str, int, dict[str, object]]:
         memories = self.memory.query(task.user_prompt, actor_id, scope)
-        call_result = DeterministicMemoryCallLoop().build_prompt(task.user_prompt, memories)
+        call_result = DeterministicMemoryCallLoop(_selector_for_task(task)).build_prompt(
+            task.user_prompt,
+            memories,
+        )
         prompt_tokens = estimate_tokens(call_result.prompt)
         if provider == "lmstudio":
             model_answer = _lmstudio_client(task, model).chat(call_result.prompt, OACS_SYSTEM)
@@ -173,6 +178,12 @@ def _task_scope(task: BenchmarkTask) -> list[str]:
     if isinstance(raw, list) and all(isinstance(item, str) for item in raw):
         return raw
     return ["project"]
+
+
+def _selector_for_task(task: BenchmarkTask) -> EvidenceSelector | None:
+    if task.type == "memoryarena_group_travel_planner":
+        return MemoryArenaTravelSelector()
+    return None
 
 
 def _lmstudio_client(task: BenchmarkTask, model: str | None) -> LMStudioClient:

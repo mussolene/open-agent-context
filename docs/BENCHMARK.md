@@ -42,14 +42,5 @@ tokens, использованную память, `memory_calls`, evidence item
 events. Token estimates являются deterministic approximations, а не
 tokenizer-specific counts.
 
-Latest public adapter token report:
-`examples/benchmarks/public_memory_adapters_2026-05-01.md`.
-
-Latest real LM Studio `google/gemma-4-e2b` context-scale report:
-`examples/benchmarks/gemma_e2b_context_scale_2026-05-01.md`.
-
-Structured evidence refactor report:
-`examples/benchmarks/structured_evidence_refactor_2026-05-01.md`.
-
-OACS v0.2.0 memory calls report:
+Current technical report:
 `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`.

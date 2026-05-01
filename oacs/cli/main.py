@@ -11,8 +11,8 @@ from rich import print as rprint
 from oacs.app import OacsServices, services
 from oacs.benchmark.external import AmaBenchImporter, MemoryArenaImporter
 from oacs.benchmark.generator import SyntheticTaskGenerator
-from oacs.benchmark.models import BenchmarkRun, BenchmarkTask
-from oacs.benchmark.reports import compare_runs
+from oacs.benchmark.models import BenchmarkTask
+from oacs.benchmark.reports import compare_runs, select_comparison_runs
 from oacs.benchmark.runner import MemoryCriticalBenchmark
 from oacs.context.reducer import reduce_capsule
 from oacs.core.config import OacsConfig
@@ -789,14 +789,7 @@ def benchmark_run(
 def benchmark_compare(db: DbOpt = None, json_out: JsonOpt = False) -> None:
     svc = services(db, require_key=False)
     rows = svc.store.list("benchmark_runs", "ORDER BY created_at")
-    baseline = next(
-        (BenchmarkRun(**r["payload"]) for r in rows if r["mode"] == "baseline_no_memory"),
-        BenchmarkRun(mode="baseline_no_memory", task_results=[], summary={"average_score": 0}),
-    )
-    oacs_run = next(
-        (BenchmarkRun(**r["payload"]) for r in rows if r["mode"] == "oacs_memory_loop"),
-        BenchmarkRun(mode="oacs_memory_loop", task_results=[], summary={"average_score": 0}),
-    )
+    baseline, oacs_run = select_comparison_runs(rows)
     emit(compare_runs(baseline, oacs_run), json_out)
 
 

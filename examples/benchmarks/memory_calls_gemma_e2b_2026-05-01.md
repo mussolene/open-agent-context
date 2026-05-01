@@ -15,6 +15,12 @@ benchmark results. The model prompt receives only a compact projection of the
 trace plus the extracted evidence, so auditability does not require prompt
 stuffing.
 
+Selector cleanup note: after the selector split, a quickstart smoke run on 5
+synthetic tasks produced `baseline_no_memory` 0/5 and `oacs_memory_call_loop`
+5/5, `memory_calls_count` 10, estimated OACS tokens 1,207, and
+`acs benchmark compare` improvement `+4.0`. The LM Studio tables below remain
+the latest real-model run.
+
 ### Deterministic Provider
 
 | Suite | Mode | Success | Avg score | Prompt tokens | Output tokens | Total tokens | Memory calls | Evidence |
@@ -84,6 +90,12 @@ operations. Он выполняет `memory_calls` (`memory.query`,
 `memory.extract_evidence`) и возвращает полный machine-readable call trace в
 benchmark results. В prompt модели попадает только компактная projection trace
 и extracted evidence, поэтому auditability не требует prompt stuffing.
+
+Selector cleanup note: после selector split quickstart smoke run на 5 synthetic
+tasks дал `baseline_no_memory` 0/5 и `oacs_memory_call_loop` 5/5, а
+`memory_calls_count` 10, estimated OACS tokens 1,207 и
+`acs benchmark compare` improvement `+4.0`. Таблицы LM Studio ниже остаются
+последним real-model прогоном.
 
 Вывод:
 

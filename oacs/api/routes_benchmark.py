@@ -4,8 +4,8 @@ from fastapi import APIRouter
 
 from oacs.app import services
 from oacs.benchmark.generator import SyntheticTaskGenerator
-from oacs.benchmark.models import BenchmarkRun, BenchmarkTask
-from oacs.benchmark.reports import compare_runs
+from oacs.benchmark.models import BenchmarkTask
+from oacs.benchmark.reports import compare_runs, select_comparison_runs
 from oacs.benchmark.runner import MemoryCriticalBenchmark
 from oacs.core.json import hash_json
 from oacs.core.time import now_iso
@@ -73,12 +73,5 @@ def run(req: dict[str, object]) -> dict[str, object]:
 @router.post("/benchmark/compare")
 def compare() -> dict[str, object]:
     rows = services(require_key=False).store.list("benchmark_runs", "ORDER BY created_at")
-    baseline = next(
-        (BenchmarkRun(**r["payload"]) for r in rows if r["mode"] == "baseline_no_memory"),
-        BenchmarkRun(mode="baseline_no_memory", task_results=[], summary={"average_score": 0}),
-    )
-    oacs_run = next(
-        (BenchmarkRun(**r["payload"]) for r in rows if r["mode"] == "oacs_memory_loop"),
-        BenchmarkRun(mode="oacs_memory_loop", task_results=[], summary={"average_score": 0}),
-    )
+    baseline, oacs_run = select_comparison_runs(rows)
     return compare_runs(baseline, oacs_run)
