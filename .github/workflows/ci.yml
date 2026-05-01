@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Quality / Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install package with dev extras
+        run: python -m pip install -e ".[dev,crypto]"
+
+      - name: Ruff
+        run: ruff check .
+
+      - name: Mypy
+        run: mypy oacs
+
+      - name: Pytest
+        run: pytest -q
+
+  package:
+    name: Package build and smoke
+    runs-on: ubuntu-latest
+    needs: quality
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Build sdist and wheel
+        run: |
+          python -m pip install build
+          python -m build
+
+      - name: Upload package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: oacs-dist
+          path: dist/*
+
+      - name: Install wheel and smoke test CLI
+        run: |
+          SMOKE_DIR="$RUNNER_TEMP/oacs-wheel-smoke"
+          python -m venv "$SMOKE_DIR"
+          "$SMOKE_DIR/bin/python" -m pip install dist/*.whl
+          "$SMOKE_DIR/bin/acs" --help
+          export OACS_DB="$SMOKE_DIR/oacs.db"
+          export OACS_PASSPHRASE="ci-smoke-passphrase"
+          "$SMOKE_DIR/bin/acs" init --json
+          "$SMOKE_DIR/bin/acs" key init --passphrase "$OACS_PASSPHRASE" --json

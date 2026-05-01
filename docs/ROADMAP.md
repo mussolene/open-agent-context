@@ -24,6 +24,8 @@ implementation.
   is `oacs_memory_call_loop`.
 - Done: README quickstart was reduced to the minimal local path and validated
   against a clean temporary SQLite store.
+- Done: CI build pipeline added for lint, typecheck, tests, package build,
+  wheel install, and CLI smoke checks.
 - Current technical report:
   `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`.
 
@@ -79,6 +81,8 @@ implementation.
   `oacs_memory_call_loop`.
 - Готово: README quickstart сокращён до минимального local path и проверен на
   чистом temporary SQLite store.
+- Готово: добавлена CI build pipeline для lint, typecheck, tests, package build,
+  wheel install и CLI smoke checks.
 - Текущий technical report:
   `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`.
 

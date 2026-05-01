@@ -77,6 +77,11 @@ acs benchmark run --mode oacs_memory_call_loop --provider lmstudio --model "$OAC
 Unit tests do not require LM Studio; integration tests skip when the server is
 unavailable.
 
+### Build Pipeline
+
+GitHub Actions runs lint, typecheck, tests, package build, wheel install, and
+CLI smoke checks. See `docs/BUILD.md`.
+
 ### Security Model
 
 Memory and sensitive capsule payloads are encrypted before they are written to
@@ -166,6 +171,11 @@ acs benchmark run --mode oacs_memory_call_loop --provider lmstudio --model "$OAC
 
 Unit tests не требуют LM Studio; integration tests пропускаются, если server
 недоступен.
+
+### Сборочная линия
+
+GitHub Actions запускает lint, typecheck, tests, package build, wheel install и
+CLI smoke checks. См. `docs/BUILD.md`.
 
 ### Security model
 
