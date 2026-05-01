@@ -12,7 +12,7 @@ Modes:
 - `baseline_no_memory`: current task only.
 - `baseline_full_context`: raw prior context plus current task.
 - `oacs_memory_loop`: scoped OACS memories plus Context Capsule prompt.
-- `oacs_memory_tool_loop`: scoped OACS memories plus deterministic MCP-like
+- `oacs_memory_call_loop`: scoped OACS memories plus deterministic MCP-like
   memory operations that extract participant/day/slot evidence before prompting.
 
 Estimated tokens use a deterministic character-based approximation, not a
@@ -23,24 +23,24 @@ model tokenizer.
 | `baseline_no_memory` | 1.0 | 0/5 | 711 | 2522 | 3233 | 1.5466 |
 | `baseline_full_context` | 4.2 | 4/5 | 5355 | 2405 | 7760 | 2.7062 |
 | `oacs_memory_loop` | 1.8 | 1/5 | 6431 | 1989 | 8420 | 1.0689 |
-| `oacs_memory_tool_loop` | 5.0 | 5/5 | 2536 | 2743 | 5279 | 4.7357 |
+| `oacs_memory_call_loop` | 5.0 | 5/5 | 2536 | 2743 | 5279 | 4.7357 |
 
 Interpretation:
 
 - The basic `oacs_memory_loop` is not enough; it still behaves like broad
   context injection and underperforms raw full context here.
-- The `oacs_memory_tool_loop` is the intended OACS shape: deterministic memory
+- The `oacs_memory_call_loop` is the intended OACS shape: deterministic memory
   operations first, compact evidence prompt second.
-- `oacs_memory_tool_loop` beats raw full context on this sample: +0.8 average
+- `oacs_memory_call_loop` beats raw full context on this sample: +0.8 average
   score, +1 exact success, and -2481 estimated total tokens.
-- This supports the roadmap direction: OACS should be a thin memory-tool layer
+- This supports the roadmap direction: OACS should be a thin memory-call layer
   under agents, not just a memory database or prompt stuffing helper.
 
 ### Public Deterministic Harness: 20 Tasks
 
 The same public MemoryArena subset was also run through the deterministic
 benchmark provider on 20 memory-supported tasks. This isolates the OACS
-memory-tool layer from model variance and checks whether the adapter extracts
+memory-call layer from model variance and checks whether the adapter extracts
 the correct evidence for tasks OACS is currently designed to solve.
 
 | Mode | Avg score | Exact success | Prompt tokens | Output tokens | Total tokens | Score / 1k tokens |
@@ -48,11 +48,11 @@ the correct evidence for tasks OACS is currently designed to solve.
 | `baseline_no_memory` | 1.0 | 0/20 | 3824 | 3924 | 7748 | 2.5813 |
 | `baseline_full_context` | 5.0 | 20/20 | 32805 | 32905 | 65710 | 1.5218 |
 | `oacs_memory_loop` | 5.0 | 20/20 | 3824 | 30165 | 33989 | 2.9421 |
-| `oacs_memory_tool_loop` | 5.0 | 20/20 | 13263 | 3075 | 16338 | 6.1207 |
+| `oacs_memory_call_loop` | 5.0 | 20/20 | 13263 | 3075 | 16338 | 6.1207 |
 
 Interpretation:
 
-- On the supported memory-reuse class, `oacs_memory_tool_loop` preserves full
+- On the supported memory-reuse class, `oacs_memory_call_loop` preserves full
   accuracy while using far fewer tokens than raw full context.
 - MemoryArena questions that require solving new constraints against an external
   environment are intentionally not claimed as solved by this adapter yet; they
@@ -89,7 +89,7 @@ acs benchmark run \
   --json
 acs benchmark run \
   --db ./.oacs-memoryarena/oacs.db \
-  --mode oacs_memory_tool_loop \
+  --mode oacs_memory_call_loop \
   --provider lmstudio \
   --model google/gemma-4-e2b \
   --json
@@ -107,7 +107,7 @@ acs benchmark run \
 - `baseline_no_memory`: только текущая задача.
 - `baseline_full_context`: сырой предыдущий контекст плюс текущая задача.
 - `oacs_memory_loop`: scoped OACS memories плюс Context Capsule prompt.
-- `oacs_memory_tool_loop`: scoped OACS memories плюс deterministic MCP-like
+- `oacs_memory_call_loop`: scoped OACS memories плюс deterministic MCP-like
   memory operations, которые извлекают participant/day/slot evidence до prompt.
 
 Оценка tokens использует детерминированную character-based approximation, а не
@@ -118,24 +118,24 @@ tokenizer конкретной модели.
 | `baseline_no_memory` | 1.0 | 0/5 | 711 | 2522 | 3233 | 1.5466 |
 | `baseline_full_context` | 4.2 | 4/5 | 5355 | 2405 | 7760 | 2.7062 |
 | `oacs_memory_loop` | 1.8 | 1/5 | 6431 | 1989 | 8420 | 1.0689 |
-| `oacs_memory_tool_loop` | 5.0 | 5/5 | 2536 | 2743 | 5279 | 4.7357 |
+| `oacs_memory_call_loop` | 5.0 | 5/5 | 2536 | 2743 | 5279 | 4.7357 |
 
 Вывод:
 
 - Базовый `oacs_memory_loop` недостаточен: он всё ещё похож на broad context
   injection и здесь проигрывает raw full context.
-- `oacs_memory_tool_loop` соответствует целевой форме OACS: сначала
+- `oacs_memory_call_loop` соответствует целевой форме OACS: сначала
   deterministic memory operations, затем компактный evidence prompt.
-- `oacs_memory_tool_loop` выигрывает у raw full context на этой выборке: +0.8
+- `oacs_memory_call_loop` выигрывает у raw full context на этой выборке: +0.8
   среднего score, +1 exact success и -2481 estimated total tokens.
-- Это поддерживает roadmap: OACS должен быть тонким memory-tool layer под
+- Это поддерживает roadmap: OACS должен быть тонким memory-call layer под
   агентами, а не только memory database или prompt stuffing helper.
 
 ### Public Deterministic Harness: 20 задач
 
 Тот же public subset MemoryArena был дополнительно прогнан через deterministic
 benchmark provider на 20 memory-supported задачах. Это изолирует OACS
-memory-tool layer от model variance и проверяет, достаёт ли adapter правильное
+memory-call layer от model variance и проверяет, достаёт ли adapter правильное
 evidence для класса задач, который OACS уже должен решать.
 
 | Режим | Avg score | Exact success | Prompt tokens | Output tokens | Total tokens | Score / 1k tokens |
@@ -143,11 +143,11 @@ evidence для класса задач, который OACS уже должен
 | `baseline_no_memory` | 1.0 | 0/20 | 3824 | 3924 | 7748 | 2.5813 |
 | `baseline_full_context` | 5.0 | 20/20 | 32805 | 32905 | 65710 | 1.5218 |
 | `oacs_memory_loop` | 5.0 | 20/20 | 3824 | 30165 | 33989 | 2.9421 |
-| `oacs_memory_tool_loop` | 5.0 | 20/20 | 13263 | 3075 | 16338 | 6.1207 |
+| `oacs_memory_call_loop` | 5.0 | 20/20 | 13263 | 3075 | 16338 | 6.1207 |
 
 Вывод:
 
-- На поддержанном классе memory-reuse задач `oacs_memory_tool_loop` сохраняет
+- На поддержанном классе memory-reuse задач `oacs_memory_call_loop` сохраняет
   полную точность и использует заметно меньше tokens, чем raw full context.
 - MemoryArena questions, где нужно решать новые constraints через внешнюю
   environment, пока честно не заявлены как решённые этим adapter; это будущий

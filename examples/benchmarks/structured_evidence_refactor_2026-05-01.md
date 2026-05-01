@@ -5,10 +5,10 @@
 Status: OACS v0.1 draft reference implementation moving toward v0.2.
 Date: 2026-05-01.
 
-The benchmark-specific parsing gap has been closed in the core memory-tool loop.
-`oacs/loop/memory_tools.py` no longer parses MemoryArena or AMA-Bench text
+The benchmark-specific parsing gap has been closed in the core memory-call loop.
+`oacs/loop/memory_calls.py` no longer parses MemoryArena or AMA-Bench text
 markers. Public adapters and synthetic tasks now write typed evidence into
-`MemoryRecord.content.evidence`, and the generic memory-tool loop consumes only
+`MemoryRecord.content.evidence`, and the generic memory-call loop consumes only
 that structured shape.
 
 ### Deterministic Verification
@@ -19,16 +19,16 @@ Tasks per suite: 5.
 | --- | --- | ---: | ---: | ---: |
 | Synthetic memory-critical | `baseline_full_context` | 4/5 | 0 | 747 |
 | Synthetic memory-critical | `oacs_memory_loop` | 5/5 | 0 | 214 |
-| Synthetic memory-critical | `oacs_memory_tool_loop` | 5/5 | 5 | 1,097 |
+| Synthetic memory-critical | `oacs_memory_call_loop` | 5/5 | 5 | 1,097 |
 | MemoryArena group travel | `baseline_full_context` | 5/5 | 0 | 11,577 |
 | MemoryArena group travel | `oacs_memory_loop` | 5/5 | 0 | 5,893 |
-| MemoryArena group travel | `oacs_memory_tool_loop` | 5/5 | 29 | 3,493 |
+| MemoryArena group travel | `oacs_memory_call_loop` | 5/5 | 29 | 3,493 |
 | MemoryArena progressive search | `baseline_full_context` | 5/5 | 0 | 50,873 |
 | MemoryArena progressive search | `oacs_memory_loop` | 5/5 | 0 | 24,382 |
-| MemoryArena progressive search | `oacs_memory_tool_loop` | 5/5 | 5 | 8,071 |
+| MemoryArena progressive search | `oacs_memory_call_loop` | 5/5 | 5 | 8,071 |
 | AMA-Bench open-ended QA | `baseline_full_context` | 5/5 | 0 | 18,999 |
 | AMA-Bench open-ended QA | `oacs_memory_loop` | 5/5 | 0 | 9,326 |
-| AMA-Bench open-ended QA | `oacs_memory_tool_loop` | 5/5 | 5 | 2,282 |
+| AMA-Bench open-ended QA | `oacs_memory_call_loop` | 5/5 | 5 | 2,282 |
 
 ### LM Studio Spot Check
 
@@ -39,10 +39,10 @@ Suite: synthetic memory-critical, 5 tasks.
 | --- | ---: | ---: | ---: | ---: | ---: |
 | `baseline_full_context` | 4/5 | 4.8 | 0 | 1,634 | 41.9s |
 | `oacs_memory_loop` | 5/5 | 5.0 | 0 | 2,854 | 80.3s |
-| `oacs_memory_tool_loop` | 5/5 | 5.0 | 5 | 3,705 | 79.8s |
+| `oacs_memory_call_loop` | 5/5 | 5.0 | 5 | 3,705 | 79.8s |
 
-This directly fixes the prior `oacs_memory_tool_loop` synthetic failure. The
-tool loop is now generic over structured evidence, not benchmark marker strings.
+The memory-call loop is generic over structured evidence, not benchmark marker
+strings.
 
 ### Remaining Gap
 
@@ -65,10 +65,10 @@ that the dogfood memory content was encrypted at rest.
 Статус: reference implementation OACS v0.1 draft движется к v0.2.
 Дата: 2026-05-01.
 
-Gap с benchmark-specific parsing в core memory-tool loop закрыт.
-`oacs/loop/memory_tools.py` больше не парсит текстовые markers MemoryArena или
+Gap с benchmark-specific parsing в core memory-call loop закрыт.
+`oacs/loop/memory_calls.py` больше не парсит текстовые markers MemoryArena или
 AMA-Bench. Public adapters и synthetic tasks теперь пишут typed evidence в
-`MemoryRecord.content.evidence`, а generic memory-tool loop потребляет только
+`MemoryRecord.content.evidence`, а generic memory-call loop потребляет только
 эту структурированную форму.
 
 ### Deterministic Verification
@@ -79,16 +79,16 @@ AMA-Bench. Public adapters и synthetic tasks теперь пишут typed evid
 | --- | --- | ---: | ---: | ---: |
 | Synthetic memory-critical | `baseline_full_context` | 4/5 | 0 | 747 |
 | Synthetic memory-critical | `oacs_memory_loop` | 5/5 | 0 | 214 |
-| Synthetic memory-critical | `oacs_memory_tool_loop` | 5/5 | 5 | 1,097 |
+| Synthetic memory-critical | `oacs_memory_call_loop` | 5/5 | 5 | 1,097 |
 | MemoryArena group travel | `baseline_full_context` | 5/5 | 0 | 11,577 |
 | MemoryArena group travel | `oacs_memory_loop` | 5/5 | 0 | 5,893 |
-| MemoryArena group travel | `oacs_memory_tool_loop` | 5/5 | 29 | 3,493 |
+| MemoryArena group travel | `oacs_memory_call_loop` | 5/5 | 29 | 3,493 |
 | MemoryArena progressive search | `baseline_full_context` | 5/5 | 0 | 50,873 |
 | MemoryArena progressive search | `oacs_memory_loop` | 5/5 | 0 | 24,382 |
-| MemoryArena progressive search | `oacs_memory_tool_loop` | 5/5 | 5 | 8,071 |
+| MemoryArena progressive search | `oacs_memory_call_loop` | 5/5 | 5 | 8,071 |
 | AMA-Bench open-ended QA | `baseline_full_context` | 5/5 | 0 | 18,999 |
 | AMA-Bench open-ended QA | `oacs_memory_loop` | 5/5 | 0 | 9,326 |
-| AMA-Bench open-ended QA | `oacs_memory_tool_loop` | 5/5 | 5 | 2,282 |
+| AMA-Bench open-ended QA | `oacs_memory_call_loop` | 5/5 | 5 | 2,282 |
 
 ### LM Studio Spot Check
 
@@ -99,10 +99,9 @@ Suite: synthetic memory-critical, 5 задач.
 | --- | ---: | ---: | ---: | ---: | ---: |
 | `baseline_full_context` | 4/5 | 4.8 | 0 | 1,634 | 41.9s |
 | `oacs_memory_loop` | 5/5 | 5.0 | 0 | 2,854 | 80.3s |
-| `oacs_memory_tool_loop` | 5/5 | 5.0 | 5 | 3,705 | 79.8s |
+| `oacs_memory_call_loop` | 5/5 | 5.0 | 5 | 3,705 | 79.8s |
 
-Это исправляет прежний провал synthetic suite в `oacs_memory_tool_loop`.
-Tool loop теперь generic over structured evidence, а не benchmark marker
+Memory-call loop теперь generic over structured evidence, а не benchmark marker
 strings.
 
 ### Remaining Gap

@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass
+from typing import Literal
 
 from oacs.memory.models import MemoryRecord
 
@@ -20,7 +21,7 @@ DAY_WORDS = {"first": 1, "second": 2, "third": 3, "1": 1, "2": 2, "3": 3}
 
 
 @dataclass(frozen=True)
-class MemoryToolEvidence:
+class MemoryCallEvidence:
     memory_id: str
     participant: str | None
     day: int | None
@@ -31,45 +32,68 @@ class MemoryToolEvidence:
 
 
 @dataclass(frozen=True)
-class MemoryToolLoopResult:
+class MemoryCall:
+    id: str
+    op: str
+    status: Literal["completed", "denied", "failed"]
+    arguments: dict[str, object]
+    result: dict[str, object]
+
+
+@dataclass(frozen=True)
+class MemoryCallLoopResult:
     intent: dict[str, object]
-    operations: list[dict[str, object]]
-    evidence: list[MemoryToolEvidence]
+    memory_calls: list[MemoryCall]
+    evidence: list[MemoryCallEvidence]
     prompt: str
     answered_deterministically: bool = False
     answer: str | None = None
 
 
-class DeterministicMemoryToolLoop:
-    """MCP-like deterministic memory operations before an LLM call."""
+class DeterministicMemoryCallLoop:
+    """Deterministic OACS memory_calls before an LLM call."""
 
-    def build_prompt(self, task: str, memories: list[MemoryRecord]) -> MemoryToolLoopResult:
+    def build_prompt(self, task: str, memories: list[MemoryRecord]) -> MemoryCallLoopResult:
         intent = parse_memory_intent(task)
-        operations: list[dict[str, object]] = [
-            {"tool": "intent.classify", "result": intent},
-            {
-                "tool": "memory.query",
-                "arguments": {
+        memory_calls: list[MemoryCall] = [
+            MemoryCall(
+                id="mcall_1",
+                op="memory.query",
+                status="completed",
+                arguments={
+                    "query": task,
                     "slots": intent["slots"],
                     "days": intent["days"],
                     "referenced_participants": intent["referenced_participants"],
                 },
-                "result_count": len(memories),
-            },
+                result={
+                    "memory_ids": [memory.id for memory in memories],
+                    "count": len(memories),
+                },
+            )
         ]
         evidence = extract_evidence(task, memories, intent)
-        operations.append(
-            {
-                "tool": "memory.extract_structured",
-                "result_count": len(evidence),
-                "evidence_values": [item.value for item in evidence],
-            }
+        memory_calls.append(
+            MemoryCall(
+                id="mcall_2",
+                op="memory.extract_evidence",
+                status="completed",
+                arguments={
+                    "memory_ids": [memory.id for memory in memories],
+                    "slots": intent["slots"],
+                    "days": intent["days"],
+                },
+                result={
+                    "count": len(evidence),
+                    "evidence": [item_to_dict(item) for item in evidence],
+                },
+            )
         )
         deterministic_answer = _deterministic_answer(task, evidence)
-        prompt = build_tool_evidence_prompt(task, intent, evidence)
-        return MemoryToolLoopResult(
+        prompt = build_memory_call_prompt(task, intent, memory_calls, evidence)
+        return MemoryCallLoopResult(
             intent=intent,
-            operations=operations,
+            memory_calls=memory_calls,
             evidence=evidence,
             prompt=prompt,
             answered_deterministically=deterministic_answer is not None,
@@ -112,7 +136,7 @@ def parse_memory_intent(task: str) -> dict[str, object]:
 
 def extract_evidence(
     task: str, memories: list[MemoryRecord], intent: dict[str, object]
-) -> list[MemoryToolEvidence]:
+) -> list[MemoryCallEvidence]:
     requested_slots = set(_strings(intent.get("slots"))) or set(SLOTS)
     raw_days = intent.get("days", [])
     requested_days = (
@@ -122,8 +146,8 @@ def extract_evidence(
     referenced = (
         {str(name) for name in raw_referenced} if isinstance(raw_referenced, list) else set()
     )
-    focused: list[MemoryToolEvidence] = []
-    broad: list[MemoryToolEvidence] = []
+    focused: list[MemoryCallEvidence] = []
+    broad: list[MemoryCallEvidence] = []
     for memory in memories:
         for evidence in _structured_evidence(memory, requested_slots, referenced, requested_days):
             if _is_focused(
@@ -140,8 +164,11 @@ def extract_evidence(
     return _focus_generic_evidence(_dedupe_evidence(focused or broad))
 
 
-def build_tool_evidence_prompt(
-    task: str, intent: dict[str, object], evidence: list[MemoryToolEvidence]
+def build_memory_call_prompt(
+    task: str,
+    intent: dict[str, object],
+    memory_calls: list[MemoryCall],
+    evidence: list[MemoryCallEvidence],
 ) -> str:
     evidence_lines = [
         (
@@ -152,11 +179,13 @@ def build_tool_evidence_prompt(
     ]
     return "\n".join(
         [
-            "You are an agent using OACS memory tools.",
-            "The deterministic memory layer already queried and read scoped memory.",
+            "You are an agent operating over OACS memory_calls.",
+            "The deterministic memory layer already executed the memory_calls below.",
             "Use only the evidence values below when they answer the task.",
             "Preserve exact names and strings from evidence.",
             f"Intent: {json.dumps(intent, ensure_ascii=False, sort_keys=True)}",
+            "Memory calls:",
+            "\n".join(_memory_call_prompt_line(call) for call in memory_calls),
             "Evidence:",
             "\n".join(evidence_lines) or "- none",
             "Task:",
@@ -172,8 +201,8 @@ def _structured_evidence(
     requested_slots: set[str],
     referenced: set[str],
     requested_days: set[int],
-) -> list[MemoryToolEvidence]:
-    result: list[MemoryToolEvidence] = []
+) -> list[MemoryCallEvidence]:
+    result: list[MemoryCallEvidence] = []
     for item in memory.content.evidence:
         slot = item.slot or "evidence"
         if slot not in requested_slots and "evidence" not in requested_slots:
@@ -181,7 +210,7 @@ def _structured_evidence(
         if not _specific_value(item.value):
             continue
         result.append(
-            MemoryToolEvidence(
+            MemoryCallEvidence(
                 memory_id=memory.id,
                 participant=item.participant,
                 day=item.day,
@@ -235,9 +264,9 @@ def _reason(
     return ",".join(bits)
 
 
-def _dedupe_evidence(items: list[MemoryToolEvidence], limit: int = 12) -> list[MemoryToolEvidence]:
+def _dedupe_evidence(items: list[MemoryCallEvidence], limit: int = 12) -> list[MemoryCallEvidence]:
     seen: set[tuple[str, str, int | None, str | None, int | None]] = set()
-    result: list[MemoryToolEvidence] = []
+    result: list[MemoryCallEvidence] = []
     for item in items:
         key = (item.value, item.slot, item.day, item.participant, item.order)
         if key in seen:
@@ -249,7 +278,7 @@ def _dedupe_evidence(items: list[MemoryToolEvidence], limit: int = 12) -> list[M
     return result
 
 
-def _focus_generic_evidence(items: list[MemoryToolEvidence]) -> list[MemoryToolEvidence]:
+def _focus_generic_evidence(items: list[MemoryCallEvidence]) -> list[MemoryCallEvidence]:
     generic = [item for item in items if item.slot == "evidence"]
     structured = [item for item in items if item.slot != "evidence"]
     if not generic:
@@ -261,7 +290,7 @@ def _focus_generic_evidence(items: list[MemoryToolEvidence]) -> list[MemoryToolE
     return structured + generic[:3]
 
 
-def _deterministic_answer(task: str, evidence: list[MemoryToolEvidence]) -> str | None:
+def _deterministic_answer(task: str, evidence: list[MemoryCallEvidence]) -> str | None:
     if not evidence:
         return None
     values = ", ".join(dict.fromkeys(item.value for item in evidence))
@@ -278,3 +307,31 @@ def _strings(value: object) -> list[str]:
     if isinstance(value, list):
         return [str(item) for item in value]
     return []
+
+
+def item_to_dict(item: MemoryCallEvidence) -> dict[str, object]:
+    return {
+        "memory_id": item.memory_id,
+        "participant": item.participant,
+        "day": item.day,
+        "slot": item.slot,
+        "value": item.value,
+        "reason": item.reason,
+        "order": item.order,
+    }
+
+
+def memory_call_to_dict(call: MemoryCall) -> dict[str, object]:
+    return {
+        "id": call.id,
+        "op": call.op,
+        "status": call.status,
+        "arguments": call.arguments,
+        "result": call.result,
+    }
+
+
+def _memory_call_prompt_line(call: MemoryCall) -> str:
+    count = call.result.get("count")
+    count_text = f" count={count}" if count is not None else ""
+    return f"- {call.id} op={call.op} status={call.status}{count_text}"

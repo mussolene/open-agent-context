@@ -21,7 +21,7 @@ deprecated -> superseded -> forgotten.
 
 `MemoryContent.evidence` is the reference implementation path for typed
 evidence attached to encrypted memory. It keeps adapter-specific parsing at the
-boundary and lets the generic memory-tool loop consume a stable shape:
+boundary and lets the generic memory-call loop consume a stable shape:
 
 - `evidence_kind`
 - `claim`
@@ -32,7 +32,7 @@ boundary and lets the generic memory-tool loop consume a stable shape:
 - optional dimensions such as `participant`, `day`, `slot`, `order`, and
   `trajectory_step`
 
-Core memory tools must not depend on benchmark-specific text markers. Importers
+Core memory_calls must not depend on benchmark-specific text markers. Importers
 or adapters may parse external formats, but they must write structured evidence
 before generic retrieval and context building use it.
 
@@ -57,7 +57,7 @@ deprecated -> superseded -> forgotten.
 
 `MemoryContent.evidence` — путь reference implementation для typed evidence,
 привязанного к encrypted memory. Он оставляет adapter-specific parsing на
-границе и даёт generic memory-tool loop стабильную форму:
+границе и даёт generic memory-call loop стабильную форму:
 
 - `evidence_kind`
 - `claim`
@@ -68,6 +68,6 @@ deprecated -> superseded -> forgotten.
 - optional dimensions: `participant`, `day`, `slot`, `order`,
   `trajectory_step`
 
-Core memory tools не должны зависеть от benchmark-specific text markers.
+Core memory_calls не должны зависеть от benchmark-specific text markers.
 Importers или adapters могут парсить внешние форматы, но перед generic retrieval
 и context building они должны записывать structured evidence.

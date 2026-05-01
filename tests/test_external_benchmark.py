@@ -65,7 +65,7 @@ def test_memoryarena_importer_filters_expected_fact_by_day_and_slot():
     assert task.expected_facts == ["Correct Lunch, Testville"]
 
 
-def test_memory_tool_loop_extracts_exact_scoped_evidence(svc):
+def test_memory_call_loop_extracts_exact_scoped_evidence(svc):
     row = {
         "id": 9,
         "base_person": {"name": "Jennifer", "daily_plans": []},
@@ -87,16 +87,20 @@ def test_memory_tool_loop_extracts_exact_scoped_evidence(svc):
     task = MemoryArenaImporter().from_rows([row], 1)[0]
 
     run = MemoryCriticalBenchmark(svc.memory, svc.loop).run(
-        [task], "oacs_memory_tool_loop", None
+        [task], "oacs_memory_call_loop", None
     )
     result = run.task_results[0]
 
-    assert run.mode == "oacs_memory_tool_loop"
+    assert run.mode == "oacs_memory_call_loop"
     assert result["exact_success"] is True
     assert result["used_required_fact"] is True
     assert "Correct Lunch, Testville" in str(result["answer"])
     assert "Wrong Day Cafe, Testville" not in str(result["answer"])
-    assert result["tool_operations"] == 3
+    assert result["memory_calls_count"] == 2
+    assert [call["op"] for call in result["memory_calls"]] == [
+        "memory.query",
+        "memory.extract_evidence",
+    ]
     assert result["evidence_items"] == 1
     assert result["prompt_tokens_estimated"] > len(task.user_prompt) // 4
     assert run.summary["tokens_estimated"] == result["tokens_estimated"]
@@ -198,7 +202,7 @@ def test_memoryarena_progressive_search_accepts_name_aliases():
     assert "John Daniel delos Santos" in task.expected_facts
 
 
-def test_memory_tool_loop_extracts_progressive_search_evidence(svc):
+def test_memory_call_loop_extracts_progressive_search_evidence(svc):
     row = {
         "id": 14,
         "questions": ["Who owns a business?", "Who owns a business and graduated in Abuja?"],
@@ -210,7 +214,7 @@ def test_memory_tool_loop_extracts_progressive_search_evidence(svc):
     task = MemoryArenaImporter().from_rows([row], 1, subset="progressive_search")[0]
 
     run = MemoryCriticalBenchmark(svc.memory, svc.loop).run(
-        [task], "oacs_memory_tool_loop", None
+        [task], "oacs_memory_call_loop", None
     )
     result = run.task_results[0]
 
@@ -221,7 +225,7 @@ def test_memory_tool_loop_extracts_progressive_search_evidence(svc):
     assert result["prompt_tokens_estimated"] > len(task.user_prompt) // 4
 
 
-def test_memory_tool_loop_focuses_progressive_search_on_latest_evidence(svc):
+def test_memory_call_loop_focuses_progressive_search_on_latest_evidence(svc):
     row = {
         "id": 15,
         "questions": [
@@ -238,7 +242,7 @@ def test_memory_tool_loop_focuses_progressive_search_on_latest_evidence(svc):
     task = MemoryArenaImporter().from_rows([row], 1, subset="progressive_search")[0]
 
     run = MemoryCriticalBenchmark(svc.memory, svc.loop).run(
-        [task], "oacs_memory_tool_loop", None
+        [task], "oacs_memory_call_loop", None
     )
     result = run.task_results[0]
 
@@ -276,7 +280,7 @@ def test_ama_bench_importer_maps_trajectory_qa_to_oacs_task():
     assert task.setup_memories[1]["memory_type"] == "episode"
 
 
-def test_memory_tool_loop_extracts_ama_evidence(svc):
+def test_memory_call_loop_extracts_ama_evidence(svc):
     row = {
         "episode_id": 43,
         "task": "Grid puzzle",
@@ -297,7 +301,7 @@ def test_memory_tool_loop_extracts_ama_evidence(svc):
     task = AmaBenchImporter().from_rows([row], 1)[0]
 
     run = MemoryCriticalBenchmark(svc.memory, svc.loop).run(
-        [task], "oacs_memory_tool_loop", None
+        [task], "oacs_memory_call_loop", None
     )
     result = run.task_results[0]
 

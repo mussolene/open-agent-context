@@ -57,6 +57,7 @@ acs benchmark generate --suite memory_critical --count 20 --json
 
 acs benchmark run --mode baseline_no_memory --model gemma-4-e2b --json
 acs benchmark run --mode oacs_memory_loop --model gemma-4-e2b --json
+acs benchmark run --mode oacs_memory_call_loop --model gemma-4-e2b --json
 acs benchmark compare --json
 ```
 
@@ -70,8 +71,10 @@ Expected shape:
 }
 ```
 
-Exact scores can vary as the benchmark evolves, but `oacs_memory_loop` should
-outperform `baseline_no_memory` on memory-critical tasks.
+Exact scores can vary as the benchmark evolves, but `oacs_memory_loop` and
+`oacs_memory_call_loop` should outperform `baseline_no_memory` on
+memory-critical tasks. `oacs_memory_call_loop` also returns a machine-readable
+`memory_calls` trace.
 
 ### Quickstart: encryption check
 
@@ -179,6 +182,7 @@ commit, retrieval, сборка Context Capsule и объяснение, поч�
 acs benchmark generate --suite memory_critical --count 20 --json
 acs benchmark run --mode baseline_no_memory --model gemma-4-e2b --json
 acs benchmark run --mode oacs_memory_loop --model gemma-4-e2b --json
+acs benchmark run --mode oacs_memory_call_loop --model gemma-4-e2b --json
 acs benchmark compare --json
 ```
 
@@ -192,9 +196,10 @@ acs benchmark compare --json
 }
 ```
 
-Точные числа могут меняться по мере развития benchmark, но
-`oacs_memory_loop` должен выигрывать у `baseline_no_memory` на memory-critical
-задачах.
+Точные числа могут меняться по мере развития benchmark, но `oacs_memory_loop` и
+`oacs_memory_call_loop` должны выигрывать у `baseline_no_memory` на
+memory-critical задачах. `oacs_memory_call_loop` также возвращает
+machine-readable trace `memory_calls`.
 
 ### Быстрый старт: проверка шифрования
 

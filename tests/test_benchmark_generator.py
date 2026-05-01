@@ -15,11 +15,23 @@ def test_benchmark_oacs_beats_baseline(svc):
     assert oacs_run.summary["score_per_1k_tokens"] > 0
 
 
-def test_synthetic_tasks_expose_structured_evidence_to_memory_tool_loop(svc):
+def test_synthetic_tasks_expose_structured_evidence_to_memory_call_loop(svc):
     tasks = SyntheticTaskGenerator().generate("memory_critical", 3)
     run = MemoryCriticalBenchmark(svc.memory, svc.loop).run(
-        tasks, "oacs_memory_tool_loop", None
+        tasks, "oacs_memory_call_loop", None
     )
 
     assert run.summary["successes"] == 3
     assert run.summary["evidence_items"] == 3
+    assert run.summary["memory_calls_count"] == 6
+
+
+def test_unknown_benchmark_mode_is_rejected(svc):
+    tasks = SyntheticTaskGenerator().generate("memory_critical", 1)
+
+    try:
+        MemoryCriticalBenchmark(svc.memory, svc.loop).run(tasks, "not_a_mode", None)
+    except ValueError as exc:
+        assert "unsupported benchmark mode" in str(exc)
+    else:
+        raise AssertionError("expected unsupported benchmark mode to fail")

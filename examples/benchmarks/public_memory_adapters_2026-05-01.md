@@ -20,9 +20,9 @@ OACS memory tasks.
 | `baseline_no_memory` | 1.0 | 0/5 | 1,036 | 1,061 | 2,097 | 2.3844 |
 | `baseline_full_context` | 5.0 | 5/5 | 25,424 | 25,449 | 50,873 | 0.4914 |
 | `oacs_memory_loop` | 5.0 | 5/5 | 1,036 | 23,346 | 24,382 | 1.0253 |
-| `oacs_memory_tool_loop` | 5.0 | 5/5 | 4,959 | 3,207 | 8,166 | 3.0615 |
+| `oacs_memory_call_loop` | 5.0 | 5/5 | 4,959 | 3,207 | 8,166 | 3.0615 |
 
-Result: `oacs_memory_tool_loop` preserved 5/5 success while using 83.9% fewer
+Result: `oacs_memory_call_loop` preserved 5/5 success while using 83.9% fewer
 estimated total tokens than raw full context.
 
 ### AMA-Bench `open_end_qa_set`
@@ -35,9 +35,9 @@ trajectory-memory tasks.
 | `baseline_no_memory` | 1.0 | 0/5 | 397 | 422 | 819 | 6.1050 |
 | `baseline_full_context` | 5.0 | 5/5 | 9,487 | 9,512 | 18,999 | 1.3159 |
 | `oacs_memory_loop` | 5.0 | 5/5 | 397 | 8,929 | 9,326 | 2.6807 |
-| `oacs_memory_tool_loop` | 5.0 | 5/5 | 1,754 | 629 | 2,383 | 10.4910 |
+| `oacs_memory_call_loop` | 5.0 | 5/5 | 1,754 | 629 | 2,383 | 10.4910 |
 
-Result: `oacs_memory_tool_loop` preserved 5/5 success while using 87.5% fewer
+Result: `oacs_memory_call_loop` preserved 5/5 success while using 87.5% fewer
 estimated total tokens than raw full context.
 
 ## RU
@@ -60,9 +60,9 @@ MemoryArena или AMA-Bench harnesses.
 | `baseline_no_memory` | 1.0 | 0/5 | 1,036 | 1,061 | 2,097 | 2.3844 |
 | `baseline_full_context` | 5.0 | 5/5 | 25,424 | 25,449 | 50,873 | 0.4914 |
 | `oacs_memory_loop` | 5.0 | 5/5 | 1,036 | 23,346 | 24,382 | 1.0253 |
-| `oacs_memory_tool_loop` | 5.0 | 5/5 | 4,959 | 3,207 | 8,166 | 3.0615 |
+| `oacs_memory_call_loop` | 5.0 | 5/5 | 4,959 | 3,207 | 8,166 | 3.0615 |
 
-Вывод: `oacs_memory_tool_loop` сохранил 5/5 success и использовал на 83.9%
+Вывод: `oacs_memory_call_loop` сохранил 5/5 success и использовал на 83.9%
 меньше estimated total tokens, чем raw full context.
 
 ### AMA-Bench `open_end_qa_set`
@@ -75,7 +75,7 @@ MemoryArena или AMA-Bench harnesses.
 | `baseline_no_memory` | 1.0 | 0/5 | 397 | 422 | 819 | 6.1050 |
 | `baseline_full_context` | 5.0 | 5/5 | 9,487 | 9,512 | 18,999 | 1.3159 |
 | `oacs_memory_loop` | 5.0 | 5/5 | 397 | 8,929 | 9,326 | 2.6807 |
-| `oacs_memory_tool_loop` | 5.0 | 5/5 | 1,754 | 629 | 2,383 | 10.4910 |
+| `oacs_memory_call_loop` | 5.0 | 5/5 | 1,754 | 629 | 2,383 | 10.4910 |
 
-Вывод: `oacs_memory_tool_loop` сохранил 5/5 success и использовал на 87.5%
+Вывод: `oacs_memory_call_loop` сохранил 5/5 success и использовал на 87.5%
 меньше estimated total tokens, чем raw full context.

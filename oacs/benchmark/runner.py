@@ -7,8 +7,15 @@ from oacs.benchmark.scorer import score_answer
 from oacs.llm.lmstudio import LMStudioClient
 from oacs.llm.prompts import BASELINE_SYSTEM, OACS_SYSTEM, build_oacs_prompt
 from oacs.loop.engine import MemoryLoopEngine
-from oacs.loop.memory_tools import DeterministicMemoryToolLoop
+from oacs.loop.memory_calls import DeterministicMemoryCallLoop, memory_call_to_dict
 from oacs.memory.service import MemoryService
+
+BENCHMARK_MODES = {
+    "baseline_no_memory",
+    "baseline_full_context",
+    "oacs_memory_loop",
+    "oacs_memory_call_loop",
+}
 
 
 class MemoryCriticalBenchmark:
@@ -24,11 +31,14 @@ class MemoryCriticalBenchmark:
         model: str | None = None,
         provider: str = "deterministic",
     ) -> BenchmarkRun:
+        if mode not in BENCHMARK_MODES:
+            supported = ", ".join(sorted(BENCHMARK_MODES))
+            raise ValueError(f"unsupported benchmark mode: {mode}; supported: {supported}")
         results: list[dict[str, object]] = []
         for task in tasks:
             scope = _task_scope(task)
             prompt_tokens = 0
-            tool_metrics: dict[str, object] = {}
+            memory_metrics: dict[str, object] = {}
             if mode == "oacs_memory_loop":
                 self._seed_memories(task, actor_id)
                 if provider == "lmstudio":
@@ -37,9 +47,9 @@ class MemoryCriticalBenchmark:
                     loop_result = self.loop.run(task.user_prompt, actor_id, scope=scope)
                     answer = loop_result.final_answer
                     prompt_tokens = estimate_tokens(task.user_prompt)
-            elif mode == "oacs_memory_tool_loop":
+            elif mode == "oacs_memory_call_loop":
                 self._seed_memories(task, actor_id)
-                answer, prompt_tokens, tool_metrics = self._run_memory_tool_loop(
+                answer, prompt_tokens, memory_metrics = self._run_memory_call_loop(
                     task, actor_id, model, scope, provider
                 )
             elif mode == "baseline_full_context":
@@ -67,7 +77,7 @@ class MemoryCriticalBenchmark:
                     "prompt_tokens_estimated": prompt_tokens,
                     "output_tokens_estimated": output_tokens,
                     "tokens_estimated": prompt_tokens + output_tokens,
-                    **tool_metrics,
+                    **memory_metrics,
                 }
             )
             results.append(result)
@@ -90,7 +100,9 @@ class MemoryCriticalBenchmark:
                 ),
                 "tokens_estimated": total_tokens,
                 "score_per_1k_tokens": round((avg * len(results)) / max(1, total_tokens) * 1000, 4),
-                "tool_operations": sum(int(str(r.get("tool_operations", 0))) for r in results),
+                "memory_calls_count": sum(
+                    int(str(r.get("memory_calls_count", 0))) for r in results
+                ),
                 "evidence_items": sum(int(str(r.get("evidence_items", 0))) for r in results),
             },
         )
@@ -128,7 +140,7 @@ class MemoryCriticalBenchmark:
         prompt = build_oacs_prompt(task.user_prompt, capsule, memories)
         return _lmstudio_client(task, model).chat(prompt, OACS_SYSTEM), estimate_tokens(prompt)
 
-    def _run_memory_tool_loop(
+    def _run_memory_call_loop(
         self,
         task: BenchmarkTask,
         actor_id: str | None,
@@ -137,21 +149,22 @@ class MemoryCriticalBenchmark:
         provider: str,
     ) -> tuple[str, int, dict[str, object]]:
         memories = self.memory.query(task.user_prompt, actor_id, scope)
-        tool_result = DeterministicMemoryToolLoop().build_prompt(task.user_prompt, memories)
-        prompt_tokens = estimate_tokens(tool_result.prompt)
+        call_result = DeterministicMemoryCallLoop().build_prompt(task.user_prompt, memories)
+        prompt_tokens = estimate_tokens(call_result.prompt)
         if provider == "lmstudio":
-            model_answer = _lmstudio_client(task, model).chat(tool_result.prompt, OACS_SYSTEM)
-            if tool_result.answer:
-                answer = f"OACS tool answer: {tool_result.answer}\nModel response: {model_answer}"
+            model_answer = _lmstudio_client(task, model).chat(call_result.prompt, OACS_SYSTEM)
+            if call_result.answer:
+                answer = f"OACS memory answer: {call_result.answer}\nModel response: {model_answer}"
             else:
                 answer = model_answer
         else:
-            answer = tool_result.answer or tool_result.prompt
+            answer = call_result.answer or call_result.prompt
         return answer, prompt_tokens, {
-            "tool_operations": len(tool_result.operations),
-            "evidence_items": len(tool_result.evidence),
-            "evidence_values": [item.value for item in tool_result.evidence],
-            "answered_deterministically": tool_result.answered_deterministically,
+            "memory_calls": [memory_call_to_dict(call) for call in call_result.memory_calls],
+            "memory_calls_count": len(call_result.memory_calls),
+            "evidence_items": len(call_result.evidence),
+            "evidence_values": [item.value for item in call_result.evidence],
+            "answered_deterministically": call_result.answered_deterministically,
         }
 
 
