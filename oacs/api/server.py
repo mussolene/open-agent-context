@@ -11,7 +11,7 @@ from oacs.core.errors import AccessDenied, NotFound, OacsError
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="OACS API", version="0.1.0")
+    app = FastAPI(title="OACS API", version="0.1.1")
 
     @app.get("/health")
     def health() -> dict[str, str]:

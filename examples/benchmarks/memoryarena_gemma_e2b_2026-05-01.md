@@ -40,7 +40,8 @@ Reproduction:
 
 ```bash
 acs init --db ./.oacs-memoryarena/oacs.db --json
-acs key init --db ./.oacs-memoryarena/oacs.db --passphrase "local-passphrase" --json
+ACS_PASSPHRASE="<choose-a-local-dev-passphrase>"
+acs key init --db ./.oacs-memoryarena/oacs.db --passphrase "$ACS_PASSPHRASE" --json
 acs benchmark import-memoryarena \
   --db ./.oacs-memoryarena/oacs.db \
   --subset group_travel_planner \

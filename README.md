@@ -28,7 +28,8 @@ source .venv/bin/activate
 pip install -e ".[dev,crypto]"
 
 acs init --db ./.oacs/oacs.db
-acs key init --passphrase "change-me-local-passphrase"
+ACS_PASSPHRASE="<choose-a-local-dev-passphrase>"
+acs key init --passphrase "$ACS_PASSPHRASE"
 acs actor create --type human --name "User" --json
 acs actor create --type agent --name "GemmaLocalAgent" --json
 
@@ -150,7 +151,8 @@ source .venv/bin/activate
 pip install -e ".[dev,crypto]"
 
 acs init --db ./.oacs/oacs.db
-acs key init --passphrase "change-me-local-passphrase"
+ACS_PASSPHRASE="<choose-a-local-dev-passphrase>"
+acs key init --passphrase "$ACS_PASSPHRASE"
 acs actor create --type human --name "User" --json
 acs actor create --type agent --name "GemmaLocalAgent" --json
 
