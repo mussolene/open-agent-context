@@ -24,7 +24,16 @@ open-ended QA trajectory rows. Scoring checks required facts, forbidden facts,
 superseded memory handling, clarification behavior, JSON validity, estimated
 prompt/output tokens, memory used, `memory_calls`, evidence items, and
 audit events. Token estimates are deterministic approximations, not
-model-tokenizer counts.
+model-tokenizer counts. In LM Studio mode, OACS records provider usage,
+latency, model, and finish reason when the OpenAI-compatible server returns
+those fields.
+
+Task packs are imported through `benchmark_task_pack.schema.json`. Packs must
+carry an integrity checksum over canonical JSON excluding the integrity field.
+Downloads require an explicit URL, expected SHA-256, and `--allow-network`;
+local synthetic generation and file imports never use the network by default.
+Benchmark comparison reports whether baseline and OACS runs are compatible by
+provider, model, and task pack id.
 
 The MemoryArena group-travel adapter does not use natural-language slot aliases
 inside benchmark execution. It imports only rows where the reused plan item is
@@ -55,7 +64,16 @@ open-ended QA trajectory rows. Scoring проверяет required facts, forbid
 facts, superseded memory, clarification, JSON validity, estimated prompt/output
 tokens, использованную память, `memory_calls`, evidence items и audit
 events. Token estimates являются deterministic approximations, а не
-tokenizer-specific counts.
+tokenizer-specific counts. В LM Studio mode OACS записывает provider usage,
+latency, model и finish reason, если OpenAI-compatible server возвращает эти
+поля.
+
+Task packs импортируются через `benchmark_task_pack.schema.json`. Packs должны
+содержать integrity checksum по canonical JSON без integrity field. Downloads
+требуют явный URL, expected SHA-256 и `--allow-network`; local synthetic
+generation и file imports не используют network по умолчанию. Benchmark
+comparison показывает, совместимы ли baseline и OACS runs по provider, model и
+task pack id.
 
 MemoryArena group-travel adapter не использует natural-language slot aliases во
 время benchmark execution. Он импортирует только строки, где reused plan item

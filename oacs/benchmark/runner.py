@@ -5,7 +5,7 @@ import json
 from oacs.benchmark.models import BenchmarkRun, BenchmarkTask
 from oacs.benchmark.scorer import score_answer
 from oacs.benchmark.selectors import MemoryArenaTravelSelector
-from oacs.llm.lmstudio import LMStudioClient
+from oacs.llm.lmstudio import ChatResult, LMStudioClient
 from oacs.llm.prompts import BASELINE_SYSTEM, OACS_SYSTEM, build_oacs_prompt
 from oacs.loop.engine import MemoryLoopEngine
 from oacs.loop.evidence_selectors import EvidenceSelector, MemoryCallEvidence
@@ -44,7 +44,9 @@ class MemoryCriticalBenchmark:
             if mode == "oacs_memory_loop":
                 self._seed_memories(task, actor_id)
                 if provider == "lmstudio":
-                    answer, prompt_tokens = self._run_oacs_lmstudio(task, actor_id, model, scope)
+                    answer, prompt_tokens, memory_metrics = self._run_oacs_lmstudio(
+                        task, actor_id, model, scope
+                    )
                 else:
                     loop_result = self.loop.run(task.user_prompt, actor_id, scope=scope)
                     answer = loop_result.final_answer
@@ -58,17 +60,29 @@ class MemoryCriticalBenchmark:
                 prompt = _full_context_prompt(task)
                 prompt_tokens = estimate_tokens(prompt)
                 if provider == "lmstudio":
-                    answer = _lmstudio_client(task, model).chat(prompt, BASELINE_SYSTEM)
+                    chat = _lmstudio_client(task, model).chat_result(prompt, BASELINE_SYSTEM)
+                    answer = chat.text
+                    prompt_tokens = _usage_token(chat.usage, "prompt_tokens", prompt_tokens)
+                    memory_metrics = _chat_metrics(chat)
                 else:
                     answer = f"Generic answer for: {prompt}"
             else:
                 prompt_tokens = estimate_tokens(task.user_prompt)
                 if provider == "lmstudio":
-                    answer = _lmstudio_client(task, model).chat(task.user_prompt, BASELINE_SYSTEM)
+                    chat = _lmstudio_client(task, model).chat_result(
+                        task.user_prompt, BASELINE_SYSTEM
+                    )
+                    answer = chat.text
+                    prompt_tokens = _usage_token(chat.usage, "prompt_tokens", prompt_tokens)
+                    memory_metrics = _chat_metrics(chat)
                 else:
                     answer = f"Generic answer for: {task.user_prompt}"
             result = score_answer(task, answer)
-            output_tokens = estimate_tokens(answer)
+            output_tokens = _usage_token(
+                memory_metrics.get("lmstudio_usage", {}),
+                "completion_tokens",
+                estimate_tokens(answer),
+            )
             result.update(
                 {
                     "task_id": task.id,
@@ -106,6 +120,20 @@ class MemoryCriticalBenchmark:
                     int(str(r.get("memory_calls_count", 0))) for r in results
                 ),
                 "evidence_items": sum(int(str(r.get("evidence_items", 0))) for r in results),
+                "task_pack_ids": sorted(
+                    {
+                        str(task.rubric.get("task_pack_id"))
+                        for task in tasks
+                        if task.rubric.get("task_pack_id")
+                    }
+                ),
+                "native_harnesses": sorted(
+                    {
+                        str(task.rubric.get("native_harness"))
+                        for task in tasks
+                        if task.rubric.get("native_harness")
+                    }
+                ),
             },
         )
 
@@ -129,7 +157,7 @@ class MemoryCriticalBenchmark:
 
     def _run_oacs_lmstudio(
         self, task: BenchmarkTask, actor_id: str | None, model: str | None, scope: list[str]
-    ) -> tuple[str, int]:
+    ) -> tuple[str, int, dict[str, object]]:
         capsule = self.loop.context_builder.build(
             task.user_prompt,
             actor_id,
@@ -140,7 +168,13 @@ class MemoryCriticalBenchmark:
             self.memory.read(memory_id, actor_id) for memory_id in capsule.included_memories
         ]
         prompt = build_oacs_prompt(task.user_prompt, capsule, memories)
-        return _lmstudio_client(task, model).chat(prompt, OACS_SYSTEM), estimate_tokens(prompt)
+        prompt_tokens = estimate_tokens(prompt)
+        chat = _lmstudio_client(task, model).chat_result(prompt, OACS_SYSTEM)
+        return (
+            chat.text,
+            _usage_token(chat.usage, "prompt_tokens", prompt_tokens),
+            _chat_metrics(chat),
+        )
 
     def _run_memory_call_loop(
         self,
@@ -157,15 +191,19 @@ class MemoryCriticalBenchmark:
         )
         prompt_tokens = estimate_tokens(call_result.prompt)
         if provider == "lmstudio":
-            model_answer = _lmstudio_client(task, model).chat(call_result.prompt, OACS_SYSTEM)
-            answer = model_answer
+            chat = _lmstudio_client(task, model).chat_result(call_result.prompt, OACS_SYSTEM)
+            answer = chat.text
+            prompt_tokens = _usage_token(chat.usage, "prompt_tokens", prompt_tokens)
+            chat_metrics = _chat_metrics(chat)
         else:
             answer = _deterministic_benchmark_answer(call_result.evidence) or call_result.prompt
+            chat_metrics = {}
         return answer, prompt_tokens, {
             "memory_calls": [memory_call_to_dict(call) for call in call_result.memory_calls],
             "memory_calls_count": len(call_result.memory_calls),
             "evidence_items": len(call_result.evidence),
             "evidence_values": [item.value for item in call_result.evidence],
+            **chat_metrics,
         }
 
 
@@ -208,6 +246,22 @@ def _full_context_prompt(task: BenchmarkTask) -> str:
 def estimate_tokens(text: str) -> int:
     # Deterministic approximation for local reports; avoids tokenizer-specific dependencies.
     return max(1, (len(text) + 3) // 4)
+
+
+def _usage_token(usage: object, key: str, fallback: int) -> int:
+    if isinstance(usage, dict) and isinstance(usage.get(key), int):
+        return int(usage[key])
+    return fallback
+
+
+def _chat_metrics(chat: ChatResult) -> dict[str, object]:
+    return {
+        "lmstudio_model": chat.model,
+        "lmstudio_usage": chat.usage,
+        "lmstudio_finish_reason": chat.finish_reason,
+        "lmstudio_latency_ms": chat.latency_ms,
+        "lmstudio_base_url": chat.base_url,
+    }
 
 
 def _deterministic_benchmark_answer(evidence: list[MemoryCallEvidence]) -> str | None:

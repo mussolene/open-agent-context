@@ -67,7 +67,8 @@ acs benchmark compare --json
 Benchmarks are validation fixtures for the memory/context contract, not the
 purpose of OACS. `oacs_memory_call_loop` records deterministic OACS
 `memory_calls` such as `memory.query` and `memory.extract_evidence`; benchmark
-scoring stays in the benchmark adapter.
+scoring stays in the benchmark adapter. Task pack import/download is schema and
+checksum validated; downloads require explicit `--allow-network`.
 
 Current technical report:
 `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`.
@@ -116,10 +117,11 @@ optional PQ libraries are absent.
 ### Limitations
 
 This is a local POC, not a hosted multi-tenant system. MCP execution is modeled
-through typed bindings and imported tool metadata. Retrieval is pluggable, but
-deterministic lexical/structured retrieval is the baseline. Embeddings are
-optional adapters, not a core requirement. Tiny tasks can show OACS overhead;
-medium and long memory tasks are the current strength.
+through typed bindings and imported tool metadata, with optional stdio execution
+guarded by `tool.call` capabilities. Retrieval is pluggable, but deterministic
+lexical/structured retrieval is the baseline. Embeddings are optional adapters,
+not a core requirement. Tiny tasks can show OACS overhead; medium and long
+memory tasks are the current strength.
 
 ## RU
 OACS - локальный proof-of-concept открытого нижнего слоя агентского контекста:
@@ -187,7 +189,8 @@ acs benchmark compare --json
 Benchmarks - это validation fixtures для memory/context contract, а не цель
 OACS. `oacs_memory_call_loop` записывает deterministic OACS `memory_calls`,
 например `memory.query` и `memory.extract_evidence`; scoring остаётся в
-benchmark adapter.
+benchmark adapter. Import/download task packs валидируется по schema и
+checksum; downloads требуют явный `--allow-network`.
 
 Текущий technical report:
 `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`.
@@ -236,7 +239,8 @@ integration point для key wrapping; если optional PQ libraries отсут
 ### Ограничения
 
 Это локальный POC, не hosted multi-tenant service. MCP execution представлен
-typed bindings и импортированной metadata. Retrieval расширяемый, но baseline -
-deterministic lexical/structured retrieval. Embeddings являются optional
-adapters, а не core requirement. Tiny tasks могут показывать OACS overhead;
-medium и long memory tasks сейчас являются сильной стороной.
+typed bindings и импортированной metadata, а optional stdio execution защищён
+`tool.call` capabilities. Retrieval расширяемый, но baseline - deterministic
+lexical/structured retrieval. Embeddings являются optional adapters, а не core
+requirement. Tiny tasks могут показывать OACS overhead; medium и long memory
+tasks сейчас являются сильной стороной.

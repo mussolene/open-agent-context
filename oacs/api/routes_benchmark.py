@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from fastapi import APIRouter
 
 from oacs.app import services
 from oacs.benchmark.generator import SyntheticTaskGenerator
 from oacs.benchmark.models import BenchmarkTask
+from oacs.benchmark.packs import load_task_pack, tasks_from_pack
 from oacs.benchmark.reports import compare_runs, select_comparison_runs
 from oacs.benchmark.runner import MemoryCriticalBenchmark
 from oacs.core.json import hash_json
@@ -46,10 +49,14 @@ def run(req: dict[str, object]) -> dict[str, object]:
     tasks = [BenchmarkTask(**row["payload"]) for row in rows] or SyntheticTaskGenerator().generate(
         "memory_critical", 3
     )
+    raw_model = req.get("model")
+    model = raw_model if isinstance(raw_model, str) else None
     result = MemoryCriticalBenchmark(svc.memory, svc.loop).run(
         tasks,
         str(req.get("mode", "baseline_no_memory")),
         req.get("actor_id"),  # type: ignore[arg-type]
+        model,
+        str(req.get("provider", "deterministic")),
     )
     now = now_iso()
     svc.store.put_json(
@@ -68,6 +75,38 @@ def run(req: dict[str, object]) -> dict[str, object]:
         },
     )
     return result.model_dump()
+
+
+@router.post("/benchmark/import")
+def import_pack(req: dict[str, object]) -> list[dict[str, object]]:
+    path = req.get("file")
+    if not isinstance(path, str):
+        return [{"error": "file is required"}]
+    svc = services(require_key=False)
+    pack = load_task_pack(Path(path))
+    tasks = tasks_from_pack(pack)
+    for task in tasks:
+        rubric = dict(task.rubric)
+        rubric["task_pack_id"] = pack["id"]
+        rubric["task_pack_source"] = pack["source"]
+        task = task.model_copy(update={"rubric": rubric})
+        now = now_iso()
+        svc.store.put_json(
+            "benchmark_tasks",
+            {
+                "id": task.id,
+                "task_type": task.type,
+                "payload": task.model_dump(),
+                "created_at": now,
+                "updated_at": now,
+                "status": "active",
+                "namespace": "default",
+                "scope": ["project"],
+                "owner_actor_id": None,
+                "content_hash": hash_json(task.model_dump()),
+            },
+        )
+    return [task.model_dump() for task in tasks]
 
 
 @router.post("/benchmark/compare")

@@ -28,6 +28,11 @@ Subagent memory sharing uses normal `CapabilityGrant` records. Non-bootstrap
 actors must have matching operation, scope, namespace, and depth grants before
 they can query, read, or build capsules from shared memory.
 
+Tool and skill adapters are also deny-by-default. `tool.call` and `skill.run`
+must be granted together with explicit `tools_allowed` or `skills_allowed`
+entries, plus namespace and scope constraints. Audit chain verification detects
+local tampering with recorded operations.
+
 ## RU
 POC закрывает риски: хранение памяти в открытом виде, случайные утечки
 capability, скрытые записи памяти, использование fuzzy memory как факта и
@@ -56,3 +61,8 @@ sensitive memory.
 Shared memory для subagents использует обычные `CapabilityGrant` records.
 Non-bootstrap actors должны иметь matching operation, scope, namespace и depth
 grants перед query, read или build capsules из shared memory.
+
+Tool и skill adapters тоже deny-by-default. `tool.call` и `skill.run` должны
+быть выданы вместе с explicit `tools_allowed` или `skills_allowed`, а также с
+namespace и scope constraints. Audit chain verification помогает обнаружить
+локальное изменение записанных операций.

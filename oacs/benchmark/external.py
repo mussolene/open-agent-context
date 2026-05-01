@@ -44,7 +44,9 @@ class MemoryArenaImporter:
                     break
         return self.from_rows(rows, count, subset=subset)
 
-    def from_url(self, url: str, count: int) -> list[BenchmarkTask]:
+    def from_url(self, url: str, count: int, allow_network: bool = False) -> list[BenchmarkTask]:
+        if not allow_network:
+            raise ValueError("network disabled; provide --file or explicit allow-network")
         response = httpx.get(url, timeout=60, follow_redirects=True)
         response.raise_for_status()
         rows = []
@@ -55,14 +57,16 @@ class MemoryArenaImporter:
                 break
         return self.from_rows(rows, count, subset=_subset_from_url(url))
 
-    def from_subset(self, subset: str, count: int) -> list[BenchmarkTask]:
+    def from_subset(
+        self, subset: str, count: int, allow_network: bool = False
+    ) -> list[BenchmarkTask]:
         try:
             url = MEMORYARENA_URLS[subset]
         except KeyError as exc:
             supported = ", ".join(sorted(MEMORYARENA_URLS))
             message = f"unsupported MemoryArena subset: {subset}; supported: {supported}"
             raise ValueError(message) from exc
-        return self.from_url(url, count)
+        return self.from_url(url, count, allow_network=allow_network)
 
     def from_rows(
         self, rows: list[dict[str, Any]], count: int, subset: str = "group_travel_planner"
@@ -213,7 +217,9 @@ class AmaBenchImporter:
                     break
         return self.from_rows(rows, count)
 
-    def from_url(self, url: str, count: int) -> list[BenchmarkTask]:
+    def from_url(self, url: str, count: int, allow_network: bool = False) -> list[BenchmarkTask]:
+        if not allow_network:
+            raise ValueError("network disabled; provide --file or explicit allow-network")
         response = httpx.get(url, timeout=60, follow_redirects=True)
         response.raise_for_status()
         rows = []

@@ -19,6 +19,16 @@ includes the Context Capsule id, memories used, `memory_calls`, selected
 evidence, compact model prompt, `context_policy` decision, and
 `operation_metrics`.
 
+Integration adapter endpoints include capability definitions/grants, tool and
+skill inspection, guarded `POST /v1/tools/{id}/call`,
+`POST /v1/skills/{id}/run`, MCP import/inspection, and `GET /v1/audit/verify`.
+Tool and skill calls are checked through `tool.call` / `skill.run`, explicit
+resource allowlists, namespace, and scope.
+
+Benchmark endpoints accept `provider` and `model` when running tasks. Task pack
+import uses schema and checksum validation; downloader paths remain explicit and
+network is never used by default.
+
 ## RU
 FastAPI предоставляет `/health`, `/v1/actors`, операции памяти, операции
 context, rules, audit, loop и benchmark endpoints. Все изменяющие endpoints
@@ -36,3 +46,13 @@ public-key signing.
 `scope`, `token_budget`, `allowed_tools` и `model_config`. Ответ включает id
 Context Capsule, использованную память, `memory_calls`, selected evidence и
 compact model prompt, а также `context_policy` decision и `operation_metrics`.
+
+Integration adapter endpoints включают capability definitions/grants, inspect
+для tools и skills, защищённые `POST /v1/tools/{id}/call`,
+`POST /v1/skills/{id}/run`, MCP import/inspection и `GET /v1/audit/verify`.
+Tool и skill calls проверяются через `tool.call` / `skill.run`, explicit
+resource allowlists, namespace и scope.
+
+Benchmark endpoints принимают `provider` и `model` при запуске задач. Import
+task packs использует schema и checksum validation; download paths явные, а
+network никогда не используется по умолчанию.

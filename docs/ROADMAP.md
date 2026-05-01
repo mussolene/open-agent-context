@@ -5,7 +5,7 @@ This roadmap keeps the OACS v0.1 draft standard small. Core work must define
 memory, context, permissions, audit, and deterministic operation contracts.
 Reference adapters prove integration, but they do not expand the standard.
 
-### Current Position: v0.2.8 Reference POC, retrieval adapter contract
+### Current Position: v0.3.0 Reference POC, integration adapters
 - Done: OACS v0.1 draft terminology, schemas, encrypted SQLite memory,
   ContextCapsule, CLI/API, rules/skills/tools/MCP registries, basic memory loop,
   memory_calls, validation adapters, and CI build checks.
@@ -40,6 +40,16 @@ Reference adapters prove integration, but they do not expand the standard.
   the reference backend.
 - Done: capability-scoped shared memory added for subagents through
   `CapabilityGrant.scope`, `namespaces_allowed`, and `memory_depth_allowed`.
+- Done: tool and skill adapter calls are capability-scoped through
+  `tool.call`, `skill.run`, `tools_allowed`, `skills_allowed`, namespace, and
+  scope checks.
+- Done: MCP bindings remain metadata-first, with an optional stdio execution
+  adapter guarded by tool capabilities and binding `allowed_tools`.
+- Done: audit chain verification is exposed through CLI and API.
+- Done: benchmark task packs use schema validation, explicit checksums, and
+  no-network-by-default download/import commands.
+- Done: benchmark comparisons report provider/model/task-pack compatibility and
+  LM Studio usage metadata when the server returns it.
 - Current technical report:
   `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`.
 
@@ -74,12 +84,12 @@ Reference adapters prove integration, but they do not expand the standard.
   default, and never part of core conformance.
 
 ### v0.3 - Integration Adapters
-- Refine MCP binding model and add optional MCP client execution adapter.
-- Extend namespace/scope-aware capability constraints from memory/context to
+- Done: refine MCP binding model and add optional MCP client execution adapter.
+- Done: extend namespace/scope-aware capability constraints from memory/context to
   tools and skills.
-- Add audit chain verification commands.
-- Add task pack import/download with schema and checksum validation.
-- Add larger benchmark suites with real LM Studio mode reporting and native
+- Done: add audit chain verification commands.
+- Done: add task pack import/download with schema and checksum validation.
+- Done: add larger benchmark suites with real LM Studio mode reporting and native
   harness comparison where available.
 
 ### v1.0
@@ -95,7 +105,7 @@ Reference adapters prove integration, but they do not expand the standard.
 определять memory, context, permissions, audit и deterministic operation
 contracts. Reference adapters доказывают интеграцию, но не расширяют стандарт.
 
-### Текущая позиция: v0.2.8 Reference POC, retrieval adapter contract
+### Текущая позиция: v0.3.0 Reference POC, integration adapters
 - Готово: OACS v0.1 draft terminology, schemas, encrypted SQLite memory,
   ContextCapsule, CLI/API, rules/skills/tools/MCP registries, базовый memory
   loop, memory_calls, validation adapters и CI build checks.
@@ -130,6 +140,15 @@ contracts. Reference adapters доказывают интеграцию, но н
   остаётся reference backend.
 - Готово: capability-scoped shared memory добавлена для subagents через
   `CapabilityGrant.scope`, `namespaces_allowed` и `memory_depth_allowed`.
+- Готово: вызовы tool и skill adapters ограничены capabilities через
+  `tool.call`, `skill.run`, `tools_allowed`, `skills_allowed`, namespace и scope.
+- Готово: MCP bindings остаются metadata-first, но добавлен optional stdio
+  execution adapter с проверкой tool capabilities и binding `allowed_tools`.
+- Готово: audit chain verification доступна через CLI и API.
+- Готово: benchmark task packs используют schema validation, явные checksums и
+  no-network-by-default download/import commands.
+- Готово: benchmark comparisons показывают provider/model/task-pack
+  compatibility и LM Studio usage metadata, когда сервер её возвращает.
 - Текущий technical report:
   `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`.
 
@@ -166,12 +185,12 @@ contracts. Reference adapters доказывают интеграцию, но н
   default и не часть core conformance.
 
 ### v0.3 - Integration Adapters
-- Уточнить MCP binding model и добавить optional MCP client execution adapter.
-- Расширить namespace/scope-aware capability constraints с memory/context на
+- Готово: уточнить MCP binding model и добавить optional MCP client execution adapter.
+- Готово: расширить namespace/scope-aware capability constraints с memory/context на
   tools и skills.
-- Добавить команды проверки audit chain.
-- Добавить import/download task packs с schema и checksum validation.
-- Расширить benchmark suites с real LM Studio mode reporting и native harness
+- Готово: добавить команды проверки audit chain.
+- Готово: добавить import/download task packs с schema и checksum validation.
+- Готово: расширить benchmark suites с real LM Studio mode reporting и native harness
   comparison там, где он доступен.
 
 ### v1.0

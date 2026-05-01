@@ -13,6 +13,7 @@ from oacs.app import OacsServices, services
 from oacs.benchmark.external import AmaBenchImporter, MemoryArenaImporter
 from oacs.benchmark.generator import SyntheticTaskGenerator
 from oacs.benchmark.models import BenchmarkTask
+from oacs.benchmark.packs import download_task_pack, load_task_pack, tasks_from_pack
 from oacs.benchmark.reports import compare_runs, select_comparison_runs
 from oacs.benchmark.runner import MemoryCriticalBenchmark
 from oacs.context.reducer import reduce_capsule
@@ -843,6 +844,7 @@ def tool_call(
     parsed_payload = json.loads(payload)
     if not isinstance(parsed_payload, dict):
         raise typer.BadParameter("--payload must be a JSON object")
+    result: dict[str, object]
     if tool.type == "mcp":
         if not execute_mcp:
             result = {
@@ -958,6 +960,7 @@ def benchmark_import_memoryarena(
     count: Annotated[int, typer.Option("--count")] = 5,
     file: Annotated[Path | None, typer.Option("--file")] = None,
     url: Annotated[str | None, typer.Option("--url")] = None,
+    allow_network: Annotated[bool, typer.Option("--allow-network")] = False,
     db: DbOpt = None,
     json_out: JsonOpt = False,
 ) -> None:
@@ -965,9 +968,11 @@ def benchmark_import_memoryarena(
     if file is not None:
         tasks = importer.from_file(file, count, subset)
     elif url is not None:
-        tasks = importer.from_url(url, count)
+        tasks = importer.from_url(url, count, allow_network=allow_network)
+    elif allow_network:
+        tasks = importer.from_subset(subset, count, allow_network=True)
     else:
-        tasks = importer.from_subset(subset, count)
+        raise typer.BadParameter("--file is required unless --allow-network is explicit")
     svc = services(db, require_key=False)
     _store_benchmark_tasks(svc, tasks)
     emit([t.model_dump() for t in tasks], json_out)
@@ -978,6 +983,7 @@ def benchmark_import_ama(
     count: Annotated[int, typer.Option("--count")] = 5,
     file: Annotated[Path | None, typer.Option("--file")] = None,
     url: Annotated[str | None, typer.Option("--url")] = None,
+    allow_network: Annotated[bool, typer.Option("--allow-network")] = False,
     db: DbOpt = None,
     json_out: JsonOpt = False,
 ) -> None:
@@ -985,7 +991,7 @@ def benchmark_import_ama(
     if file is not None:
         tasks = importer.from_file(file, count)
     elif url is not None:
-        tasks = importer.from_url(url, count)
+        tasks = importer.from_url(url, count, allow_network=allow_network)
     else:
         raise typer.BadParameter("--file or --url is required for AMA-Bench import")
     svc = services(db, require_key=False)
@@ -993,8 +999,19 @@ def benchmark_import_ama(
     emit([t.model_dump() for t in tasks], json_out)
 
 
-def _store_benchmark_tasks(svc: OacsServices, tasks: list[BenchmarkTask]) -> None:
+def _store_benchmark_tasks(
+    svc: OacsServices, tasks: list[BenchmarkTask], pack: dict[str, object] | None = None
+) -> None:
     for task in tasks:
+        if pack is not None:
+            rubric = dict(task.rubric)
+            rubric["task_pack_id"] = pack["id"]
+            rubric["task_pack_source"] = pack["source"]
+            if pack.get("native_harness") is not None:
+                rubric["native_harness"] = pack["native_harness"]
+            if pack.get("native_suite") is not None:
+                rubric["native_suite"] = pack["native_suite"]
+            task = task.model_copy(update={"rubric": rubric})
         now = now_iso()
         svc.store.put_json(
             "benchmark_tasks",
@@ -1015,21 +1032,32 @@ def _store_benchmark_tasks(svc: OacsServices, tasks: list[BenchmarkTask]) -> Non
 
 @benchmark_app.command("import")
 def benchmark_import(file: Path, db: DbOpt = None, json_out: JsonOpt = False) -> None:
-    tasks = [BenchmarkTask(**item) for item in json.loads(file.read_text(encoding="utf-8"))]
-    _store_benchmark_tasks(services(db, require_key=False), tasks)
+    pack = load_task_pack(file)
+    tasks = tasks_from_pack(pack)
+    _store_benchmark_tasks(services(db, require_key=False), tasks, pack)
     emit([t.model_dump() for t in tasks], json_out)
 
 
 @benchmark_app.command("download")
-def benchmark_download(url: str, checksum: str, json_out: JsonOpt = False) -> None:
+def benchmark_download(
+    url: str,
+    checksum: str,
+    output: Annotated[Path, typer.Option("--output")] = Path(".oacs/task-pack.json"),
+    allow_network: Annotated[bool, typer.Option("--allow-network")] = False,
+    db: DbOpt = None,
+    json_out: JsonOpt = False,
+) -> None:
+    pack = download_task_pack(url, checksum, output, allow_network)
+    tasks = tasks_from_pack(pack)
+    _store_benchmark_tasks(services(db, require_key=False), tasks, pack)
     emit(
         {
             "url": url,
             "checksum": checksum,
-            "downloaded": False,
-            "reason": (
-                "explicit downloader validates packs; network disabled in default POC command"
-            ),
+            "downloaded": True,
+            "output": str(output),
+            "task_pack_id": pack["id"],
+            "tasks": len(tasks),
         },
         json_out,
     )
