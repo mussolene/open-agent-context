@@ -20,10 +20,10 @@ tool is used.
 The draft can change before v1.0. See `docs/COMPATIBILITY.md` for what counts
 as a breaking change.
 
-### Quickstart
+### Quickstart: local deterministic proof
 
 ```bash
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev,crypto]"
 
@@ -32,16 +32,60 @@ acs key init --passphrase "change-me-local-passphrase"
 acs actor create --type human --name "User" --json
 acs actor create --type agent --name "GemmaLocalAgent" --json
 
-acs memory propose --type procedure --depth 2 --scope project \
-  --text "В проекте Alpha отчёты генерируются через make report-safe." --json
-acs memory commit <candidate_id> --json
+CANDIDATE_ID=$(acs memory propose --type procedure --depth 2 --scope project \
+  --text "In project Alpha reports are generated with make report-safe." --json \
+  | python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])')
 
-acs context build --intent answer_project_question --scope project --budget 4000 --json
+acs memory commit "$CANDIDATE_ID" --json
+acs memory query --query "Alpha report" --scope project --json
 
+CAPSULE_ID=$(acs context build --intent answer_project_question \
+  --scope project --budget 4000 --json \
+  | python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])')
+
+acs context explain "$CAPSULE_ID" --json
+```
+
+This proves the basic OACS path: explicit memory proposal, explicit commit,
+retrieval, capsule build, and capsule explanation.
+
+### Quickstart: benchmark proof
+
+```bash
 acs benchmark generate --suite memory_critical --count 20 --json
+
 acs benchmark run --mode baseline_no_memory --model gemma-4-e2b --json
 acs benchmark run --mode oacs_memory_loop --model gemma-4-e2b --json
 acs benchmark compare --json
+```
+
+Expected shape:
+
+```json
+{
+  "baseline_average": 1.0,
+  "oacs_average": 5.0,
+  "improvement": 4.0
+}
+```
+
+Exact scores can vary as the benchmark evolves, but `oacs_memory_loop` should
+outperform `baseline_no_memory` on memory-critical tasks.
+
+### Quickstart: encryption check
+
+```bash
+SECRET_ID=$(acs memory propose --type fact --depth 2 --scope project \
+  --text "sensitive-memory-plaintext-proof" --json \
+  | python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])')
+
+acs memory commit "$SECRET_ID" --json
+
+if grep -a "sensitive-memory-plaintext-proof" ./.oacs/oacs.db; then
+  echo "FAIL: plaintext found"
+else
+  echo "PASS: plaintext absent from SQLite"
+fi
 ```
 
 ### LM Studio
@@ -50,6 +94,21 @@ Start LM Studio with an OpenAI-compatible server at `http://localhost:1234/v1`.
 The default model name is `gemma-4-e2b`, but it is configurable with
 `--model` or `OACS_LMSTUDIO_MODEL`. Unit tests do not require LM Studio;
 integration tests skip when the server is unavailable.
+
+The benchmark commands above are deterministic by default. To run a real model
+proof, use the `LMStudioClient` integration or the LM Studio integration test:
+
+```bash
+export OACS_LMSTUDIO_BASE_URL=http://localhost:1234/v1
+export OACS_LMSTUDIO_MODEL=gemma-4-e2b
+pytest -q tests/integration_test_lmstudio.py
+```
+
+The important distinction:
+
+- `baseline_no_memory`: the model receives only the task.
+- `oacs_memory_loop`: OACS retrieves memory, builds a Context Capsule, applies
+  rules/capabilities, and gives the model a governed context.
 
 ### Security Model
 
@@ -83,10 +142,73 @@ OACS не заменяет MCP. MCP описывает совместимост�
 До v1.0 draft может меняться. Что считается breaking change, описано в
 `docs/COMPATIBILITY.md`.
 
-### Быстрый старт
+### Быстрый старт: локальная детерминированная проверка
 
-Команды совпадают с Quickstart выше. Для разработки используйте локальную БД
-`./.oacs/oacs.db` и passphrase только для dev-сценария.
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev,crypto]"
+
+acs init --db ./.oacs/oacs.db
+acs key init --passphrase "change-me-local-passphrase"
+acs actor create --type human --name "User" --json
+acs actor create --type agent --name "GemmaLocalAgent" --json
+
+CANDIDATE_ID=$(acs memory propose --type procedure --depth 2 --scope project \
+  --text "В проекте Alpha отчёты генерируются через make report-safe." --json \
+  | python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])')
+
+acs memory commit "$CANDIDATE_ID" --json
+acs memory query --query "Alpha отчёты" --scope project --json
+
+CAPSULE_ID=$(acs context build --intent answer_project_question \
+  --scope project --budget 4000 --json \
+  | python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])')
+
+acs context explain "$CAPSULE_ID" --json
+```
+
+Этот путь показывает базовую механику OACS: явное предложение памяти, явный
+commit, retrieval, сборка Context Capsule и объяснение, почему контекст включён.
+
+### Быстрый старт: проверка benchmark
+
+```bash
+acs benchmark generate --suite memory_critical --count 20 --json
+acs benchmark run --mode baseline_no_memory --model gemma-4-e2b --json
+acs benchmark run --mode oacs_memory_loop --model gemma-4-e2b --json
+acs benchmark compare --json
+```
+
+Ожидаемая форма результата:
+
+```json
+{
+  "baseline_average": 1.0,
+  "oacs_average": 5.0,
+  "improvement": 4.0
+}
+```
+
+Точные числа могут меняться по мере развития benchmark, но
+`oacs_memory_loop` должен выигрывать у `baseline_no_memory` на memory-critical
+задачах.
+
+### Быстрый старт: проверка шифрования
+
+```bash
+SECRET_ID=$(acs memory propose --type fact --depth 2 --scope project \
+  --text "sensitive-memory-plaintext-proof" --json \
+  | python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])')
+
+acs memory commit "$SECRET_ID" --json
+
+if grep -a "sensitive-memory-plaintext-proof" ./.oacs/oacs.db; then
+  echo "FAIL: plaintext found"
+else
+  echo "PASS: plaintext absent from SQLite"
+fi
+```
 
 ### LM Studio
 
@@ -94,6 +216,21 @@ OACS не заменяет MCP. MCP описывает совместимост�
 Имя модели по умолчанию `gemma-4-e2b`, но его можно поменять через `--model` или
 `OACS_LMSTUDIO_MODEL`. Unit tests не требуют LM Studio; integration tests
 пропускаются, если server недоступен.
+
+Benchmark commands выше по умолчанию deterministic. Для проверки реальной
+модели используйте `LMStudioClient` integration или integration test:
+
+```bash
+export OACS_LMSTUDIO_BASE_URL=http://localhost:1234/v1
+export OACS_LMSTUDIO_MODEL=gemma-4-e2b
+pytest -q tests/integration_test_lmstudio.py
+```
+
+Разница режимов:
+
+- `baseline_no_memory`: модель получает только задачу.
+- `oacs_memory_loop`: OACS достаёт память, строит Context Capsule, применяет
+  rules/capabilities и даёт модели управляемый контекст.
 
 ### Ограничения
 
