@@ -739,11 +739,20 @@ def loop_run(
     agent: AgentOpt = None,
     scope: ScopeOpt = None,
     budget: Annotated[int, typer.Option("--budget")] = 4000,
-    memory_calls: Annotated[bool, typer.Option("--memory-calls/--no-memory-calls")] = True,
+    memory_calls: Annotated[
+        bool | None, typer.Option("--memory-calls/--no-memory-calls")
+    ] = None,
     allow_deepening: Annotated[bool, typer.Option("--deepening/--no-deepening")] = True,
+    context_policy: Annotated[str, typer.Option("--context-policy")] = "auto",
     db: DbOpt = None,
     json_out: JsonOpt = False,
 ) -> None:
+    model_config: dict[str, object] = {
+        "allow_deepening": allow_deepening,
+        "context_policy": context_policy,
+    }
+    if memory_calls is not None:
+        model_config["memory_calls"] = memory_calls
     emit(
         services(db)
         .loop.run(
@@ -752,10 +761,7 @@ def loop_run(
             agent,
             scope or [],
             budget,
-            model_config={
-                "memory_calls": memory_calls,
-                "allow_deepening": allow_deepening,
-            },
+            model_config=model_config,
         )
         .model_dump(),
         json_out,

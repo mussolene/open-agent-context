@@ -4,7 +4,7 @@
 This roadmap tracks the OACS v0.1 draft standard and the Python reference
 implementation.
 
-### Current Position: v0.2.2 Reference POC, general memory calls
+### Current Position: v0.2.3 Reference POC, adaptive context policy
 - Done: OACS v0.1 draft terminology, schemas, encrypted SQLite memory,
   ContextCapsule, CLI/API, rules/skills/tools/MCP registries, basic memory loop,
   memory_calls, and public benchmark adapters.
@@ -31,12 +31,13 @@ implementation.
 - Done: `memory_calls` promoted into general `MemoryLoopEngine`, CLI `loop run`,
   and API `/v1/loop/run` with intent, read trace, evidence, compact prompt, and
   deepening controls.
+- Done: adaptive context policy added so tiny low-pressure tasks can use compact
+  capsules, while structured evidence and medium/large contexts use
+  `memory_calls`.
 - Current technical report:
   `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`.
 
 ### v0.2
-- Add adaptive context policy: tiny context uses compact capsule, medium/large
-  context uses memory_calls, exact evidence can short-circuit.
 - Add a storage backend protocol and keep SQLite as the reference backend.
 - Add real embedding retrieval behind the memory search interface.
 - Add stricter JSON-only output handling for LM Studio prompts.
@@ -63,7 +64,7 @@ implementation.
 Этот roadmap отслеживает OACS v0.1 draft standard и Python reference
 implementation.
 
-### Текущая позиция: v0.2.2 Reference POC, general memory calls
+### Текущая позиция: v0.2.3 Reference POC, adaptive context policy
 - Готово: OACS v0.1 draft terminology, schemas, encrypted SQLite memory,
   ContextCapsule, CLI/API, rules/skills/tools/MCP registries, базовый memory
   loop, memory_calls и public benchmark adapters.
@@ -91,13 +92,13 @@ implementation.
 - Готово: `memory_calls` перенесены в общий `MemoryLoopEngine`, CLI `loop run`
   и API `/v1/loop/run` с intent, read trace, evidence, compact prompt и
   deepening controls.
+- Готово: добавлена adaptive context policy: tiny low-pressure tasks могут
+  использовать compact capsules, а structured evidence и medium/large contexts
+  используют `memory_calls`.
 - Текущий technical report:
   `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`.
 
 ### v0.2
-- Добавить adaptive context policy: tiny context использует compact capsule,
-  medium/large context использует memory_calls, exact evidence может
-  short-circuit.
 - Добавить protocol для storage backend и оставить SQLite reference backend.
 - Добавить real embedding retrieval за интерфейсом memory search.
 - Усилить JSON-only output handling для LM Studio prompts.

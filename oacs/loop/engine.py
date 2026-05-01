@@ -5,6 +5,7 @@ from dataclasses import replace
 from pydantic import BaseModel, Field
 
 from oacs.context.builder import ContextBuilder
+from oacs.loop.context_policy import AdaptiveContextPolicy
 from oacs.loop.intent import classify_intent
 from oacs.loop.memory_calls import (
     DeterministicMemoryCallLoop,
@@ -31,6 +32,7 @@ class MemoryLoopResult(BaseModel):
     evidence: list[dict[str, object]] = Field(default_factory=list)
     model_prompt: str | None = None
     answered_deterministically: bool = False
+    context_policy: dict[str, object] = Field(default_factory=dict)
     benchmark_metrics: dict[str, object] = Field(default_factory=dict)
 
 
@@ -38,6 +40,7 @@ class MemoryLoopEngine:
     def __init__(self, memory: MemoryService, context_builder: ContextBuilder):
         self.memory = memory
         self.context_builder = context_builder
+        self.context_policy = AdaptiveContextPolicy()
 
     def run(
         self,
@@ -50,8 +53,6 @@ class MemoryLoopEngine:
         model_config: dict[str, object] | None = None,
     ) -> MemoryLoopResult:
         config = model_config or {}
-        use_memory_calls = bool(config.get("memory_calls", True))
-        allow_deepening = bool(config.get("allow_deepening", True))
         intent_name = classify_intent(user_request)
         intent: dict[str, object] = {"name": intent_name, "query": user_request}
         self.memory.observe(user_request, actor_id, scope or [])
@@ -59,16 +60,17 @@ class MemoryLoopEngine:
             intent_name, actor_id, agent_id, scope or [], token_budget
         )
         memories = [self.memory.read(mid, actor_id) for mid in capsule.included_memories]
+        context_policy = self.context_policy.decide(user_request, memories, token_budget, config)
         memory_call_payload: list[dict[str, object]] = []
         evidence_payload: list[dict[str, object]] = []
         model_prompt: str | None = None
         answered_deterministically = False
         deterministic_answer: str | None = None
-        if use_memory_calls:
+        if context_policy.use_memory_calls:
             call_result = DeterministicMemoryCallLoop(include_read=True).build_prompt(
                 user_request, memories
             )
-            if not call_result.evidence and allow_deepening:
+            if not call_result.evidence and context_policy.allow_deepening:
                 deepened = self._deepen_if_needed(user_request, actor_id, scope or [], memories)
                 if len(deepened) > len(memories):
                     existing_ids = {memory.id for memory in memories}
@@ -137,6 +139,12 @@ class MemoryLoopEngine:
             evidence=evidence_payload,
             model_prompt=model_prompt,
             answered_deterministically=answered_deterministically,
+            context_policy={
+                "name": context_policy.name,
+                "use_memory_calls": context_policy.use_memory_calls,
+                "allow_deepening": context_policy.allow_deepening,
+                "reason": context_policy.reason,
+            },
             benchmark_metrics={
                 "tokens_estimated": len(" ".join(answer_parts).split()),
                 "memory_calls_count": len(memory_call_payload),

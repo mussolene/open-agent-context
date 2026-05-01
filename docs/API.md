@@ -8,7 +8,7 @@ rules, audit, loop, and benchmark endpoints. All mutating endpoints accept
 `POST /v1/loop/run` accepts `user_request`, optional `actor_id`, `agent_id`,
 `scope`, `token_budget`, `allowed_tools`, and `model_config`. The response
 includes the Context Capsule id, memories used, `memory_calls`, selected
-evidence, and compact model prompt.
+evidence, compact model prompt, and `context_policy` decision.
 
 ## RU
 FastAPI предоставляет `/health`, `/v1/actors`, операции памяти, операции
@@ -18,4 +18,4 @@ context, rules, audit, loop и benchmark endpoints. Все изменяющие 
 `POST /v1/loop/run` принимает `user_request`, optional `actor_id`, `agent_id`,
 `scope`, `token_budget`, `allowed_tools` и `model_config`. Ответ включает id
 Context Capsule, использованную память, `memory_calls`, selected evidence и
-compact model prompt.
+compact model prompt, а также `context_policy` decision.
