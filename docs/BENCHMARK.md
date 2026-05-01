@@ -21,6 +21,11 @@ prompt/output tokens, memory used, `memory_calls`, evidence items, and
 audit events. Token estimates are deterministic approximations, not
 model-tokenizer counts.
 
+The MemoryArena group-travel adapter does not use natural-language slot aliases
+inside benchmark execution. It imports only rows where the reused plan item is
+unambiguous from structured answer overlap, writes typed `memory_selectors`, and
+skips ambiguous rows instead of guessing from phrases such as "same place".
+
 ## RU
 Benchmark сравнивает:
 
@@ -41,6 +46,11 @@ facts, superseded memory, clarification, JSON validity, estimated prompt/output
 tokens, использованную память, `memory_calls`, evidence items и audit
 events. Token estimates являются deterministic approximations, а не
 tokenizer-specific counts.
+
+MemoryArena group-travel adapter не использует natural-language slot aliases во
+время benchmark execution. Он импортирует только строки, где reused plan item
+однозначен по structured answer overlap, записывает typed `memory_selectors` и
+пропускает неоднозначные строки вместо угадывания по фразам вроде "same place".
 
 Current technical report:
 `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`.

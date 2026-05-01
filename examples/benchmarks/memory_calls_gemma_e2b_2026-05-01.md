@@ -21,6 +21,10 @@ synthetic tasks produced `baseline_no_memory` 0/5 and `oacs_memory_call_loop`
 `acs benchmark compare` improvement `+4.0`. The LM Studio tables below remain
 the latest real-model run.
 
+Fairness note: the current MemoryArena group-travel adapter no longer uses
+natural-language slot aliases during benchmark execution. It accepts only
+unambiguous structured answer overlaps and skips ambiguous rows.
+
 ### Deterministic Provider
 
 | Suite | Mode | Success | Avg score | Prompt tokens | Output tokens | Total tokens | Memory calls | Evidence |
@@ -96,6 +100,10 @@ tasks дал `baseline_no_memory` 0/5 и `oacs_memory_call_loop` 5/5, а
 `memory_calls_count` 10, estimated OACS tokens 1,207 и
 `acs benchmark compare` improvement `+4.0`. Таблицы LM Studio ниже остаются
 последним real-model прогоном.
+
+Fairness note: текущий MemoryArena group-travel adapter больше не использует
+natural-language slot aliases во время benchmark execution. Он принимает только
+однозначные structured answer overlaps и пропускает неоднозначные строки.
 
 Вывод:
 

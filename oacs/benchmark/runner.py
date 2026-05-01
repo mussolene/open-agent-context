@@ -182,7 +182,9 @@ def _task_scope(task: BenchmarkTask) -> list[str]:
 
 def _selector_for_task(task: BenchmarkTask) -> EvidenceSelector | None:
     if task.type == "memoryarena_group_travel_planner":
-        return MemoryArenaTravelSelector()
+        raw_selectors = task.rubric.get("memory_selectors", {})
+        selectors = raw_selectors if isinstance(raw_selectors, dict) else {}
+        return MemoryArenaTravelSelector(selectors)
     return None
 
 

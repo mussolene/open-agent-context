@@ -23,7 +23,7 @@ def test_memoryarena_importer_builds_memory_dependent_task():
             [
                 {
                     "days": 1,
-                    "dinner": "Coco Bambu, Rockford",
+                    "dinner": "Another Dinner, Testville",
                     "accommodation": "Pure luxury one bdrm + sofa bed on Central Park, Rockford",
                 }
             ],
@@ -40,7 +40,7 @@ def test_memoryarena_importer_builds_memory_dependent_task():
     assert task.setup_memories[1]["depth"] == 1
 
 
-def test_memoryarena_importer_filters_expected_fact_by_day_and_slot():
+def test_memoryarena_importer_skips_ambiguous_group_travel_overlap():
     row = {
         "id": 8,
         "base_person": {"name": "Jennifer", "daily_plans": []},
@@ -60,9 +60,9 @@ def test_memoryarena_importer_filters_expected_fact_by_day_and_slot():
         ],
     }
 
-    task = MemoryArenaImporter().from_rows([row], 1)[0]
+    tasks = MemoryArenaImporter().from_rows([row], 1)
 
-    assert task.expected_facts == ["Correct Lunch, Testville"]
+    assert tasks == []
 
 
 def test_memory_call_loop_extracts_exact_scoped_evidence(svc):
@@ -79,7 +79,6 @@ def test_memory_call_loop_extracts_exact_scoped_evidence(svc):
                 {"days": 2, "lunch": "Correct Lunch, Testville"},
             ],
             [
-                {"days": 1, "lunch": "Wrong Day Cafe, Testville"},
                 {"days": 2, "lunch": "Correct Lunch, Testville"},
             ],
         ],
@@ -128,7 +127,7 @@ def test_memoryarena_importer_skips_constraint_only_question_until_memory_reuse(
     assert task.expected_facts == ["Known Lunch, Testville"]
 
 
-def test_memoryarena_importer_treats_stay_as_accommodation():
+def test_memoryarena_importer_maps_unique_accommodation_overlap():
     row = {
         "id": 11,
         "base_person": {"name": "Jennifer", "daily_plans": []},
@@ -142,7 +141,6 @@ def test_memoryarena_importer_treats_stay_as_accommodation():
                 {"days": 2, "accommodation": "Correct Stay, Testville"},
             ],
             [
-                {"days": 1, "accommodation": "Wrong Stay, Testville"},
                 {"days": 2, "accommodation": "Correct Stay, Testville"},
             ],
         ],

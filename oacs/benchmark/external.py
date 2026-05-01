@@ -10,14 +10,14 @@ import httpx
 
 from oacs.benchmark.models import BenchmarkTask
 
-SLOT_ALIASES = {
-    "breakfast": ("breakfast",),
-    "lunch": ("lunch",),
-    "dinner": ("dinner",),
-    "accommodation": ("accommodation", "stay", "same place"),
-    "attraction": ("attraction",),
-    "transportation": ("transportation", "flight", "self-driving"),
-}
+TRAVEL_PLAN_FIELDS = (
+    "breakfast",
+    "lunch",
+    "dinner",
+    "accommodation",
+    "attraction",
+    "transportation",
+)
 
 MEMORYARENA_URLS = {
     "group_travel_planner": (
@@ -91,6 +91,7 @@ class MemoryArenaImporter:
             return None
         question_index, expected = selected
         previous_answers = answers[:question_index]
+        memory_selectors = _memory_selectors(previous_answers, answers[question_index], expected)
 
         setup_memories = [
             {
@@ -141,6 +142,7 @@ class MemoryArenaImporter:
                 "scope": [f"memoryarena:{row_id}"],
                 "max_output_tokens": 512,
                 "requires_memory": True,
+                "memory_selectors": memory_selectors,
             },
         )
 
@@ -291,67 +293,71 @@ class AmaBenchImporter:
         )
 
 
-def _expected_facts(
-    previous_answers: list[Any], current_answer: Any, current_question: str
-) -> list[str]:
+def _expected_facts(previous_answers: list[Any], current_answer: Any) -> list[str]:
     previous_strings = set(_strings(previous_answers))
-    current_strings = list(dict.fromkeys(_requested_slot_strings(current_answer, current_question)))
+    current_strings = list(dict.fromkeys(_strings_for_plan_fields(current_answer)))
     overlaps = [
         value
         for value in current_strings
         if value in previous_strings and _is_specific_expected_fact(value)
     ]
-    return sorted(overlaps, key=len, reverse=True)[:3]
+    if len(overlaps) != 1:
+        return []
+    return overlaps
 
 
 def _select_memory_supported_question(
     questions: list[Any], answers: list[Any]
 ) -> tuple[int, list[str]] | None:
     for question_index in range(1, min(len(questions), len(answers))):
-        expected = _expected_facts(
-            answers[:question_index], answers[question_index], str(questions[question_index])
-        )
+        expected = _expected_facts(answers[:question_index], answers[question_index])
         if expected:
             return question_index, expected
     return None
 
 
-def _requested_slot_strings(value: Any, question: str) -> Iterable[str]:
-    requested = {
-        key
-        for key, aliases in SLOT_ALIASES.items()
-        if any(alias in question.lower() for alias in aliases)
-    }
-    requested_days = _requested_days(question)
-    if not requested:
-        yield from _strings(value)
-        return
-    yield from _strings_for_keys(value, requested, requested_days)
-
-
-def _strings_for_keys(value: Any, requested: set[str], requested_days: set[int]) -> Iterable[str]:
+def _strings_for_plan_fields(value: Any) -> Iterable[str]:
     if isinstance(value, dict):
-        day = value.get("days")
-        if requested_days and isinstance(day, int) and day not in requested_days:
-            return
         for key, child in value.items():
-            if str(key).lower() in requested:
+            if str(key).lower() in TRAVEL_PLAN_FIELDS:
                 yield from _strings(child)
             elif isinstance(child, dict | list):
-                yield from _strings_for_keys(child, requested, requested_days)
+                yield from _strings_for_plan_fields(child)
         return
     if isinstance(value, list):
         for child in value:
-            yield from _strings_for_keys(child, requested, requested_days)
+            yield from _strings_for_plan_fields(child)
 
 
-def _requested_days(question: str) -> set[int]:
-    question_lower = question.lower()
-    mapping = {"first": 1, "second": 2, "third": 3, "1": 1, "2": 2, "3": 3}
+def _memory_selectors(
+    previous_answers: list[Any], current_answer: Any, expected: list[str]
+) -> dict[str, object]:
+    expected_set = set(expected)
+    selector_items: list[dict[str, object]] = []
+    for current_slot, _current_day, current_value in _travel_plan_values(current_answer):
+        if current_value not in expected_set:
+            continue
+        for index, previous_answer in enumerate(previous_answers):
+            for previous_slot, previous_day, previous_value in _travel_plan_values(previous_answer):
+                if previous_value == current_value:
+                    selector: dict[str, object] = {
+                        "slot": previous_slot or current_slot,
+                        "source_index": index,
+                    }
+                    if previous_day is not None:
+                        selector["day"] = previous_day
+                    selector_items.append(selector)
+    slots = sorted({str(item["slot"]) for item in selector_items if item.get("slot")})
+    days: list[int] = []
+    for item in selector_items:
+        day = item.get("day")
+        if isinstance(day, int) and day not in days:
+            days.append(day)
+    days.sort()
     return {
-        day
-        for word, day in mapping.items()
-        if re.search(rf"\b{re.escape(word)}[- ]day\b|\bday {re.escape(word)}\b", question_lower)
+        "items": selector_items,
+        "slots": slots,
+        "days": days,
     }
 
 
@@ -364,7 +370,7 @@ def _travel_evidence_items(
         if not isinstance(plan, dict):
             continue
         day = plan.get("days")
-        for slot in SLOT_ALIASES:
+        for slot in TRAVEL_PLAN_FIELDS:
             value = plan.get(slot)
             if isinstance(value, str) and _is_specific_expected_fact(value):
                 item: dict[str, object] = {
@@ -382,6 +388,19 @@ def _travel_evidence_items(
                     item["participant"] = participant
                 items.append(item)
     return items
+
+
+def _travel_plan_values(value: Any) -> Iterable[tuple[str, int | None, str]]:
+    plans = value if isinstance(value, list) else [value]
+    for plan in plans:
+        if not isinstance(plan, dict):
+            continue
+        day = plan.get("days")
+        normalized_day = day if isinstance(day, int) else None
+        for slot in TRAVEL_PLAN_FIELDS:
+            item = plan.get(slot)
+            if isinstance(item, str) and _is_specific_expected_fact(item):
+                yield slot, normalized_day, item
 
 
 def _participant_from_question(question: str) -> str | None:
