@@ -23,6 +23,24 @@ acs repo context --task "continue OACS development" --json
 Capsule from the repo scope so another local agent pass can start from explicit
 memory rather than conversation history alone.
 
+For controlled auto-memory during local development:
+
+```bash
+acs repo auto-start --task "implement next OACS slice" --json
+
+acs repo autorun --task "verify next OACS slice" \
+  --command "pytest -q" --json
+
+acs repo auto-finish --task "implement next OACS slice" \
+  --summary "Added and verified the next OACS slice." \
+  --outcome "implemented" --json
+```
+
+`auto-start` only builds context and records audit metadata; it does not write
+memory. `auto-finish` and `autorun` commit only D1 repo episodes. D2 facts,
+procedures, rules, and D3-D5 patterns still require explicit OACS
+`memory propose` / `memory commit` review.
+
 ## RU
 Этот документ - internal validation note для reference implementation. Он не
 является частью OACS v0.1 draft standard surface. Он показывает, что ordinary
@@ -45,3 +63,21 @@ acs repo context --task "continue OACS development" --json
 `repo capture` пишет committed D1 episode. `repo context` строит Context Capsule
 из repo scope, чтобы другой local agent pass начинался с явной памяти, а не
 только с истории диалога.
+
+Для controlled auto-memory во время локальной разработки:
+
+```bash
+acs repo auto-start --task "implement next OACS slice" --json
+
+acs repo autorun --task "verify next OACS slice" \
+  --command "pytest -q" --json
+
+acs repo auto-finish --task "implement next OACS slice" \
+  --summary "Added and verified the next OACS slice." \
+  --outcome "implemented" --json
+```
+
+`auto-start` только строит context и пишет audit metadata; memory он не
+записывает. `auto-finish` и `autorun` коммитят только D1 repo episodes. D2
+facts, procedures, rules и D3-D5 patterns по-прежнему требуют явного review
+через OACS `memory propose` / `memory commit`.

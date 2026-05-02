@@ -83,10 +83,12 @@ acs repo capture --task "tighten memory_calls" \
   --summary "Removed benchmark-specific shortcuts and kept selector metadata typed." --json
 
 acs repo context --task "continue OACS development" --json
+acs repo autorun --task "verify OACS development" --command "pytest -q" --json
 ```
 
 `repo capture` stores a committed D1 episode. `repo context` builds an
-explainable capsule over the repo scope.
+explainable capsule over the repo scope. `repo autorun` runs a local command
+and commits only a D1 repo episode with command outcome metadata.
 
 ### LM Studio
 
@@ -205,10 +207,12 @@ acs repo capture --task "tighten memory_calls" \
   --summary "Removed benchmark-specific shortcuts and kept selector metadata typed." --json
 
 acs repo context --task "continue OACS development" --json
+acs repo autorun --task "verify OACS development" --command "pytest -q" --json
 ```
 
 `repo capture` сохраняет committed D1 episode. `repo context` строит explainable
-capsule по repo scope.
+capsule по repo scope. `repo autorun` запускает local command и коммитит только
+D1 repo episode с metadata результата команды.
 
 ### LM Studio
 

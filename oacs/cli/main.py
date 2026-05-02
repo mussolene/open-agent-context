@@ -104,6 +104,79 @@ def _repo_state(cwd: Path) -> dict[str, object]:
     }
 
 
+def _commit_repo_episode(
+    svc: OacsServices,
+    task: str,
+    summary: str,
+    actor: str | None,
+    repo_scope: list[str],
+    state: dict[str, object],
+    *,
+    outcome: str | None = None,
+    command: str | None = None,
+    exit_code: int | None = None,
+    auto_memory: bool = False,
+) -> dict[str, object]:
+    lines = [
+        f"Repository task: {task}",
+        f"Summary: {summary}",
+        f"Git branch: {state['branch']}",
+        f"Git commit: {state['commit']}",
+        f"Dirty worktree: {state['dirty']}",
+    ]
+    if outcome:
+        lines.append(f"Outcome: {outcome}")
+    if command:
+        lines.append(f"Command: {command}")
+    if exit_code is not None:
+        lines.append(f"Exit code: {exit_code}")
+    evidence: list[EvidenceItem | dict[str, object]] = [
+        EvidenceItem(
+            evidence_kind="repo_task_trace",
+            claim="Repository development task summary",
+            value=summary,
+            source_ref=f"git:{state['commit']}",
+            confidence=1.0,
+            scope=repo_scope,
+            slot="evidence",
+        )
+    ]
+    proposed = svc.memory.propose(
+        "episode",
+        1,
+        "\n".join(lines),
+        actor,
+        repo_scope,
+        evidence=evidence,
+    )
+    committed = svc.memory.commit(proposed.id, actor)
+    svc.audit.record(
+        "repo.capture",
+        actor,
+        committed.id,
+        {
+            "task_hash": hash_json(task),
+            "auto_memory": auto_memory,
+            "outcome": outcome,
+            "command_hash": hash_json(command) if command else None,
+            "exit_code": exit_code,
+        },
+    )
+    result: dict[str, object] = {
+        "memory_id": committed.id,
+        "scope": repo_scope,
+        "git": state,
+        "status": committed.lifecycle_status,
+    }
+    if auto_memory:
+        result["auto_memory_policy"] = {
+            "committed_depth": 1,
+            "committed_type": "episode",
+            "d2_d3_auto_commit": False,
+        }
+    return result
+
+
 def emit(data: object, json_out: bool) -> None:
     if json_out:
         typer.echo(json.dumps(data, ensure_ascii=False, indent=2, default=str))
@@ -545,38 +618,7 @@ def repo_capture(
     svc = services(db)
     repo_scope = scope or _repo_scope(cwd)
     state = _repo_state(cwd)
-    text = "\n".join(
-        [
-            f"Repository task: {task}",
-            f"Summary: {summary}",
-            f"Git branch: {state['branch']}",
-            f"Git commit: {state['commit']}",
-            f"Dirty worktree: {state['dirty']}",
-        ]
-    )
-    evidence: list[EvidenceItem | dict[str, object]] = [
-        EvidenceItem(
-            evidence_kind="repo_task_trace",
-            claim="Repository development task summary",
-            value=summary,
-            source_ref=f"git:{state['commit']}",
-            confidence=1.0,
-            scope=repo_scope,
-            slot="evidence",
-        )
-    ]
-    proposed = svc.memory.propose("episode", 1, text, actor, repo_scope, evidence=evidence)
-    committed = svc.memory.commit(proposed.id, actor)
-    svc.audit.record("repo.capture", actor, committed.id, {"task_hash": hash_json(task)})
-    emit(
-        {
-            "memory_id": committed.id,
-            "scope": repo_scope,
-            "git": state,
-            "status": committed.lifecycle_status,
-        },
-        json_out,
-    )
+    emit(_commit_repo_episode(svc, task, summary, actor, repo_scope, state), json_out)
 
 
 @repo_app.command("context")
@@ -597,6 +639,153 @@ def repo_context(
         {
             "capsule": capsule.model_dump(),
             "explain": svc.context.explain(capsule.id, actor),
+        },
+        json_out,
+    )
+
+
+@repo_app.command("auto-start")
+def repo_auto_start(
+    task: Annotated[str, typer.Option("--task")],
+    actor: ActorOpt = None,
+    agent: AgentOpt = None,
+    scope: ScopeOpt = None,
+    cwd: Annotated[Path, typer.Option("--cwd")] = Path("."),
+    budget: Annotated[int, typer.Option("--budget")] = 4000,
+    db: DbOpt = None,
+    json_out: JsonOpt = False,
+) -> None:
+    svc = services(db)
+    repo_scope = scope or _repo_scope(cwd)
+    capsule = svc.context.build(task, actor, agent, repo_scope, budget)
+    svc.audit.record(
+        "repo.auto_start",
+        actor,
+        capsule.id,
+        {"task_hash": hash_json(task), "auto_memory": True},
+    )
+    emit(
+        {
+            "task": task,
+            "scope": repo_scope,
+            "git": _repo_state(cwd),
+            "capsule": capsule.model_dump(),
+            "explain": svc.context.explain(capsule.id, actor),
+            "auto_memory_policy": {
+                "start_writes_memory": False,
+                "finish_commits_depth": 1,
+                "d2_d3_auto_commit": False,
+            },
+        },
+        json_out,
+    )
+
+
+@repo_app.command("auto-finish")
+def repo_auto_finish(
+    task: Annotated[str, typer.Option("--task")],
+    summary: Annotated[str, typer.Option("--summary")],
+    outcome: Annotated[str | None, typer.Option("--outcome")] = None,
+    actor: ActorOpt = None,
+    scope: ScopeOpt = None,
+    cwd: Annotated[Path, typer.Option("--cwd")] = Path("."),
+    db: DbOpt = None,
+    json_out: JsonOpt = False,
+) -> None:
+    svc = services(db)
+    repo_scope = scope or _repo_scope(cwd)
+    state = _repo_state(cwd)
+    emit(
+        _commit_repo_episode(
+            svc,
+            task,
+            summary,
+            actor,
+            repo_scope,
+            state,
+            outcome=outcome,
+            auto_memory=True,
+        ),
+        json_out,
+    )
+
+
+@repo_app.command("autorun")
+def repo_autorun(
+    task: Annotated[str, typer.Option("--task")],
+    command: Annotated[str, typer.Option("--command")],
+    actor: ActorOpt = None,
+    agent: AgentOpt = None,
+    scope: ScopeOpt = None,
+    cwd: Annotated[Path, typer.Option("--cwd")] = Path("."),
+    budget: Annotated[int, typer.Option("--budget")] = 4000,
+    timeout: Annotated[int, typer.Option("--timeout")] = 300,
+    db: DbOpt = None,
+    json_out: JsonOpt = False,
+) -> None:
+    import shlex
+
+    svc = services(db)
+    repo_scope = scope or _repo_scope(cwd)
+    capsule = svc.context.build(task, actor, agent, repo_scope, budget)
+    args = shlex.split(command)
+    if not args:
+        raise typer.BadParameter("--command must not be empty")
+    try:
+        completed = subprocess.run(
+            args,
+            cwd=cwd,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+        exit_code = completed.returncode
+        stdout_tail = completed.stdout[-4000:]
+        stderr_tail = completed.stderr[-4000:]
+        outcome = "passed" if exit_code == 0 else "failed"
+        summary = f"Autorun command {outcome}: {command}"
+    except subprocess.TimeoutExpired as exc:
+        exit_code = 124
+        stdout_tail = (exc.stdout or "")[-4000:] if isinstance(exc.stdout, str) else ""
+        stderr_tail = (exc.stderr or "")[-4000:] if isinstance(exc.stderr, str) else ""
+        outcome = "timeout"
+        summary = f"Autorun command timed out after {timeout}s: {command}"
+    state = _repo_state(cwd)
+    memory = _commit_repo_episode(
+        svc,
+        task,
+        summary,
+        actor,
+        repo_scope,
+        state,
+        outcome=outcome,
+        command=command,
+        exit_code=exit_code,
+        auto_memory=True,
+    )
+    svc.audit.record(
+        "repo.autorun",
+        actor,
+        str(memory["memory_id"]),
+        {
+            "capsule_id": capsule.id,
+            "command_hash": hash_json(command),
+            "exit_code": exit_code,
+            "auto_memory": True,
+        },
+    )
+    emit(
+        {
+            "task": task,
+            "scope": repo_scope,
+            "capsule_id": capsule.id,
+            "command": command,
+            "exit_code": exit_code,
+            "outcome": outcome,
+            "stdout_tail": stdout_tail,
+            "stderr_tail": stderr_tail,
+            "memory": memory,
         },
         json_out,
     )
