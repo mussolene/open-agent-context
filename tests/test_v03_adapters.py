@@ -224,6 +224,80 @@ def test_local_cli_tool_binding_uses_json_stdin_and_evidence(svc, tmp_path) -> N
     assert result.evidence_ref is not None
 
 
+def test_cli_grant_tool_helper_and_schema_file(tmp_path) -> None:
+    db = tmp_path / "oacs.db"
+    schema = tmp_path / "out.schema.json"
+    schema.write_text(
+        json.dumps(
+            {
+                "type": "object",
+                "required": ["echo"],
+                "properties": {"echo": {"type": "object"}},
+            }
+        ),
+        encoding="utf-8",
+    )
+    runner = CliRunner()
+    assert runner.invoke(app, ["init", "--db", str(db), "--json"]).exit_code == 0
+    actor = runner.invoke(
+        app,
+        ["actor", "create", "--db", str(db), "--type", "agent", "--name", "ToolAgent", "--json"],
+    )
+    actor_id = json.loads(actor.output)["id"]
+    added = runner.invoke(
+        app,
+        [
+            "tool",
+            "add",
+            "--db",
+            str(db),
+            "--name",
+            "local_echo",
+            "--type",
+            "python_function",
+            "--output-schema",
+            str(schema),
+            "--json",
+        ],
+    )
+    assert added.exit_code == 0, added.output
+    tool_id = json.loads(added.output)["id"]
+    grant = runner.invoke(
+        app,
+        [
+            "capability",
+            "grant-tool",
+            "--db",
+            str(db),
+            "--subject",
+            actor_id,
+            "--tool",
+            tool_id,
+            "--json",
+        ],
+    )
+    assert grant.exit_code == 0, grant.output
+    call = runner.invoke(
+        app,
+        [
+            "tool",
+            "call",
+            "local_echo",
+            "--db",
+            str(db),
+            "--actor",
+            actor_id,
+            "--payload",
+            '{"ok":true}',
+            "--json",
+        ],
+    )
+    assert call.exit_code == 0, call.output
+    body = json.loads(call.output)
+    assert body["output"] == {"echo": {"ok": True}}
+    assert body["evidence_ref"].startswith("ev_")
+
+
 def test_mcp_import_creates_scoped_tools_and_blocks_unlisted_binding_tool(svc, tmp_path) -> None:
     config = tmp_path / "mcp.json"
     config.write_text(

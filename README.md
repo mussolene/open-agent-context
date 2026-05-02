@@ -46,6 +46,8 @@ adapters. They validate or exercise the contract but do not expand it.
 This path reaches the first useful OACS result: commit a memory, retrieve it,
 and build an explainable Context Capsule.
 
+For the public PyPI install path, see `docs/QUICKSTART_PYPI.md`.
+
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
@@ -104,6 +106,8 @@ python3 examples/killer_demo/run_demo.py --out .oacs/killer-demo --force
 
 Raw artifacts are written to the output directory; start with `SUMMARY.md` and
 `summary.json`.
+
+Tool onboarding is documented in `docs/TOOL_BINDINGS.md`.
 
 ### Development Dogfood
 
@@ -203,6 +207,8 @@ reference adapters. Они валидируют или упражняют contra
 Этот путь даёт первый полезный результат OACS: записать memory, найти её и
 построить explainable Context Capsule.
 
+Публичный путь установки через PyPI описан в `docs/QUICKSTART_PYPI.md`.
+
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
@@ -261,6 +267,8 @@ python3 examples/killer_demo/run_demo.py --out .oacs/killer-demo --force
 
 Raw artifacts пишутся в output directory; начинать стоит с `SUMMARY.md` и
 `summary.json`.
+
+Tool onboarding описан в `docs/TOOL_BINDINGS.md`.
 
 ### Development dogfood
 

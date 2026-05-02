@@ -168,6 +168,33 @@ def main() -> int:
             "1600",
         ],
     )
+    run_cli(
+        "11_tool_grant",
+        [
+            "capability",
+            "grant-tool",
+            "--db",
+            str(db),
+            "--subject",
+            actor_id,
+            "--tool",
+            "tool_local_echo",
+        ],
+    )
+    tool_call = run_cli(
+        "12_tool_call",
+        [
+            "tool",
+            "call",
+            "local_echo",
+            "--db",
+            str(db),
+            "--actor",
+            actor_id,
+            "--payload",
+            '{"request":"capture release evidence proof"}',
+        ],
+    )
 
     mcp_config = {
         "mcpServers": {
@@ -180,13 +207,13 @@ def main() -> int:
             }
         }
     }
-    write_json(out_dir / "11_mcp_config.json", mcp_config)
+    write_json(out_dir / "13_mcp_config.json", mcp_config)
     mcp_import = run_cli(
-        "12_mcp_import",
-        ["mcp", "import", str(out_dir / "11_mcp_config.json"), "--db", str(db)],
+        "14_mcp_import",
+        ["mcp", "import", str(out_dir / "13_mcp_config.json"), "--db", str(db)],
     )
-    mcp_list = run_cli("13_mcp_list", ["mcp", "list", "--db", str(db)])
-    audit_verify = run_cli("14_audit_verify", ["audit", "verify", "--db", str(db)])
+    mcp_list = run_cli("15_mcp_list", ["mcp", "list", "--db", str(db)])
+    audit_verify = run_cli("16_audit_verify", ["audit", "verify", "--db", str(db)])
 
     benchmark = read_benchmark_summary()
     api_artifacts = write_api_shaped_artifacts(out_dir, actor_id, capsule, exported, loop_run)
@@ -215,8 +242,9 @@ def main() -> int:
             "context_export": "08_context_export.json",
             "context_validation": "09_context_validate.json",
             "loop_memory_calls": "10_loop_run.json",
-            "mcp_adapter_metadata": "12_mcp_import.json",
-            "audit_verification": "14_audit_verify.json",
+            "tool_call_result": "12_tool_call.json",
+            "mcp_adapter_metadata": "14_mcp_import.json",
+            "audit_verification": "16_audit_verify.json",
             "api_shaped": api_artifacts,
         },
         "proof_points": {
@@ -227,6 +255,8 @@ def main() -> int:
             "export_type": exported.get("export_type"),
             "context_validation": validation,
             "memory_calls": len(loop_run.get("memory_calls", [])),
+            "tool_call_evidence_ref": tool_call.get("evidence_ref"),
+            "tool_call_output": tool_call.get("output"),
             "mcp_bindings_imported": len(mcp_import),
             "mcp_bindings_listed": len(mcp_list),
             "audit": audit_verify,
@@ -333,6 +363,7 @@ MCP replacement.
 - Context export type: `{proof["export_type"]}`
 - Context validation: `{proof["context_validation"]["valid"]}`
 - Memory calls emitted: {proof["memory_calls"]}
+- Tool call evidence: `{proof["tool_call_evidence_ref"]}`
 - MCP bindings imported: {proof["mcp_bindings_imported"]}
 - Audit chain valid: `{proof["audit"]["valid"]}` across {proof["audit"]["events"]} events
 
@@ -352,7 +383,8 @@ Aggregate row:
 
 See `summary.json`, `commands.json`, `06_memory_query.json`,
 `07_context_build.json`, `08_context_export.json`, `09_context_validate.json`,
-`10_loop_run.json`, `12_mcp_import.json`, and `14_audit_verify.json`.
+`10_loop_run.json`, `12_tool_call.json`, `14_mcp_import.json`, and
+`16_audit_verify.json`.
 """
     path.write_text(content, encoding="utf-8")
 

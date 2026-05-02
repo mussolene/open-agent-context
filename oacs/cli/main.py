@@ -226,6 +226,27 @@ def capability_grant(
     emit(grant.model_dump(), json_out)
 
 
+@capability_app.command("grant-tool")
+def capability_grant_tool(
+    subject: Annotated[str, typer.Option("--subject")],
+    tool: Annotated[list[str], typer.Option("--tool")],
+    issuer: Annotated[str, typer.Option("--issuer")] = "system",
+    scope: ScopeOpt = None,
+    namespace: Annotated[list[str] | None, typer.Option("--namespace")] = None,
+    db: DbOpt = None,
+    json_out: JsonOpt = False,
+) -> None:
+    grant = services(db, require_key=False).capabilities.grant(
+        subject,
+        issuer,
+        ["tool.call"],
+        scope=scope,
+        namespaces_allowed=namespace,
+        tools_allowed=tool,
+    )
+    emit(grant.model_dump(), json_out)
+
+
 @memory_app.command("observe")
 def memory_observe(
     text: Annotated[str, typer.Option("--text")],
@@ -692,6 +713,11 @@ def tool_add(
     name: Annotated[str, typer.Option("--name")],
     type: Annotated[str, typer.Option("--type")] = "python_function",
     command: Annotated[str | None, typer.Option("--command")] = None,
+    input_schema: Annotated[Path | None, typer.Option("--input-schema")] = None,
+    output_schema: Annotated[Path | None, typer.Option("--output-schema")] = None,
+    http_url: Annotated[str | None, typer.Option("--http-url")] = None,
+    http_method: Annotated[str, typer.Option("--http-method")] = "POST",
+    allow_network: Annotated[bool, typer.Option("--allow-network")] = False,
     description: Annotated[str, typer.Option("--description")] = "",
     risk_level: Annotated[str, typer.Option("--risk")] = "low",
     namespace: Annotated[str, typer.Option("--namespace")] = "default",
@@ -706,10 +732,13 @@ def tool_add(
                 name=name,
                 type=type,
                 command=command,
+                http=_http_config(http_url, http_method, allow_network),
                 description=description,
                 risk_level=risk_level,
                 namespace=namespace,
                 scope=scope or [],
+                input_schema=_schema_file(input_schema),
+                output_schema=_schema_file(output_schema),
             )
         )
         .model_dump(),
@@ -752,6 +781,23 @@ def tool_call(
         execute_mcp=execute_mcp,
     )
     emit(result.model_dump(), json_out)
+
+
+def _schema_file(path: Path | None) -> dict[str, object]:
+    if path is None:
+        return {}
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise typer.BadParameter("schema file must contain a JSON object")
+    return payload
+
+
+def _http_config(url: str | None, method: str, allow_network: bool) -> dict[str, object] | None:
+    if url is None and not allow_network:
+        return None
+    if not url:
+        raise typer.BadParameter("--http-url is required for HTTP tool config")
+    return {"url": url, "method": method.upper(), "allow_network": allow_network}
 
 
 @mcp_app.command("import")

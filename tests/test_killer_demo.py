@@ -33,6 +33,8 @@ def test_killer_demo_generates_governed_context_artifacts(tmp_path) -> None:
     assert proof["capsule_memory_refs"] == 1
     assert proof["context_validation"]["valid"] is True
     assert proof["memory_calls"] >= 2
+    assert proof["tool_call_evidence_ref"].startswith("ev_")
+    assert proof["tool_call_output"]["echo"]["request"] == "capture release evidence proof"
     assert proof["mcp_bindings_imported"] == 1
     assert proof["audit"]["valid"] is True
 
