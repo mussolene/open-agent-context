@@ -36,3 +36,7 @@ def test_release_workflow_uses_trusted_publishing():
     assert "pypa/gh-action-pypi-publish@release/v1" in workflow
     assert "https://test.pypi.org/legacy/" in workflow
     assert "target == 'pypi'" in workflow
+    assert "github.event_name == 'push'" in workflow
+    assert "contains(github.ref_name, 'a')" in workflow
+    assert "contains(github.ref_name, 'b')" in workflow
+    assert "contains(github.ref_name, 'rc')" in workflow
