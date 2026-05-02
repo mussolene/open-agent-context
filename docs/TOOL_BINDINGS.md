@@ -52,6 +52,27 @@ This writes the same `tool_result` evidence shape and an
 `evidence.ingest_tool_result` audit event. OACS governs provenance, scope,
 hashing, and later context projection; it does not choose or schedule the tool.
 
+Canonical retrieval pattern for external knowledge:
+
+```text
+external retrieval tool -> tool ingest-result -> EvidenceRef -> memory sharpen -> context build
+```
+
+For example, a 1C documentation retriever can run outside OACS, pass the
+retrieved canonical snippet through `acs tool ingest-result`, receive an
+`EvidenceRef`, attach that ref to a distilled memory through
+`acs memory sharpen --evidence <ev_...>`, and then use `acs context build`.
+The raw tool-call evidence does not enter `ContextCapsule.evidence_refs` by
+itself. Context build projects evidence refs from included memories, so the
+sharpening step is the bridge from external canonical evidence to task context.
+
+Debug evidence refs during proof-loop work:
+
+```bash
+acs evidence list --kind tool_result --json
+acs evidence inspect <ev_...> --json
+```
+
 HTTP tools are disabled by default unless the binding explicitly opts in:
 
 ```bash
@@ -117,6 +138,28 @@ acs tool ingest-result \
 Это пишет тот же `tool_result` evidence shape и audit event
 `evidence.ingest_tool_result`. OACS отвечает за provenance, scope, hashing и
 последующую projection в context; он не выбирает и не планирует tool.
+
+Canonical retrieval pattern для внешних знаний:
+
+```text
+external retrieval tool -> tool ingest-result -> EvidenceRef -> memory sharpen -> context build
+```
+
+Например, retriever справки 1С может работать вне OACS, передать найденный
+canonical snippet через `acs tool ingest-result`, получить `EvidenceRef`,
+привязать этот ref к distilled memory через
+`acs memory sharpen --evidence <ev_...>`, а затем вызвать `acs context build`.
+Raw tool-call evidence сам по себе не попадает в
+`ContextCapsule.evidence_refs`. Context build проецирует evidence refs из
+включённых memories, поэтому sharpening step является мостом от внешнего
+canonical evidence к task context.
+
+Evidence refs можно смотреть во время proof-loop/debugging:
+
+```bash
+acs evidence list --kind tool_result --json
+acs evidence inspect <ev_...> --json
+```
 
 HTTP tools отключены по умолчанию, пока binding явно не разрешит network:
 

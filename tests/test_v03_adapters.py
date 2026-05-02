@@ -395,6 +395,39 @@ def test_cli_ingests_external_tool_result(tmp_path) -> None:
     assert body["output"] == {"result": "alpha evidence"}
     assert body["evidence_ref"].startswith("ev_")
 
+    inspect = runner.invoke(
+        app,
+        [
+            "evidence",
+            "inspect",
+            body["evidence_ref"],
+            "--db",
+            str(db),
+            "--json",
+        ],
+    )
+    assert inspect.exit_code == 0, inspect.output
+    evidence = json.loads(inspect.output)
+    assert evidence["id"] == body["evidence_ref"]
+    assert evidence["kind"] == "tool_result"
+    assert evidence["public_payload"]["source_uri"] == "file:///tmp/external-cli-result.json"
+
+    listed = runner.invoke(
+        app,
+        [
+            "evidence",
+            "list",
+            "--db",
+            str(db),
+            "--kind",
+            "tool_result",
+            "--json",
+        ],
+    )
+    assert listed.exit_code == 0, listed.output
+    evidence_refs = json.loads(listed.output)
+    assert [record["id"] for record in evidence_refs] == [body["evidence_ref"]]
+
 
 def test_api_ingests_external_tool_result(db, monkeypatch) -> None:
     monkeypatch.setenv("OACS_DB", str(db))

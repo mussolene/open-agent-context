@@ -5,7 +5,7 @@ This roadmap keeps the OACS v0.1 draft standard small. Core work must define
 memory, context, permissions, audit, and deterministic operation contracts.
 Reference adapters prove integration, but they do not expand the standard.
 
-### Current Position: v0.3.1a1 Reference POC
+### Current Position: v0.3.1a2 Reference POC
 Core contract:
 
 - Done: OACS v0.1 draft terminology, schemas, encrypted `MemoryRecord`,
@@ -122,7 +122,7 @@ Reference adapters:
 определять memory, context, permissions, audit и deterministic operation
 contracts. Reference adapters доказывают интеграцию, но не расширяют стандарт.
 
-### Текущая позиция: v0.3.1a1 Reference POC
+### Текущая позиция: v0.3.1a2 Reference POC
 Core contract:
 
 - Готово: OACS v0.1 draft terminology, schemas, encrypted `MemoryRecord`,

@@ -15,6 +15,27 @@ class EvidenceService:
         self.policy = policy
         self.audit = audit
 
+    def get(self, evidence_ref: str) -> dict[str, object]:
+        return self.repo.get(evidence_ref)
+
+    def list_refs(
+        self,
+        *,
+        kind: str | None = None,
+        namespace: str | None = None,
+        limit: int | None = 50,
+    ) -> list[dict[str, object]]:
+        filters: dict[str, object] = {}
+        if kind:
+            filters["kind"] = kind
+        if namespace:
+            filters["namespace"] = namespace
+        return self.repo.list(
+            filters=filters or None,
+            order_by=[("created_at", "desc"), ("id", "desc")],
+            limit=limit,
+        )
+
     def ingest_tool_result(
         self,
         *,

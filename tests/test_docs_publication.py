@@ -54,6 +54,26 @@ def test_public_docs_do_not_use_stale_reference_version() -> None:
         assert stale not in path.read_text(encoding="utf-8"), path
 
 
+def test_quickstart_pypi_uses_current_version() -> None:
+    text = (ROOT / "docs" / "QUICKSTART_PYPI.md").read_text(encoding="utf-8")
+
+    assert f"pip install oacs=={__version__}" in text
+    assert "pip install oacs==0.3.0a1" not in text
+
+
+def test_tool_docs_describe_canonical_evidence_projection() -> None:
+    text = (ROOT / "docs" / "TOOL_BINDINGS.md").read_text(encoding="utf-8")
+    pattern = (
+        "external retrieval tool -> tool ingest-result -> EvidenceRef -> "
+        "memory sharpen -> context build"
+    )
+
+    assert pattern in text
+    assert "acs evidence list --kind tool_result --json" in text
+    assert "acs evidence inspect <ev_...> --json" in text
+    assert "does not enter `ContextCapsule.evidence_refs` by" in text
+
+
 def test_public_docs_call_standard_a_draft() -> None:
     pattern = re.compile(r"OACS v0\.1(?! draft)")
     for path in PUBLIC_MARKDOWN:

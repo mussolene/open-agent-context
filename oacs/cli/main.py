@@ -17,6 +17,7 @@ from oacs.benchmark.reports import compare_runs, select_comparison_runs
 from oacs.benchmark.runner import MemoryCriticalBenchmark
 from oacs.context.reducer import reduce_capsule
 from oacs.core.config import OacsConfig
+from oacs.core.errors import NotFound
 from oacs.core.json import hash_json
 from oacs.core.time import now_iso
 from oacs.crypto.hybrid_pqc import HybridPQCKeyProvider
@@ -34,6 +35,7 @@ capsule_app = typer.Typer()
 rule_app = typer.Typer()
 skill_app = typer.Typer()
 tool_app = typer.Typer()
+evidence_app = typer.Typer()
 mcp_app = typer.Typer()
 loop_app = typer.Typer()
 benchmark_app = typer.Typer()
@@ -50,6 +52,7 @@ app.add_typer(capsule_app, name="capsule")
 app.add_typer(rule_app, name="rule")
 app.add_typer(skill_app, name="skill")
 app.add_typer(tool_app, name="tool")
+app.add_typer(evidence_app, name="evidence")
 app.add_typer(mcp_app, name="mcp")
 app.add_typer(loop_app, name="loop")
 app.add_typer(benchmark_app, name="benchmark")
@@ -820,6 +823,30 @@ def tool_ingest_result(
         executed=executed,
     )
     emit(result.model_dump(), json_out)
+
+
+@evidence_app.command("list")
+def evidence_list(
+    kind: Annotated[str | None, typer.Option("--kind")] = None,
+    namespace: Annotated[str | None, typer.Option("--namespace")] = None,
+    limit: Annotated[int, typer.Option("--limit", min=0)] = 50,
+    db: DbOpt = None,
+    json_out: JsonOpt = False,
+) -> None:
+    records = services(db, require_key=False).evidence.list_refs(
+        kind=kind,
+        namespace=namespace,
+        limit=limit,
+    )
+    emit(records, json_out)
+
+
+@evidence_app.command("inspect")
+def evidence_inspect(evidence_ref: str, db: DbOpt = None, json_out: JsonOpt = False) -> None:
+    try:
+        emit(services(db, require_key=False).evidence.get(evidence_ref), json_out)
+    except NotFound as exc:
+        fail(str(exc))
 
 
 def _schema_file(path: Path | None) -> dict[str, object]:

@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.3.1a2 - 2026-05-02
+
+### Added
+
+- `acs evidence list` and `acs evidence inspect` for proof-loop/debugging.
+- Canonical retrieval pattern documentation for external retrieval tools:
+  `tool ingest-result` -> `EvidenceRef` -> `memory sharpen` -> `context build`.
+
+### Changed
+
+- Clarified that standalone tool-result evidence is not projected into
+  `ContextCapsule.evidence_refs` until attached to an included memory.
+- Updated PyPI quickstart and roadmap references for `0.3.1a2`.
+
 ## 0.3.1a1 - 2026-05-02
 
 ### Added

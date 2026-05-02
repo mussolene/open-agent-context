@@ -34,6 +34,11 @@ submit already executed tool result envelopes to OACS; OACS hashes, scopes,
 audits, and stores them as `tool_result` evidence without selecting or running
 the tool.
 
+`ContextCapsule.evidence_refs` is projected from the memories included in the
+capsule. A standalone tool-call or ingested tool-result evidence record is
+available for inspection by id, but it is not added to a task capsule until a
+memory that references it is sharpened and selected by context build.
+
 Benchmark endpoints accept `provider` and `model` when running tasks. Task pack
 import uses schema and checksum validation; downloader paths remain explicit and
 network is never used by default.
@@ -70,6 +75,11 @@ Tool execution нормализован через `ToolRunner`. Tool call во�
 требуют явный `http.allow_network=true`. Внешние orchestrators также могут
 передать в OACS уже выполненный tool result envelope; OACS хеширует, scope-ит,
 аудирует и сохраняет его как `tool_result` evidence без выбора или запуска tool.
+
+`ContextCapsule.evidence_refs` проецируется из memories, включённых в capsule.
+Standalone tool-call или ingested tool-result evidence record можно посмотреть
+по id, но он не добавляется в task capsule, пока memory, которая на него
+ссылается, не будет sharpened и выбрана context build.
 
 Benchmark endpoints принимают `provider` и `model` при запуске задач. Import
 task packs использует schema и checksum validation; download paths явные, а
