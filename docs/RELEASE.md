@@ -37,6 +37,25 @@ python3 -m venv "$SMOKE_DIR"
 "$SMOKE_DIR/bin/acs" key init --db "$SMOKE_DIR/oacs.db" --passphrase smoke-pass --json
 ```
 
+TestPyPI smoke after the release workflow succeeds:
+
+```bash
+SMOKE_DIR="${TMPDIR:-/tmp}/oacs-testpypi-smoke"
+rm -rf "$SMOKE_DIR"
+python3 -m venv "$SMOKE_DIR"
+"$SMOKE_DIR/bin/python" -m pip install \
+  cryptography fastapi httpx jsonschema pydantic rich typer uvicorn
+"$SMOKE_DIR/bin/python" -m pip install --no-deps \
+  --index-url https://test.pypi.org/simple/ \
+  oacs==0.3.0a1
+"$SMOKE_DIR/bin/acs" --help
+"$SMOKE_DIR/bin/acs" init --db "$SMOKE_DIR/oacs.db" --json
+"$SMOKE_DIR/bin/acs" key init --db "$SMOKE_DIR/oacs.db" --passphrase smoke-pass --json
+```
+
+Do not make TestPyPI the dependency source. TestPyPI can contain unrelated
+packages with names that shadow production dependencies.
+
 Publishing uses GitHub trusted publishing through `.github/workflows/release.yml`.
 Configure PyPI and TestPyPI projects for the repository before publishing. Do
 not store PyPI API tokens in the repository.
@@ -87,6 +106,25 @@ python3 -m venv "$SMOKE_DIR"
 "$SMOKE_DIR/bin/acs" init --db "$SMOKE_DIR/oacs.db" --json
 "$SMOKE_DIR/bin/acs" key init --db "$SMOKE_DIR/oacs.db" --passphrase smoke-pass --json
 ```
+
+Smoke test после успешной публикации в TestPyPI:
+
+```bash
+SMOKE_DIR="${TMPDIR:-/tmp}/oacs-testpypi-smoke"
+rm -rf "$SMOKE_DIR"
+python3 -m venv "$SMOKE_DIR"
+"$SMOKE_DIR/bin/python" -m pip install \
+  cryptography fastapi httpx jsonschema pydantic rich typer uvicorn
+"$SMOKE_DIR/bin/python" -m pip install --no-deps \
+  --index-url https://test.pypi.org/simple/ \
+  oacs==0.3.0a1
+"$SMOKE_DIR/bin/acs" --help
+"$SMOKE_DIR/bin/acs" init --db "$SMOKE_DIR/oacs.db" --json
+"$SMOKE_DIR/bin/acs" key init --db "$SMOKE_DIR/oacs.db" --passphrase smoke-pass --json
+```
+
+Не используйте TestPyPI как источник dependencies. На TestPyPI могут быть
+посторонние packages, которые перекрывают production dependencies по имени.
 
 Публикация использует GitHub trusted publishing через
 `.github/workflows/release.yml`. До публикации нужно настроить PyPI и TestPyPI
