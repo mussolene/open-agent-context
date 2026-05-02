@@ -1,9 +1,10 @@
 # OACS v0.1 draft - Open Agent Context Standard
 
 ## EN
-OACS is a local proof-of-concept for an open lower layer for agent context:
-memory, context capsules, rules, skills, tools, identity, capabilities, audit,
-and a memory loop. The CLI is `acs`, the Agent Context Shell.
+OACS is an open lower-layer draft contract for agent memory and context:
+`MemoryRecord`, `ContextCapsule`, `CapabilityGrant`, `EvidenceRef`, auditable
+`memory_calls`, and adapter boundaries. The bundled `acs` CLI is the reference
+local interface to that contract.
 
 OACS is not a replacement for MCP. MCP describes tool/server interoperability.
 OACS describes how an agent assembles and governs context before a model or MCP
@@ -25,6 +26,20 @@ context, capability, and audit operations.
 
 The draft can change before v1.0. See `docs/COMPATIBILITY.md` for breaking
 change policy.
+
+### Core Contracts
+
+The core draft is intentionally small:
+
+- `MemoryRecord`: lifecycle, depth, scope, encrypted content, and evidence.
+- `ContextCapsule`: portable governed context for one task.
+- `CapabilityGrant`: actor-scoped permission record.
+- `EvidenceRef` and structured evidence items: support for memory and context decisions.
+- `MemoryOperation`, `ContextOperation`, `MemoryLoopRun`, and `memory_call`:
+  auditable operation envelopes.
+
+Benchmarks, LM Studio, MCP execution, repo dogfood, and task packs are reference
+adapters. They validate or exercise the contract but do not expand it.
 
 ### Quickstart
 
@@ -70,28 +85,27 @@ purpose of OACS. `oacs_memory_call_loop` records deterministic OACS
 scoring stays in the benchmark adapter. Task pack import/download is schema and
 checksum validated; downloads require explicit `--allow-network`.
 
-Current technical report:
-`examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`.
+Current technical reports:
+
+- `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`
+- `examples/benchmarks/full_context_gemma_e2b_2026-05-02.md`
 
 ### Development Dogfood
 
-Optional local dogfood uses generic OACS memory/context operations for this
-repository. It is not part of the standard surface:
+Optional source-checkout dogfood lives in the removable
+`repo_development_memory` skill under `examples/skills/`. It is not part of the
+standard surface or the minimal installed-package path:
 
 ```bash
-acs repo capture --task "tighten memory_calls" \
-  --summary "Removed benchmark-specific shortcuts and kept selector metadata typed." --json
-
 acs skill scan examples/skills --json
-acs repo context --task "continue OACS development" --json
-acs repo autorun --task "verify OACS development" --command "pytest -q" --json
+acs skill run repo_development_memory \
+  --payload '{"action":"capture","task":"tighten memory_calls","summary":"Removed benchmark-specific shortcuts and kept selector metadata typed.","cwd":"."}' --json
+acs skill run repo_development_memory \
+  --payload '{"action":"context","task":"continue OACS development","cwd":"."}' --json
 ```
 
-`repo capture` stores a committed D1 episode. `repo context` builds an
-explainable capsule over the repo scope. `repo autorun` runs a local command
-and commits only a D1 repo episode with command outcome metadata. The `repo`
-commands are non-standard convenience wrappers around the removable
-`repo_development_memory` skill in `examples/skills/`.
+The dogfood skill is a source-checkout adapter. Auto mode commits only D1 repo
+episodes; D2/D3 memory remains explicit review.
 
 ### LM Studio
 
@@ -129,9 +143,10 @@ not a core requirement. Tiny tasks can show OACS overhead; medium and long
 memory tasks are the current strength.
 
 ## RU
-OACS - локальный proof-of-concept открытого нижнего слоя агентского контекста:
-memory, context capsules, rules, skills, tools, identity, capabilities, audit и
-memory loop. CLI называется `acs` - Agent Context Shell.
+OACS - open lower-layer draft contract для агентской памяти и контекста:
+`MemoryRecord`, `ContextCapsule`, `CapabilityGrant`, `EvidenceRef`, auditable
+`memory_calls` и adapter boundaries. Встроенный CLI `acs` является reference
+local interface к этому contract.
 
 OACS не заменяет MCP. MCP описывает совместимость tools/server. OACS описывает,
 как агент собирает и контролирует контекст до вызова модели или MCP tool.
@@ -152,6 +167,20 @@ memory, context, capability и audit operations.
 
 До v1.0 draft может меняться. Compatibility policy описана в
 `docs/COMPATIBILITY.md`.
+
+### Core Contracts
+
+Core draft намеренно небольшой:
+
+- `MemoryRecord`: lifecycle, depth, scope, encrypted content и evidence.
+- `ContextCapsule`: переносимый управляемый контекст для одной задачи.
+- `CapabilityGrant`: actor-scoped permission record.
+- `EvidenceRef` и structured evidence items: поддержка memory/context decisions.
+- `MemoryOperation`, `ContextOperation`, `MemoryLoopRun` и `memory_call`:
+  auditable operation envelopes.
+
+Benchmarks, LM Studio, MCP execution, repo dogfood и task packs являются
+reference adapters. Они валидируют или упражняют contract, но не расширяют его.
 
 ### Quickstart
 
@@ -197,28 +226,27 @@ OACS. `oacs_memory_call_loop` записывает deterministic OACS `memory_ca
 benchmark adapter. Import/download task packs валидируется по schema и
 checksum; downloads требуют явный `--allow-network`.
 
-Текущий technical report:
-`examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`.
+Текущие technical reports:
+
+- `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`
+- `examples/benchmarks/full_context_gemma_e2b_2026-05-02.md`
 
 ### Development dogfood
 
-Optional local dogfood использует generic OACS memory/context operations для
-этого репозитория. Это не часть standard surface:
+Optional source-checkout dogfood живёт в отключаемом
+`repo_development_memory` skill в `examples/skills/`. Это не часть standard
+surface и не minimal installed-package path:
 
 ```bash
-acs repo capture --task "tighten memory_calls" \
-  --summary "Removed benchmark-specific shortcuts and kept selector metadata typed." --json
-
 acs skill scan examples/skills --json
-acs repo context --task "continue OACS development" --json
-acs repo autorun --task "verify OACS development" --command "pytest -q" --json
+acs skill run repo_development_memory \
+  --payload '{"action":"capture","task":"tighten memory_calls","summary":"Removed benchmark-specific shortcuts and kept selector metadata typed.","cwd":"."}' --json
+acs skill run repo_development_memory \
+  --payload '{"action":"context","task":"continue OACS development","cwd":"."}' --json
 ```
 
-`repo capture` сохраняет committed D1 episode. `repo context` строит explainable
-capsule по repo scope. `repo autorun` запускает local command и коммитит только
-D1 repo episode с metadata результата команды. Команды `repo` являются
-non-standard convenience wrappers вокруг отключаемого
-`repo_development_memory` skill в `examples/skills/`.
+Dogfood skill является source-checkout adapter. Auto mode коммитит только D1
+repo episodes; D2/D3 memory остаётся под явным review.
 
 ### LM Studio
 

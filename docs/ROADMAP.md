@@ -5,35 +5,16 @@ This roadmap keeps the OACS v0.1 draft standard small. Core work must define
 memory, context, permissions, audit, and deterministic operation contracts.
 Reference adapters prove integration, but they do not expand the standard.
 
-### Current Position: v0.3.0 Reference POC, integration adapters
-- Done: OACS v0.1 draft terminology, schemas, encrypted SQLite memory,
-  ContextCapsule, CLI/API, rules/skills/tools/MCP registries, basic memory loop,
-  memory_calls, validation adapters, and CI build checks.
+### Current Position: v0.3.0 Reference POC
+Core contract:
+
+- Done: OACS v0.1 draft terminology, schemas, encrypted `MemoryRecord`,
+  `ContextCapsule`, `CapabilityGrant`, `EvidenceRef`, `MemoryOperation`,
+  `ContextOperation`, `MemoryLoopRun`, `memory_call`, and audit chain metadata.
 - Done: `memory_calls` are backend-independent operation traces for intent
   classification, scoped memory query, structured evidence extraction, compact
   prompts, and operation metrics. Core memory loop does not synthesize final
   benchmark answers.
-- Observed on `google/gemma-4-e2b`: medium/large/long memory tasks can improve
-  token use and relevance through compact evidence projection; tiny tasks can
-  show overhead.
-- Done: benchmark-specific text parsing is outside the core memory-call loop.
-  Synthetic tasks and public adapters attach structured evidence to
-  `MemoryRecord.content`.
-- Done: domain-shaped evidence selection is isolated behind pluggable selectors;
-  the core memory-call loop now records calls and builds projections only.
-- Done: benchmark execution uses explicit `memory_calls` instead of
-  backend-dependent `tool_calls` or hidden parser heuristics, but scoring stays
-  in validation adapters.
-- Done: README quickstart is the minimal local path: commit memory, query it,
-  and build an explainable Context Capsule.
-- Done: CI build pipeline added for lint, typecheck, tests, package build,
-  wheel install, and CLI smoke checks.
-- Done: optional repo dogfood commands use ordinary OACS memory/context
-  operations and are not part of the standard surface.
-- Done: controlled repo auto-memory dogfood commands added for `auto-start`,
-  `auto-finish`, and `autorun`; they are thin wrappers around the removable
-  `repo_development_memory` skill, commit only D1 repo episodes, and keep D2/D3
-  memory under explicit review.
 - Done: `memory_calls` are available in `MemoryLoopEngine`, CLI `loop run`, and
   API `/v1/loop/run` with intent, read trace, evidence, compact prompt, and
   deepening controls.
@@ -44,6 +25,15 @@ Reference adapters prove integration, but they do not expand the standard.
   the reference backend.
 - Done: capability-scoped shared memory added for subagents through
   `CapabilityGrant.scope`, `namespaces_allowed`, and `memory_depth_allowed`.
+
+Reference adapters:
+
+- Done: CLI/API, SQLite storage, retrieval providers, tools/skills/MCP bindings,
+  validation fixtures, LM Studio reporting, and CI build checks exercise the
+  contract without expanding conformance.
+- Done: benchmark-specific parsing and scoring are outside the core
+  memory-call loop. Synthetic tasks and public adapters attach structured
+  evidence to `MemoryRecord.content`.
 - Done: tool and skill adapter calls are capability-scoped through
   `tool.call`, `skill.run`, `tools_allowed`, `skills_allowed`, namespace, and
   scope checks.
@@ -54,8 +44,15 @@ Reference adapters prove integration, but they do not expand the standard.
   no-network-by-default download/import commands.
 - Done: benchmark comparisons report provider/model/task-pack compatibility and
   LM Studio usage metadata when the server returns it.
-- Current technical report:
-  `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`.
+- Done: repo dogfood moved to the removable `repo_development_memory` skill
+  under `examples/skills/`; it is source-checkout validation, not standard
+  surface.
+- Observed on `google/gemma-4-e2b`: medium/large/long memory tasks can improve
+  token use and relevance through compact evidence projection; tiny tasks can
+  show overhead.
+- Current technical reports:
+  `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md` and
+  `examples/benchmarks/full_context_gemma_e2b_2026-05-02.md`.
 
 ### v0.2.6 - Memory Standard Hardening
 - Done: core `memory_calls` now produce operation traces, selected evidence, and
@@ -101,43 +98,26 @@ Reference adapters prove integration, but they do not expand the standard.
   RuleManifest, SkillManifest, ToolBinding, McpBinding, EvidenceRef, and
   AuditEvent.
 - Define compatibility guarantees and migration policy.
-- Provide backend and retrieval conformance tests.
-- Publish a reference benchmark pack and reproducibility report.
+- Provide backend, retrieval, and adapter-boundary conformance tests.
+- Publish conformance fixtures for MemoryRecord, ContextCapsule,
+  CapabilityGrant, EvidenceRef, memory_calls, and adapter boundaries.
+- Keep public benchmark packs as optional validation artifacts.
 
 ## RU
 Этот roadmap удерживает OACS v0.1 draft standard небольшим. Core work должен
 определять memory, context, permissions, audit и deterministic operation
 contracts. Reference adapters доказывают интеграцию, но не расширяют стандарт.
 
-### Текущая позиция: v0.3.0 Reference POC, integration adapters
-- Готово: OACS v0.1 draft terminology, schemas, encrypted SQLite memory,
-  ContextCapsule, CLI/API, rules/skills/tools/MCP registries, базовый memory
-  loop, memory_calls, validation adapters и CI build checks.
+### Текущая позиция: v0.3.0 Reference POC
+Core contract:
+
+- Готово: OACS v0.1 draft terminology, schemas, encrypted `MemoryRecord`,
+  `ContextCapsule`, `CapabilityGrant`, `EvidenceRef`, `MemoryOperation`,
+  `ContextOperation`, `MemoryLoopRun`, `memory_call` и audit chain metadata.
 - Готово: `memory_calls` являются backend-independent operation traces для
   intent classification, scoped memory query, structured evidence extraction,
   compact prompts и operation metrics. Core memory loop не синтезирует final
   benchmark answers.
-- Наблюдение на `google/gemma-4-e2b`: medium/large/long memory tasks могут
-  улучшать token use и relevance через compact evidence projection; tiny tasks
-  могут показывать overhead.
-- Готово: benchmark-specific text parsing находится вне core memory-call loop.
-  Synthetic tasks и public adapters пишут structured evidence в
-  `MemoryRecord.content`.
-- Готово: domain-shaped evidence selection изолирован за pluggable selectors;
-  core memory-call loop только записывает calls и строит projections.
-- Готово: benchmark execution использует явные `memory_calls` вместо
-  backend-dependent `tool_calls` или скрытых parser heuristics, но scoring
-  остаётся в validation adapters.
-- Готово: README quickstart является minimal local path: commit memory, query it
-  и build explainable Context Capsule.
-- Готово: добавлена CI build pipeline для lint, typecheck, tests, package build,
-  wheel install и CLI smoke checks.
-- Готово: optional repo dogfood commands используют ordinary OACS memory/context
-  operations и не являются standard surface.
-- Готово: добавлены controlled repo auto-memory dogfood commands `auto-start`,
-  `auto-finish` и `autorun`; это тонкие wrappers вокруг отключаемого
-  `repo_development_memory` skill, они коммитят только D1 repo episodes, а
-  D2/D3 memory оставляют под явный review.
 - Готово: `memory_calls` доступны в `MemoryLoopEngine`, CLI `loop run` и API
   `/v1/loop/run` с intent, read trace, evidence, compact prompt и deepening
   controls.
@@ -148,6 +128,15 @@ contracts. Reference adapters доказывают интеграцию, но н
   остаётся reference backend.
 - Готово: capability-scoped shared memory добавлена для subagents через
   `CapabilityGrant.scope`, `namespaces_allowed` и `memory_depth_allowed`.
+
+Reference adapters:
+
+- Готово: CLI/API, SQLite storage, retrieval providers, tools/skills/MCP
+  bindings, validation fixtures, LM Studio reporting и CI build checks
+  упражняют contract, не расширяя conformance.
+- Готово: benchmark-specific parsing и scoring находятся вне core memory-call
+  loop. Synthetic tasks и public adapters пишут structured evidence в
+  `MemoryRecord.content`.
 - Готово: вызовы tool и skill adapters ограничены capabilities через
   `tool.call`, `skill.run`, `tools_allowed`, `skills_allowed`, namespace и scope.
 - Готово: MCP bindings остаются metadata-first, но добавлен optional stdio
@@ -157,8 +146,14 @@ contracts. Reference adapters доказывают интеграцию, но н
   no-network-by-default download/import commands.
 - Готово: benchmark comparisons показывают provider/model/task-pack
   compatibility и LM Studio usage metadata, когда сервер её возвращает.
-- Текущий technical report:
-  `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`.
+- Готово: repo dogfood перенесён в отключаемый `repo_development_memory` skill
+  в `examples/skills/`; это source-checkout validation, а не standard surface.
+- Наблюдение на `google/gemma-4-e2b`: medium/large/long memory tasks могут
+  улучшать token use и relevance через compact evidence projection; tiny tasks
+  могут показывать overhead.
+- Текущие technical reports:
+  `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md` и
+  `examples/benchmarks/full_context_gemma_e2b_2026-05-02.md`.
 
 ### v0.2.6 - Memory Standard Hardening
 - Готово: core `memory_calls` теперь создают operation traces, selected evidence
@@ -206,5 +201,7 @@ contracts. Reference adapters доказывают интеграцию, но н
   RuleManifest, SkillManifest, ToolBinding, McpBinding, EvidenceRef и
   AuditEvent.
 - Зафиксировать compatibility guarantees и migration policy.
-- Добавить backend и retrieval conformance tests.
-- Опубликовать reference benchmark pack и reproducibility report.
+- Добавить backend, retrieval и adapter-boundary conformance tests.
+- Опубликовать conformance fixtures для MemoryRecord, ContextCapsule,
+  CapabilityGrant, EvidenceRef, memory_calls и adapter boundaries.
+- Оставить public benchmark packs как optional validation artifacts.

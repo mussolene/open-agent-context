@@ -1,9 +1,10 @@
 # API / API
 
 ## EN
-FastAPI exposes `/health`, `/v1/actors`, memory operations, context operations,
-rules, audit, loop, and benchmark endpoints. All mutating endpoints accept
-`actor_id` and write audit events.
+FastAPI exposes core reference endpoints for actors, `MemoryRecord` operations,
+`ContextCapsule` operations, capability policy, audit, and memory loop runs.
+Optional adapter endpoints cover tools, skills, MCP bindings, and validation
+benchmarks. All mutating endpoints accept `actor_id` and write audit events.
 
 Context endpoints include `POST /v1/context/build`, `GET /v1/context/{id}`,
 `POST /v1/context/{id}/export`, `POST /v1/context/validate`, and
@@ -30,9 +31,11 @@ import uses schema and checksum validation; downloader paths remain explicit and
 network is never used by default.
 
 ## RU
-FastAPI предоставляет `/health`, `/v1/actors`, операции памяти, операции
-context, rules, audit, loop и benchmark endpoints. Все изменяющие endpoints
-принимают `actor_id` и пишут audit events.
+FastAPI предоставляет core reference endpoints для actors, операций
+`MemoryRecord`, операций `ContextCapsule`, capability policy, audit и memory
+loop runs. Optional adapter endpoints покрывают tools, skills, MCP bindings и
+validation benchmarks. Все изменяющие endpoints принимают `actor_id` и пишут
+audit events.
 
 Context endpoints включают `POST /v1/context/build`, `GET /v1/context/{id}`,
 `POST /v1/context/{id}/export`, `POST /v1/context/validate` и

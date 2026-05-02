@@ -37,6 +37,12 @@ acs = "oacs.cli.main:app"
 [tool.hatch.build.targets.wheel]
 packages = ["oacs"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"schemas" = "schemas"
+
+[tool.hatch.build.targets.sdist.force-include]
+"schemas" = "schemas"
+
 [tool.ruff]
 line-length = 100
 target-version = "py311"

@@ -5,6 +5,11 @@ Benchmarks are validation fixtures for the OACS v0.1 draft memory/context
 contract. They are not the standard itself and they are not intended to replace
 native public benchmark harnesses.
 
+The validation target is not model score by itself. The target is whether
+`MemoryRecord`, `ContextCapsule`, `EvidenceRef`, `CapabilityGrant`,
+`memory_calls`, and adapter isolation behave consistently under repeatable
+tasks.
+
 The benchmark compares:
 
 - `baseline_no_memory`: the model receives only the current task.
@@ -46,6 +51,10 @@ skips ambiguous rows instead of guessing from phrases such as "same place".
 Benchmarks - это validation fixtures для OACS v0.1 draft memory/context
 contract. Они не являются самим стандартом и не заменяют native public benchmark
 harnesses.
+
+Validation target - не model score сам по себе. Цель проверки - стабильно ли
+работают `MemoryRecord`, `ContextCapsule`, `EvidenceRef`, `CapabilityGrant`,
+`memory_calls` и adapter isolation на repeatable tasks.
 
 Benchmark сравнивает:
 

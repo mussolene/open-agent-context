@@ -5,6 +5,11 @@ The POC separates the draft standard from reference adapters. The standard is
 the memory/context contract; adapters prove that the contract can be embedded in
 existing agent stacks.
 
+Core OACS should stay small: `MemoryRecord`, `ContextCapsule`,
+`CapabilityGrant`, `EvidenceRef`, auditable operations, and `memory_calls`.
+Shell commands, benchmarks, LM Studio, MCP execution, and repo dogfood are
+reference adapters around that contract, not new standard layers.
+
 The reference implementation is layered:
 
 1. Schemas and typed models.
@@ -23,6 +28,11 @@ Modules are intentionally small and framework-agnostic below CLI/API.
 POC разделяет draft standard и reference adapters. Standard - это
 memory/context contract; adapters доказывают, что contract можно встроить в
 существующие agent stacks.
+
+Core OACS должен оставаться небольшим: `MemoryRecord`, `ContextCapsule`,
+`CapabilityGrant`, `EvidenceRef`, auditable operations и `memory_calls`.
+Shell commands, benchmarks, LM Studio, MCP execution и repo dogfood являются
+reference adapters вокруг этого contract, а не новыми слоями стандарта.
 
 Reference implementation построена слоями:
 

@@ -15,7 +15,7 @@ Breaking changes before v1.0 include:
 - Changing ContextCapsule export envelope or integrity metadata semantics,
   including `integrity.payload_checksum`, `integrity.signature`, algorithm names,
   or checksum canonicalization.
-- Changing benchmark scoring semantics.
+- Changing conformance fixture scoring semantics.
 
 Non-breaking changes before v1.0 include:
 - Adding optional fields.
@@ -28,6 +28,10 @@ Non-breaking changes before v1.0 include:
 
 The `StorageBackend` protocol is still draft-level before v1.0 and may evolve;
 SQLite remains the reference backend for compatibility checks.
+
+Reference benchmark scoring is adapter-level unless a fixture is explicitly
+promoted to conformance. Changing optional benchmark adapters is not a standard
+breaking change by itself.
 
 Scoped memory grants are part of the v0.2 reference implementation. Before
 v1.0, exact grant matching rules may tighten, but broadening access without an
@@ -51,7 +55,7 @@ Breaking changes до v1.0:
 - Изменение ContextCapsule export envelope или integrity metadata semantics,
   включая `integrity.payload_checksum`, `integrity.signature`, algorithm names
   или checksum canonicalization.
-- Изменение benchmark scoring semantics.
+- Изменение conformance fixture scoring semantics.
 
 Non-breaking changes до v1.0:
 - Добавление optional fields.
@@ -64,6 +68,10 @@ Non-breaking changes до v1.0:
 
 `StorageBackend` protocol до v1.0 остаётся draft-level и может меняться; SQLite
 остаётся reference backend для compatibility checks.
+
+Reference benchmark scoring находится на уровне adapter, если fixture явно не
+promoted to conformance. Изменение optional benchmark adapters само по себе не
+является breaking change стандарта.
 
 Scoped memory grants являются частью v0.2 reference implementation. До v1.0
 точные правила matching могут ужесточаться, но расширение доступа без явного

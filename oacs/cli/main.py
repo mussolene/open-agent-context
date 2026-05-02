@@ -42,7 +42,6 @@ benchmark_app = typer.Typer()
 server_app = typer.Typer()
 audit_app = typer.Typer()
 capability_app = typer.Typer()
-repo_app = typer.Typer()
 
 app.add_typer(actor_app, name="actor")
 app.add_typer(capability_app, name="capability")
@@ -58,7 +57,6 @@ app.add_typer(loop_app, name="loop")
 app.add_typer(benchmark_app, name="benchmark")
 app.add_typer(server_app, name="server")
 app.add_typer(audit_app, name="audit")
-app.add_typer(repo_app, name="repo")
 
 
 DbOpt = Annotated[str | None, typer.Option("--db")]
@@ -67,41 +65,6 @@ ActorOpt = Annotated[str | None, typer.Option("--actor")]
 AgentOpt = Annotated[str | None, typer.Option("--agent")]
 ScopeOpt = Annotated[list[str] | None, typer.Option("--scope")]
 PassOpt = Annotated[str | None, typer.Option("--passphrase")]
-REPO_DOGFOOD_SKILL = (
-    Path(__file__).resolve().parents[2] / "examples" / "skills" / "repo_development_memory"
-)
-
-
-def _repo_skill_payload(
-    action: str,
-    task: str,
-    actor: str | None,
-    agent: str | None,
-    scope: list[str] | None,
-    cwd: Path,
-    db: str | None,
-    **extra: object,
-) -> dict[str, object]:
-    payload: dict[str, object] = {
-        "action": action,
-        "task": task,
-        "actor": actor,
-        "agent": agent,
-        "scope": scope or [],
-        "cwd": str(cwd),
-        "db": db,
-    }
-    payload.update(extra)
-    return payload
-
-
-def _run_repo_skill(payload: dict[str, object]) -> dict[str, object]:
-    manifest_path = REPO_DOGFOOD_SKILL / "skill.json"
-    if not manifest_path.is_file():
-        raise typer.BadParameter(f"repo dogfood skill not found: {manifest_path}")
-    skill_payload = json.loads(manifest_path.read_text(encoding="utf-8"))
-    skill_payload["source_path"] = str(REPO_DOGFOOD_SKILL)
-    return run_skill(SkillManifest(**skill_payload), payload)
 
 
 def emit(data: object, json_out: bool) -> None:
@@ -530,150 +493,6 @@ def context_validate(
     requires_key = payload.get("export_type") == "context_capsule_export"
     result = services(db, require_key=requires_key).context.validate_payload(payload)
     emit(result, json_out)
-
-
-@repo_app.command("capture")
-def repo_capture(
-    task: Annotated[str, typer.Option("--task")],
-    summary: Annotated[str, typer.Option("--summary")],
-    actor: ActorOpt = None,
-    scope: ScopeOpt = None,
-    cwd: Annotated[Path, typer.Option("--cwd")] = Path("."),
-    db: DbOpt = None,
-    json_out: JsonOpt = False,
-) -> None:
-    emit(
-        _run_repo_skill(
-            _repo_skill_payload(
-                "capture",
-                task,
-                actor,
-                None,
-                scope,
-                cwd,
-                db,
-                summary=summary,
-            )
-        ),
-        json_out,
-    )
-
-
-@repo_app.command("context")
-def repo_context(
-    task: Annotated[str, typer.Option("--task")],
-    actor: ActorOpt = None,
-    agent: AgentOpt = None,
-    scope: ScopeOpt = None,
-    cwd: Annotated[Path, typer.Option("--cwd")] = Path("."),
-    budget: Annotated[int, typer.Option("--budget")] = 4000,
-    db: DbOpt = None,
-    json_out: JsonOpt = False,
-) -> None:
-    emit(
-        _run_repo_skill(
-            _repo_skill_payload(
-                "context",
-                task,
-                actor,
-                agent,
-                scope,
-                cwd,
-                db,
-                budget=budget,
-            )
-        ),
-        json_out,
-    )
-
-
-@repo_app.command("auto-start")
-def repo_auto_start(
-    task: Annotated[str, typer.Option("--task")],
-    actor: ActorOpt = None,
-    agent: AgentOpt = None,
-    scope: ScopeOpt = None,
-    cwd: Annotated[Path, typer.Option("--cwd")] = Path("."),
-    budget: Annotated[int, typer.Option("--budget")] = 4000,
-    db: DbOpt = None,
-    json_out: JsonOpt = False,
-) -> None:
-    emit(
-        _run_repo_skill(
-            _repo_skill_payload(
-                "auto_start",
-                task,
-                actor,
-                agent,
-                scope,
-                cwd,
-                db,
-                budget=budget,
-            )
-        ),
-        json_out,
-    )
-
-
-@repo_app.command("auto-finish")
-def repo_auto_finish(
-    task: Annotated[str, typer.Option("--task")],
-    summary: Annotated[str, typer.Option("--summary")],
-    outcome: Annotated[str | None, typer.Option("--outcome")] = None,
-    actor: ActorOpt = None,
-    scope: ScopeOpt = None,
-    cwd: Annotated[Path, typer.Option("--cwd")] = Path("."),
-    db: DbOpt = None,
-    json_out: JsonOpt = False,
-) -> None:
-    emit(
-        _run_repo_skill(
-            _repo_skill_payload(
-                "auto_finish",
-                task,
-                actor,
-                None,
-                scope,
-                cwd,
-                db,
-                summary=summary,
-                outcome=outcome,
-            )
-        ),
-        json_out,
-    )
-
-
-@repo_app.command("autorun")
-def repo_autorun(
-    task: Annotated[str, typer.Option("--task")],
-    command: Annotated[str, typer.Option("--command")],
-    actor: ActorOpt = None,
-    agent: AgentOpt = None,
-    scope: ScopeOpt = None,
-    cwd: Annotated[Path, typer.Option("--cwd")] = Path("."),
-    budget: Annotated[int, typer.Option("--budget")] = 4000,
-    timeout: Annotated[int, typer.Option("--timeout")] = 300,
-    db: DbOpt = None,
-    json_out: JsonOpt = False,
-) -> None:
-    emit(
-        _run_repo_skill(
-            _repo_skill_payload(
-                "autorun",
-                task,
-                actor,
-                agent,
-                scope,
-                cwd,
-                db,
-                budget=budget,
-                command=command,
-                timeout=timeout,
-            )
-        ),
-        json_out,
-    )
 
 
 @capsule_app.command("create")

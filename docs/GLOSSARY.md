@@ -2,8 +2,9 @@
 
 ## EN
 - **OACS v0.1 draft:** Draft contract for agent context assembly and governance.
-- **Reference implementation:** This Python package, CLI, API, storage, and benchmark implementation.
-- **acs:** Agent Context Shell, the CLI for local OACS workflows.
+- **Reference implementation:** This Python package plus local CLI/API, storage,
+  and optional adapters that exercise the draft contract.
+- **acs:** Reference CLI for local OACS memory, context, capability, and audit operations.
 - **Actor:** Human, agent, application, tool, service, or organization identity.
 - **CapabilityGrant:** Permission record that allows or denies operations for an actor.
 - **MemoryRecord:** Encrypted memory item with lifecycle, depth, scope, and evidence metadata.
@@ -19,8 +20,9 @@
 
 ## RU
 - **OACS v0.1 draft:** Draft-контракт для сборки и управления агентским контекстом.
-- **Reference implementation:** Этот Python package, CLI, API, storage и benchmark implementation.
-- **acs:** Agent Context Shell, CLI для локальных OACS workflows.
+- **Reference implementation:** Этот Python package плюс local CLI/API, storage
+  и optional adapters, проверяющие draft contract.
+- **acs:** Reference CLI для локальных OACS memory, context, capability и audit operations.
 - **Actor:** Human, agent, application, tool, service или organization identity.
 - **CapabilityGrant:** Permission record, разрешающий или запрещающий операции actor.
 - **MemoryRecord:** Зашифрованная единица памяти с lifecycle, depth, scope и evidence metadata.

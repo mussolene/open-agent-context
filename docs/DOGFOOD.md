@@ -14,28 +14,33 @@ acs init --json
 acs key init --passphrase "$OACS_PASSPHRASE" --json
 acs skill scan examples/skills --json
 
-acs repo capture --task "implement repo dogfood" \
-  --summary "Added repo capture/context commands for OACS self-development." --json
+acs skill run repo_development_memory \
+  --payload '{"action":"capture","task":"implement repo dogfood","summary":"Added repo dogfood skill for OACS self-development.","cwd":"."}' \
+  --json
 
-acs repo context --task "continue OACS development" --json
+acs skill run repo_development_memory \
+  --payload '{"action":"context","task":"continue OACS development","cwd":"."}' \
+  --json
 ```
 
-`repo capture` writes a committed D1 episode. `repo context` builds a Context
-Capsule from the repo scope so another local agent pass can start from explicit
-memory rather than conversation history alone. These commands are thin wrappers
-around the removable `repo_development_memory` skill in `examples/skills/`.
+The removable `repo_development_memory` skill writes committed D1 episodes and
+builds Context Capsules from repo scope so another local agent pass can start
+from explicit memory rather than conversation history alone.
 
 For controlled auto-memory during local development:
 
 ```bash
-acs repo auto-start --task "implement next OACS slice" --json
+acs skill run repo_development_memory \
+  --payload '{"action":"auto_start","task":"implement next OACS slice","cwd":"."}' \
+  --json
 
-acs repo autorun --task "verify next OACS slice" \
-  --command "pytest -q" --json
+acs skill run repo_development_memory \
+  --payload '{"action":"autorun","task":"verify next OACS slice","command":"pytest -q","cwd":"."}' \
+  --json
 
-acs repo auto-finish --task "implement next OACS slice" \
-  --summary "Added and verified the next OACS slice." \
-  --outcome "implemented" --json
+acs skill run repo_development_memory \
+  --payload '{"action":"auto_finish","task":"implement next OACS slice","summary":"Added and verified the next OACS slice.","outcome":"implemented","cwd":"."}' \
+  --json
 ```
 
 `auto-start` only builds context and records audit metadata; it does not write
@@ -57,28 +62,33 @@ acs init --json
 acs key init --passphrase "$OACS_PASSPHRASE" --json
 acs skill scan examples/skills --json
 
-acs repo capture --task "implement repo dogfood" \
-  --summary "Added repo capture/context commands for OACS self-development." --json
+acs skill run repo_development_memory \
+  --payload '{"action":"capture","task":"implement repo dogfood","summary":"Added repo dogfood skill for OACS self-development.","cwd":"."}' \
+  --json
 
-acs repo context --task "continue OACS development" --json
+acs skill run repo_development_memory \
+  --payload '{"action":"context","task":"continue OACS development","cwd":"."}' \
+  --json
 ```
 
-`repo capture` пишет committed D1 episode. `repo context` строит Context Capsule
-из repo scope, чтобы другой local agent pass начинался с явной памяти, а не
-только с истории диалога. Эти команды являются тонкими wrappers вокруг
-отключаемого `repo_development_memory` skill в `examples/skills/`.
+Отключаемый `repo_development_memory` skill пишет committed D1 episodes и
+строит Context Capsules из repo scope, чтобы другой local agent pass начинался
+с явной памяти, а не только с истории диалога.
 
 Для controlled auto-memory во время локальной разработки:
 
 ```bash
-acs repo auto-start --task "implement next OACS slice" --json
+acs skill run repo_development_memory \
+  --payload '{"action":"auto_start","task":"implement next OACS slice","cwd":"."}' \
+  --json
 
-acs repo autorun --task "verify next OACS slice" \
-  --command "pytest -q" --json
+acs skill run repo_development_memory \
+  --payload '{"action":"autorun","task":"verify next OACS slice","command":"pytest -q","cwd":"."}' \
+  --json
 
-acs repo auto-finish --task "implement next OACS slice" \
-  --summary "Added and verified the next OACS slice." \
-  --outcome "implemented" --json
+acs skill run repo_development_memory \
+  --payload '{"action":"auto_finish","task":"implement next OACS slice","summary":"Added and verified the next OACS slice.","outcome":"implemented","cwd":"."}' \
+  --json
 ```
 
 `auto-start` только строит context и пишет audit metadata; memory он не
