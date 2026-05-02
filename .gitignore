@@ -4,7 +4,6 @@ __pycache__/
 .agent/
 .codex/
 .claude/
-AGENTS.md
 CLAUDE.md
 .pytest_cache/
 .ruff_cache/

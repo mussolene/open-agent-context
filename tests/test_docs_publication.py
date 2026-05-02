@@ -74,6 +74,15 @@ def test_tool_docs_describe_canonical_evidence_projection() -> None:
     assert "does not enter `ContextCapsule.evidence_refs` by" in text
 
 
+def test_agent_instructions_use_oacs_native_proof_loop() -> None:
+    text = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+
+    assert "OACS Repo Development Workflow" in text
+    assert "acs tool ingest-result" in text
+    assert "acs evidence inspect <ev_...>" in text
+    assert ".agent/tasks" not in text
+
+
 def test_public_docs_call_standard_a_draft() -> None:
     pattern = re.compile(r"OACS v0\.1(?! draft)")
     for path in PUBLIC_MARKDOWN:
