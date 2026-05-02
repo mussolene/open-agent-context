@@ -6,6 +6,7 @@ from oacs.audit import AuditService
 from oacs.context.builder import ContextBuilder
 from oacs.core.config import OacsConfig
 from oacs.crypto.local_passphrase import LocalPassphraseKeyProvider
+from oacs.evidence import EvidenceService
 from oacs.identity.actors import ActorService
 from oacs.identity.capabilities import CapabilityService
 from oacs.identity.policy import PolicyEngine
@@ -34,6 +35,7 @@ class OacsServices:
     skills: SkillRegistry
     tools: ToolRegistry
     mcp: McpRegistry
+    evidence: EvidenceService
     tool_runner: ToolRunner
     context: ContextBuilder
     loop: MemoryLoopEngine
@@ -65,12 +67,13 @@ def services(
     tools = ToolRegistry(Repository(store, "tools"))
     mcp = McpRegistry(Repository(store, "mcp_bindings"), tools)
     audit = AuditService(Repository(store, "audit_events"))
+    evidence = EvidenceService(Repository(store, "evidence_refs"), policy, audit)
     tool_runner = ToolRunner(
         tools,
         mcp,
         policy,
         audit,
-        Repository(store, "evidence_refs"),
+        evidence,
     )
     context = ContextBuilder(
         Repository(store, "context_capsules"),
@@ -93,6 +96,7 @@ def services(
         skills=skills,
         tools=tools,
         mcp=mcp,
+        evidence=evidence,
         tool_runner=tool_runner,
         context=context,
         loop=MemoryLoopEngine(memory, context),

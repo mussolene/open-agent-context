@@ -36,6 +36,22 @@ acs tool add \
 OACS includes it under `output.json`. Every successful call returns
 `ToolCallResult` and writes a `tool_result` `EvidenceRef`.
 
+If another orchestrator already executed a tool, submit the result instead of
+asking OACS to run it:
+
+```bash
+acs tool ingest-result \
+  --tool-id external_search \
+  --tool-name "External Search" \
+  --output '{"answer":"OACS stores governed context."}' \
+  --source-uri https://example.test/search/123 \
+  --json
+```
+
+This writes the same `tool_result` evidence shape and an
+`evidence.ingest_tool_result` audit event. OACS governs provenance, scope,
+hashing, and later context projection; it does not choose or schedule the tool.
+
 HTTP tools are disabled by default unless the binding explicitly opts in:
 
 ```bash
@@ -85,6 +101,22 @@ acs tool add \
 `local_cli` tools получают JSON payload через stdin. Если stdout является JSON
 object, OACS добавляет его в `output.json`. Каждый успешный вызов возвращает
 `ToolCallResult` и пишет `tool_result` `EvidenceRef`.
+
+Если другой orchestrator уже выполнил tool, передайте результат, не заставляя
+OACS запускать tool:
+
+```bash
+acs tool ingest-result \
+  --tool-id external_search \
+  --tool-name "External Search" \
+  --output '{"answer":"OACS stores governed context."}' \
+  --source-uri https://example.test/search/123 \
+  --json
+```
+
+Это пишет тот же `tool_result` evidence shape и audit event
+`evidence.ingest_tool_result`. OACS отвечает за provenance, scope, hashing и
+последующую projection в context; он не выбирает и не планирует tool.
 
 HTTP tools отключены по умолчанию, пока binding явно не разрешит network:
 

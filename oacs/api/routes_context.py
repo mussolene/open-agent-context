@@ -238,6 +238,34 @@ def call_tool(tool_id: str, req: dict[str, object]) -> dict[str, object]:
     ).model_dump()
 
 
+@router.post("/tools/results/ingest")
+def ingest_tool_result(req: dict[str, object]) -> dict[str, object]:
+    svc = services(require_key=False)
+    raw_actor = req.get("actor_id")
+    actor_id: str | None = raw_actor if isinstance(raw_actor, str) else None
+    tool_id = req.get("tool_id")
+    if not isinstance(tool_id, str) or not tool_id:
+        return {"error": "tool_id is required"}
+    tool_name = req.get("tool_name")
+    tool_type = req.get("tool_type", "external")
+    namespace = req.get("namespace", "default")
+    source_uri = req.get("source_uri")
+    status = req.get("status", "completed")
+    return svc.evidence.ingest_tool_result(
+        tool_id=tool_id,
+        tool_name=tool_name if isinstance(tool_name, str) else None,
+        tool_type=tool_type if isinstance(tool_type, str) else "external",
+        output=_dict_payload(req.get("output")),
+        input_payload=_dict_payload(req.get("input")),
+        actor_id=actor_id,
+        scope=_string_list(req.get("scope")) or [],
+        namespace=namespace if isinstance(namespace, str) else "default",
+        source_uri=source_uri if isinstance(source_uri, str) else None,
+        status=status if isinstance(status, str) else "completed",
+        executed=bool(req.get("executed", True)),
+    ).model_dump()
+
+
 @router.get("/mcp")
 def list_mcp() -> list[dict[str, object]]:
     return [binding.model_dump() for binding in services(require_key=False).mcp.list()]

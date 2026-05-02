@@ -783,6 +783,45 @@ def tool_call(
     emit(result.model_dump(), json_out)
 
 
+@tool_app.command("ingest-result")
+def tool_ingest_result(
+    tool_id: Annotated[str, typer.Option("--tool-id")],
+    output: Annotated[str, typer.Option("--output")],
+    actor: ActorOpt = None,
+    scope: ScopeOpt = None,
+    input_payload: Annotated[str, typer.Option("--input")] = "{}",
+    tool_name: Annotated[str | None, typer.Option("--tool-name")] = None,
+    tool_type: Annotated[str, typer.Option("--tool-type")] = "external",
+    namespace: Annotated[str, typer.Option("--namespace")] = "default",
+    source_uri: Annotated[str | None, typer.Option("--source-uri")] = None,
+    status: Annotated[str, typer.Option("--status")] = "completed",
+    executed: Annotated[bool, typer.Option("--executed/--not-executed")] = True,
+    db: DbOpt = None,
+    json_out: JsonOpt = False,
+) -> None:
+    svc = services(db, require_key=False)
+    parsed_input = json.loads(input_payload)
+    parsed_output = json.loads(output)
+    if not isinstance(parsed_input, dict):
+        raise typer.BadParameter("--input must be a JSON object")
+    if not isinstance(parsed_output, dict):
+        raise typer.BadParameter("--output must be a JSON object")
+    result = svc.evidence.ingest_tool_result(
+        tool_id=tool_id,
+        tool_name=tool_name,
+        tool_type=tool_type,
+        output=parsed_output,
+        input_payload=parsed_input,
+        actor_id=actor,
+        scope=scope or [],
+        namespace=namespace,
+        source_uri=source_uri,
+        status=status,
+        executed=executed,
+    )
+    emit(result.model_dump(), json_out)
+
+
 def _schema_file(path: Path | None) -> dict[str, object]:
     if path is None:
         return {}

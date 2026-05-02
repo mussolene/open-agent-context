@@ -22,13 +22,17 @@ evidence, compact model prompt, `context_policy` decision, and
 
 Integration adapter endpoints include capability definitions/grants, tool and
 skill inspection, guarded `POST /v1/tools/{id}/call`,
-`POST /v1/skills/{id}/run`, MCP import/inspection, and `GET /v1/audit/verify`.
-Tool and skill calls are checked through `tool.call` / `skill.run`, explicit
-resource allowlists, namespace, and scope.
+`POST /v1/tools/results/ingest`, `POST /v1/skills/{id}/run`, MCP
+import/inspection, and `GET /v1/audit/verify`. Tool and skill calls are checked
+through `tool.call` / `skill.run`, explicit resource allowlists, namespace, and
+scope. External tool result ingest is checked through `evidence.ingest`.
 
 Tool execution is normalized through `ToolRunner`. A tool call returns a
 `ToolCallResult` envelope and records a `tool_result` `EvidenceRef`; HTTP tools
-require explicit `http.allow_network=true`.
+require explicit `http.allow_network=true`. External orchestrators may also
+submit already executed tool result envelopes to OACS; OACS hashes, scopes,
+audits, and stores them as `tool_result` evidence without selecting or running
+the tool.
 
 Benchmark endpoints accept `provider` and `model` when running tasks. Task pack
 import uses schema and checksum validation; downloader paths remain explicit and
@@ -56,13 +60,16 @@ compact model prompt, а также `context_policy` decision и `operation_metr
 
 Integration adapter endpoints включают capability definitions/grants, inspect
 для tools и skills, защищённые `POST /v1/tools/{id}/call`,
-`POST /v1/skills/{id}/run`, MCP import/inspection и `GET /v1/audit/verify`.
-Tool и skill calls проверяются через `tool.call` / `skill.run`, explicit
-resource allowlists, namespace и scope.
+`POST /v1/tools/results/ingest`, `POST /v1/skills/{id}/run`, MCP
+import/inspection и `GET /v1/audit/verify`. Tool и skill calls проверяются
+через `tool.call` / `skill.run`, explicit resource allowlists, namespace и
+scope. Ingest внешних результатов tools проверяется через `evidence.ingest`.
 
 Tool execution нормализован через `ToolRunner`. Tool call возвращает
 `ToolCallResult` envelope и записывает `tool_result` `EvidenceRef`; HTTP tools
-требуют явный `http.allow_network=true`.
+требуют явный `http.allow_network=true`. Внешние orchestrators также могут
+передать в OACS уже выполненный tool result envelope; OACS хеширует, scope-ит,
+аудирует и сохраняет его как `tool_result` evidence без выбора или запуска tool.
 
 Benchmark endpoints принимают `provider` и `model` при запуске задач. Import
 task packs использует schema и checksum validation; download paths явные, а

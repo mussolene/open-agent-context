@@ -10,11 +10,8 @@ from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 
 from oacs.audit import AuditService
-from oacs.core.ids import new_id
-from oacs.core.json import hash_json
-from oacs.core.time import now_iso
+from oacs.evidence import EvidenceService
 from oacs.identity.policy import PolicyEngine
-from oacs.storage.repositories import Repository
 from oacs.tools.local import call_local_tool
 from oacs.tools.mcp import McpRegistry
 from oacs.tools.mcp_client import McpClientAdapter
@@ -29,13 +26,13 @@ class ToolRunner:
         mcp: McpRegistry,
         policy: PolicyEngine,
         audit: AuditService,
-        evidence_repo: Repository,
+        evidence: EvidenceService,
     ):
         self.registry = registry
         self.mcp = mcp
         self.policy = policy
         self.audit = audit
-        self.evidence_repo = evidence_repo
+        self.evidence = evidence
 
     def call(
         self,
@@ -71,7 +68,16 @@ class ToolRunner:
             scope=call_scope,
             input=input_payload,
             output=output,
-            evidence_ref=self._record_evidence(tool, actor_id, call_scope, input_payload, output),
+            evidence_ref=self.evidence.record_tool_result(
+                tool_id=tool.id,
+                tool_name=tool.name,
+                tool_type=tool.type,
+                actor_id=actor_id,
+                scope=call_scope,
+                namespace=tool.namespace,
+                input_payload=input_payload,
+                output=output,
+            ),
             executed=bool(output.get("executed", True)),
         )
         self.audit.record(
@@ -159,41 +165,6 @@ class ToolRunner:
             "headers": dict(response.headers),
             "body": body,
         }
-
-    def _record_evidence(
-        self,
-        tool: ToolBinding,
-        actor_id: str | None,
-        scope: list[str],
-        payload: dict[str, object],
-        output: dict[str, object],
-    ) -> str:
-        evidence_id = new_id("ev")
-        public_payload = {
-            "tool_id": tool.id,
-            "tool_name": tool.name,
-            "tool_type": tool.type,
-            "input_hash": hash_json(payload),
-            "output": output,
-        }
-        now = now_iso()
-        record: dict[str, object] = {
-            "id": evidence_id,
-            "kind": "tool_result",
-            "uri": f"oacs://tools/{tool.id}/calls/{evidence_id}",
-            "public_payload": public_payload,
-            "sensitive_ciphertext": None,
-            "sensitive_nonce": None,
-            "content_hash": hash_json(public_payload),
-            "status": "active",
-            "namespace": tool.namespace,
-            "scope": scope,
-            "owner_actor_id": actor_id,
-            "created_at": now,
-            "updated_at": now,
-        }
-        self.evidence_repo.save(record)
-        return evidence_id
 
     @staticmethod
     def _validate_input(tool: ToolBinding, payload: dict[str, object]) -> None:

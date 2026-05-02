@@ -19,7 +19,7 @@ def test_public_package_metadata_is_release_ready():
     urls = project["urls"]
 
     assert project["name"] == "oacs"
-    assert project["version"] == "0.3.1.dev0"
+    assert project["version"] == "0.3.1a1"
     assert "Open Agent Context Standard" in project["description"]
     assert "Development Status :: 3 - Alpha" in project["classifiers"]
     assert "License :: OSI Approved :: Apache Software License" in project["classifiers"]

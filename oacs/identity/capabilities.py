@@ -222,6 +222,12 @@ def builtin_capabilities() -> list[CapabilityDefinition]:
             description="Allows calling explicitly granted tools inside granted scopes.",
         ),
         CapabilityDefinition(
+            id="cap_evidence_ingest",
+            name="evidence_ingest",
+            operation="evidence.ingest",
+            description="Allows ingesting external tool results as governed evidence.",
+        ),
+        CapabilityDefinition(
             id="cap_skill_run",
             name="skill_run",
             operation="skill.run",

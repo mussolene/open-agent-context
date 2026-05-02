@@ -8,8 +8,8 @@ v1.0 compatibility guarantees.
 Recommended first public release:
 
 ```bash
-git tag -a v0.3.0a1 -m "OACS 0.3.0 alpha 1"
-git push origin v0.3.0a1
+git tag -a v0.3.1a1 -m "OACS 0.3.1 alpha 1"
+git push origin v0.3.1a1
 ```
 
 Before tagging:
@@ -47,7 +47,7 @@ python3 -m venv "$SMOKE_DIR"
   cryptography fastapi httpx jsonschema pydantic rich typer uvicorn
 "$SMOKE_DIR/bin/python" -m pip install --no-deps \
   --index-url https://test.pypi.org/simple/ \
-  oacs==0.3.0a1
+  oacs==0.3.1a1
 "$SMOKE_DIR/bin/acs" --help
 "$SMOKE_DIR/bin/acs" init --db "$SMOKE_DIR/oacs.db" --json
 "$SMOKE_DIR/bin/acs" key init --db "$SMOKE_DIR/oacs.db" --passphrase smoke-pass --json
@@ -62,7 +62,7 @@ not store PyPI API tokens in the repository.
 
 Release flow:
 
-1. Push an alpha/rc tag such as `v0.3.0a1`. Alpha, beta, and release-candidate
+1. Push an alpha/rc tag such as `v0.3.1a1`. Alpha, beta, and release-candidate
    tags publish to TestPyPI automatically.
 2. Confirm the release workflow publishes to TestPyPI.
 3. Install from TestPyPI in a clean environment and run the smoke commands.
@@ -78,8 +78,8 @@ tags.
 Рекомендуемый первый публичный релиз:
 
 ```bash
-git tag -a v0.3.0a1 -m "OACS 0.3.0 alpha 1"
-git push origin v0.3.0a1
+git tag -a v0.3.1a1 -m "OACS 0.3.1 alpha 1"
+git push origin v0.3.1a1
 ```
 
 Перед tag:
@@ -117,7 +117,7 @@ python3 -m venv "$SMOKE_DIR"
   cryptography fastapi httpx jsonschema pydantic rich typer uvicorn
 "$SMOKE_DIR/bin/python" -m pip install --no-deps \
   --index-url https://test.pypi.org/simple/ \
-  oacs==0.3.0a1
+  oacs==0.3.1a1
 "$SMOKE_DIR/bin/acs" --help
 "$SMOKE_DIR/bin/acs" init --db "$SMOKE_DIR/oacs.db" --json
 "$SMOKE_DIR/bin/acs" key init --db "$SMOKE_DIR/oacs.db" --passphrase smoke-pass --json
@@ -132,7 +132,7 @@ projects для этого repository. Не храните PyPI API tokens в р
 
 Release flow:
 
-1. Push alpha/rc tag, например `v0.3.0a1`. Alpha, beta и release-candidate tags
+1. Push alpha/rc tag, например `v0.3.1a1`. Alpha, beta и release-candidate tags
    автоматически публикуются в TestPyPI.
 2. Убедиться, что release workflow публикует в TestPyPI.
 3. Установить пакет из TestPyPI в чистом окружении и запустить smoke commands.

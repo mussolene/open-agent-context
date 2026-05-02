@@ -187,6 +187,61 @@ def test_tool_runner_records_evidence_and_validates_output_schema(svc) -> None:
     assert evidence["public_payload"]["tool_id"] == tool.id
 
 
+def test_external_tool_result_ingest_projects_through_memory_into_context(svc) -> None:
+    actor = svc.actors.create("agent", "ExternalEvidenceAgent")
+    tool_id = "external_search"
+    svc.capabilities.grant(
+        actor.id,
+        "system",
+        [
+            "evidence.ingest",
+            "memory.propose",
+            "memory.commit",
+            "memory.correct",
+            "memory.read",
+            "memory.query",
+            "context.build",
+        ],
+        tools_allowed=[tool_id],
+    )
+
+    result = svc.evidence.ingest_tool_result(
+        tool_id=tool_id,
+        tool_name="External Search",
+        tool_type="external",
+        input_payload={"query": "canonical OACS context"},
+        output={"answer": "Canonical docs say OACS packages governed context."},
+        actor_id=actor.id,
+        scope=[],
+        source_uri="https://example.test/docs/oacs",
+    )
+    memory = svc.memory.propose(
+        "fact",
+        2,
+        "Canonical docs say OACS packages governed context.",
+        actor.id,
+        [],
+    )
+    svc.memory.commit(memory.id, actor.id)
+    sharpened = svc.memory.sharpen(memory.id, result.evidence_ref or "", actor.id)
+    capsule = svc.context.build(
+        "What do canonical docs say about OACS context?", actor.id, scope=[]
+    )
+
+    assert result.evidence_ref is not None
+    assert result.executed is True
+    assert sharpened.evidence_refs == [result.evidence_ref]
+    assert result.evidence_ref in capsule.evidence_refs
+    evidence = svc.store.get("evidence_refs", result.evidence_ref)
+    assert evidence["kind"] == "tool_result"
+    assert evidence["public_payload"]["source_uri"] == "https://example.test/docs/oacs"
+    assert any(
+        event["operation"] == "evidence.ingest_tool_result"
+        and event["target_id"] == result.evidence_ref
+        for event in svc.audit.list()
+    )
+
+
 def test_local_cli_tool_binding_uses_json_stdin_and_evidence(svc, tmp_path) -> None:
     script = tmp_path / "tool.py"
     script.write_text(
@@ -295,6 +350,80 @@ def test_cli_grant_tool_helper_and_schema_file(tmp_path) -> None:
     assert call.exit_code == 0, call.output
     body = json.loads(call.output)
     assert body["output"] == {"echo": {"ok": True}}
+    assert body["evidence_ref"].startswith("ev_")
+
+
+def test_cli_ingests_external_tool_result(tmp_path) -> None:
+    db = tmp_path / "oacs.db"
+    svc = services(str(db), require_key=False)
+    actor = svc.actors.create("agent", "CliExternalEvidenceAgent")
+    svc.capabilities.grant(
+        actor.id,
+        "system",
+        ["evidence.ingest"],
+        tools_allowed=["external_cli"],
+    )
+    runner = CliRunner()
+
+    ingest = runner.invoke(
+        app,
+        [
+            "tool",
+            "ingest-result",
+            "--db",
+            str(db),
+            "--actor",
+            actor.id,
+            "--tool-id",
+            "external_cli",
+            "--tool-name",
+            "External CLI",
+            "--input",
+            '{"query":"alpha"}',
+            "--output",
+            '{"result":"alpha evidence"}',
+            "--source-uri",
+            "file:///tmp/external-cli-result.json",
+            "--json",
+        ],
+    )
+
+    assert ingest.exit_code == 0, ingest.output
+    body = json.loads(ingest.output)
+    assert body["tool_id"] == "external_cli"
+    assert body["tool_name"] == "External CLI"
+    assert body["output"] == {"result": "alpha evidence"}
+    assert body["evidence_ref"].startswith("ev_")
+
+
+def test_api_ingests_external_tool_result(db, monkeypatch) -> None:
+    monkeypatch.setenv("OACS_DB", str(db))
+    svc = services(str(db))
+    actor = svc.actors.create("agent", "ApiExternalEvidenceAgent")
+    svc.capabilities.grant(
+        actor.id,
+        "system",
+        ["evidence.ingest"],
+        tools_allowed=["external_api"],
+    )
+    client = TestClient(create_app())
+
+    response = client.post(
+        "/v1/tools/results/ingest",
+        json={
+            "actor_id": actor.id,
+            "tool_id": "external_api",
+            "tool_name": "External API",
+            "input": {"query": "beta"},
+            "output": {"result": "beta evidence"},
+            "source_uri": "https://example.test/result/beta",
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["tool_id"] == "external_api"
+    assert body["output"] == {"result": "beta evidence"}
     assert body["evidence_ref"].startswith("ev_")
 
 

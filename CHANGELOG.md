@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.1.dev0 - Unreleased
+## 0.3.1a1 - 2026-05-02
 
 ### Added
 
@@ -8,6 +8,9 @@
 - `ToolCallResult` envelope and schema.
 - Tool result evidence capture through `tool_result` `EvidenceRef` records.
 - JSON schema validation for declared tool inputs and outputs.
+- External tool result ingest for already-executed tools, with governed
+  `EvidenceRef` capture, audit, CLI/API entry points, and Context Capsule
+  projection through linked memory.
 
 ## 0.3.0a1 - 2026-05-02
 
