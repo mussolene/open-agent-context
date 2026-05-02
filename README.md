@@ -90,6 +90,21 @@ Current technical reports:
 - `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`
 - `examples/benchmarks/full_context_gemma_e2b_2026-05-02.md`
 
+### Killer Demo
+
+The local killer demo proves the public product story without a hosted service,
+network access, LM Studio, or a running model. It writes one scoped memory,
+builds and exports a Context Capsule, validates the export envelope, records
+`memory_calls`, imports MCP metadata as an adapter boundary, verifies the audit
+chain, and links the checked-in full-context benchmark comparison.
+
+```bash
+python3 examples/killer_demo/run_demo.py --out .oacs/killer-demo --force
+```
+
+Raw artifacts are written to the output directory; start with `SUMMARY.md` and
+`summary.json`.
+
 ### Development Dogfood
 
 Optional source-checkout dogfood lives in the removable
@@ -231,6 +246,21 @@ checksum; downloads требуют явный `--allow-network`.
 
 - `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`
 - `examples/benchmarks/full_context_gemma_e2b_2026-05-02.md`
+
+### Killer Demo
+
+Локальное killer demo доказывает публичный product story без hosted service,
+network access, LM Studio или запущенной модели. Оно пишет одну scoped memory,
+строит и экспортирует Context Capsule, валидирует export envelope, записывает
+`memory_calls`, импортирует MCP metadata как adapter boundary, проверяет audit
+chain и ссылается на checked-in full-context benchmark comparison.
+
+```bash
+python3 examples/killer_demo/run_demo.py --out .oacs/killer-demo --force
+```
+
+Raw artifacts пишутся в output directory; начинать стоит с `SUMMARY.md` и
+`summary.json`.
 
 ### Development dogfood
 

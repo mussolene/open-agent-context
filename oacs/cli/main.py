@@ -1036,3 +1036,7 @@ def audit_export(db: DbOpt = None, json_out: JsonOpt = False) -> None:
 @audit_app.command("verify")
 def audit_verify(db: DbOpt = None, json_out: JsonOpt = False) -> None:
     emit(services(db, require_key=False).audit.verify_chain(), json_out)
+
+
+if __name__ == "__main__":
+    app()
