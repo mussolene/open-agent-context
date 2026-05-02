@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import subprocess
 from pathlib import Path
 from typing import Annotated
 
@@ -21,9 +20,9 @@ from oacs.core.config import OacsConfig
 from oacs.core.json import hash_json
 from oacs.core.time import now_iso
 from oacs.crypto.hybrid_pqc import HybridPQCKeyProvider
-from oacs.memory.models import EvidenceItem
 from oacs.rules.models import RuleManifest
 from oacs.skills.models import SkillManifest
+from oacs.skills.runner import run_skill
 from oacs.tools.local import call_local_tool
 from oacs.tools.mcp_client import McpClientAdapter
 from oacs.tools.models import ToolBinding
@@ -68,113 +67,41 @@ ActorOpt = Annotated[str | None, typer.Option("--actor")]
 AgentOpt = Annotated[str | None, typer.Option("--agent")]
 ScopeOpt = Annotated[list[str] | None, typer.Option("--scope")]
 PassOpt = Annotated[str | None, typer.Option("--passphrase")]
+REPO_DOGFOOD_SKILL = (
+    Path(__file__).resolve().parents[2] / "examples" / "skills" / "repo_development_memory"
+)
 
 
-def _git_value(args: list[str], cwd: Path | None = None) -> str | None:
-    try:
-        result = subprocess.run(
-            ["git", *args],
-            cwd=cwd,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=5,
-        )
-    except (OSError, subprocess.TimeoutExpired):
-        return None
-    if result.returncode != 0:
-        return None
-    value = result.stdout.strip()
-    return value or None
-
-
-def _repo_scope(cwd: Path) -> list[str]:
-    root = _git_value(["rev-parse", "--show-toplevel"], cwd)
-    repo_name = Path(root).name if root else cwd.resolve().name
-    return [f"repo:{repo_name}"]
-
-
-def _repo_state(cwd: Path) -> dict[str, object]:
-    changed = (_git_value(["status", "--short"], cwd) or "").splitlines()
-    return {
-        "branch": _git_value(["branch", "--show-current"], cwd) or "unknown",
-        "commit": _git_value(["rev-parse", "--short", "HEAD"], cwd) or "unknown",
-        "dirty": bool(changed),
-        "changed_files": changed[:50],
-    }
-
-
-def _commit_repo_episode(
-    svc: OacsServices,
+def _repo_skill_payload(
+    action: str,
     task: str,
-    summary: str,
     actor: str | None,
-    repo_scope: list[str],
-    state: dict[str, object],
-    *,
-    outcome: str | None = None,
-    command: str | None = None,
-    exit_code: int | None = None,
-    auto_memory: bool = False,
+    agent: str | None,
+    scope: list[str] | None,
+    cwd: Path,
+    db: str | None,
+    **extra: object,
 ) -> dict[str, object]:
-    lines = [
-        f"Repository task: {task}",
-        f"Summary: {summary}",
-        f"Git branch: {state['branch']}",
-        f"Git commit: {state['commit']}",
-        f"Dirty worktree: {state['dirty']}",
-    ]
-    if outcome:
-        lines.append(f"Outcome: {outcome}")
-    if command:
-        lines.append(f"Command: {command}")
-    if exit_code is not None:
-        lines.append(f"Exit code: {exit_code}")
-    evidence: list[EvidenceItem | dict[str, object]] = [
-        EvidenceItem(
-            evidence_kind="repo_task_trace",
-            claim="Repository development task summary",
-            value=summary,
-            source_ref=f"git:{state['commit']}",
-            confidence=1.0,
-            scope=repo_scope,
-            slot="evidence",
-        )
-    ]
-    proposed = svc.memory.propose(
-        "episode",
-        1,
-        "\n".join(lines),
-        actor,
-        repo_scope,
-        evidence=evidence,
-    )
-    committed = svc.memory.commit(proposed.id, actor)
-    svc.audit.record(
-        "repo.capture",
-        actor,
-        committed.id,
-        {
-            "task_hash": hash_json(task),
-            "auto_memory": auto_memory,
-            "outcome": outcome,
-            "command_hash": hash_json(command) if command else None,
-            "exit_code": exit_code,
-        },
-    )
-    result: dict[str, object] = {
-        "memory_id": committed.id,
-        "scope": repo_scope,
-        "git": state,
-        "status": committed.lifecycle_status,
+    payload: dict[str, object] = {
+        "action": action,
+        "task": task,
+        "actor": actor,
+        "agent": agent,
+        "scope": scope or [],
+        "cwd": str(cwd),
+        "db": db,
     }
-    if auto_memory:
-        result["auto_memory_policy"] = {
-            "committed_depth": 1,
-            "committed_type": "episode",
-            "d2_d3_auto_commit": False,
-        }
-    return result
+    payload.update(extra)
+    return payload
+
+
+def _run_repo_skill(payload: dict[str, object]) -> dict[str, object]:
+    manifest_path = REPO_DOGFOOD_SKILL / "skill.json"
+    if not manifest_path.is_file():
+        raise typer.BadParameter(f"repo dogfood skill not found: {manifest_path}")
+    skill_payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    skill_payload["source_path"] = str(REPO_DOGFOOD_SKILL)
+    return run_skill(SkillManifest(**skill_payload), payload)
 
 
 def emit(data: object, json_out: bool) -> None:
@@ -615,10 +542,21 @@ def repo_capture(
     db: DbOpt = None,
     json_out: JsonOpt = False,
 ) -> None:
-    svc = services(db)
-    repo_scope = scope or _repo_scope(cwd)
-    state = _repo_state(cwd)
-    emit(_commit_repo_episode(svc, task, summary, actor, repo_scope, state), json_out)
+    emit(
+        _run_repo_skill(
+            _repo_skill_payload(
+                "capture",
+                task,
+                actor,
+                None,
+                scope,
+                cwd,
+                db,
+                summary=summary,
+            )
+        ),
+        json_out,
+    )
 
 
 @repo_app.command("context")
@@ -632,14 +570,19 @@ def repo_context(
     db: DbOpt = None,
     json_out: JsonOpt = False,
 ) -> None:
-    svc = services(db)
-    repo_scope = scope or _repo_scope(cwd)
-    capsule = svc.context.build(task, actor, agent, repo_scope, budget)
     emit(
-        {
-            "capsule": capsule.model_dump(),
-            "explain": svc.context.explain(capsule.id, actor),
-        },
+        _run_repo_skill(
+            _repo_skill_payload(
+                "context",
+                task,
+                actor,
+                agent,
+                scope,
+                cwd,
+                db,
+                budget=budget,
+            )
+        ),
         json_out,
     )
 
@@ -655,28 +598,19 @@ def repo_auto_start(
     db: DbOpt = None,
     json_out: JsonOpt = False,
 ) -> None:
-    svc = services(db)
-    repo_scope = scope or _repo_scope(cwd)
-    capsule = svc.context.build(task, actor, agent, repo_scope, budget)
-    svc.audit.record(
-        "repo.auto_start",
-        actor,
-        capsule.id,
-        {"task_hash": hash_json(task), "auto_memory": True},
-    )
     emit(
-        {
-            "task": task,
-            "scope": repo_scope,
-            "git": _repo_state(cwd),
-            "capsule": capsule.model_dump(),
-            "explain": svc.context.explain(capsule.id, actor),
-            "auto_memory_policy": {
-                "start_writes_memory": False,
-                "finish_commits_depth": 1,
-                "d2_d3_auto_commit": False,
-            },
-        },
+        _run_repo_skill(
+            _repo_skill_payload(
+                "auto_start",
+                task,
+                actor,
+                agent,
+                scope,
+                cwd,
+                db,
+                budget=budget,
+            )
+        ),
         json_out,
     )
 
@@ -692,19 +626,19 @@ def repo_auto_finish(
     db: DbOpt = None,
     json_out: JsonOpt = False,
 ) -> None:
-    svc = services(db)
-    repo_scope = scope or _repo_scope(cwd)
-    state = _repo_state(cwd)
     emit(
-        _commit_repo_episode(
-            svc,
-            task,
-            summary,
-            actor,
-            repo_scope,
-            state,
-            outcome=outcome,
-            auto_memory=True,
+        _run_repo_skill(
+            _repo_skill_payload(
+                "auto_finish",
+                task,
+                actor,
+                None,
+                scope,
+                cwd,
+                db,
+                summary=summary,
+                outcome=outcome,
+            )
         ),
         json_out,
     )
@@ -723,70 +657,21 @@ def repo_autorun(
     db: DbOpt = None,
     json_out: JsonOpt = False,
 ) -> None:
-    import shlex
-
-    svc = services(db)
-    repo_scope = scope or _repo_scope(cwd)
-    capsule = svc.context.build(task, actor, agent, repo_scope, budget)
-    args = shlex.split(command)
-    if not args:
-        raise typer.BadParameter("--command must not be empty")
-    try:
-        completed = subprocess.run(
-            args,
-            cwd=cwd,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-        )
-        exit_code = completed.returncode
-        stdout_tail = completed.stdout[-4000:]
-        stderr_tail = completed.stderr[-4000:]
-        outcome = "passed" if exit_code == 0 else "failed"
-        summary = f"Autorun command {outcome}: {command}"
-    except subprocess.TimeoutExpired as exc:
-        exit_code = 124
-        stdout_tail = (exc.stdout or "")[-4000:] if isinstance(exc.stdout, str) else ""
-        stderr_tail = (exc.stderr or "")[-4000:] if isinstance(exc.stderr, str) else ""
-        outcome = "timeout"
-        summary = f"Autorun command timed out after {timeout}s: {command}"
-    state = _repo_state(cwd)
-    memory = _commit_repo_episode(
-        svc,
-        task,
-        summary,
-        actor,
-        repo_scope,
-        state,
-        outcome=outcome,
-        command=command,
-        exit_code=exit_code,
-        auto_memory=True,
-    )
-    svc.audit.record(
-        "repo.autorun",
-        actor,
-        str(memory["memory_id"]),
-        {
-            "capsule_id": capsule.id,
-            "command_hash": hash_json(command),
-            "exit_code": exit_code,
-            "auto_memory": True,
-        },
-    )
     emit(
-        {
-            "task": task,
-            "scope": repo_scope,
-            "capsule_id": capsule.id,
-            "command": command,
-            "exit_code": exit_code,
-            "outcome": outcome,
-            "stdout_tail": stdout_tail,
-            "stderr_tail": stderr_tail,
-            "memory": memory,
-        },
+        _run_repo_skill(
+            _repo_skill_payload(
+                "autorun",
+                task,
+                actor,
+                agent,
+                scope,
+                cwd,
+                db,
+                budget=budget,
+                command=command,
+                timeout=timeout,
+            )
+        ),
         json_out,
     )
 
@@ -954,13 +839,12 @@ def skill_activate(skill_id: str, db: DbOpt = None, json_out: JsonOpt = False) -
 @skill_app.command("run")
 def skill_run(
     skill_id: str,
+    payload: Annotated[str, typer.Option("--payload")] = "{}",
     actor: ActorOpt = None,
     scope: ScopeOpt = None,
     db: DbOpt = None,
     json_out: JsonOpt = False,
 ) -> None:
-    from oacs.skills.runner import run_builtin_skill
-
     svc = services(db, require_key=False)
     skill = svc.skills.inspect(skill_id)
     check_scope = skill.scope or scope or []
@@ -975,7 +859,13 @@ def skill_run(
         svc.policy.require(
             actor, "skill.run", scope=check_scope, namespace=skill.namespace, skill=skill.id
         )
-    result = run_builtin_skill(skill.name, {})
+    parsed_payload = json.loads(payload)
+    if not isinstance(parsed_payload, dict):
+        raise typer.BadParameter("--payload must be a JSON object")
+    parsed_payload.setdefault("db", db)
+    parsed_payload.setdefault("actor", actor)
+    parsed_payload.setdefault("scope", scope or [])
+    result = run_skill(skill, parsed_payload)
     svc.audit.record("skill.run", actor, skill.id, {"status": "completed"})
     emit(result, json_out)
 

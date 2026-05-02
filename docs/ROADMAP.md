@@ -31,8 +31,9 @@ Reference adapters prove integration, but they do not expand the standard.
 - Done: optional repo dogfood commands use ordinary OACS memory/context
   operations and are not part of the standard surface.
 - Done: controlled repo auto-memory dogfood commands added for `auto-start`,
-  `auto-finish`, and `autorun`; they commit only D1 repo episodes and keep
-  D2/D3 memory under explicit review.
+  `auto-finish`, and `autorun`; they are thin wrappers around the removable
+  `repo_development_memory` skill, commit only D1 repo episodes, and keep D2/D3
+  memory under explicit review.
 - Done: `memory_calls` are available in `MemoryLoopEngine`, CLI `loop run`, and
   API `/v1/loop/run` with intent, read trace, evidence, compact prompt, and
   deepening controls.
@@ -134,8 +135,9 @@ contracts. Reference adapters доказывают интеграцию, но н
 - Готово: optional repo dogfood commands используют ordinary OACS memory/context
   operations и не являются standard surface.
 - Готово: добавлены controlled repo auto-memory dogfood commands `auto-start`,
-  `auto-finish` и `autorun`; они коммитят только D1 repo episodes, а D2/D3
-  memory оставляют под явный review.
+  `auto-finish` и `autorun`; это тонкие wrappers вокруг отключаемого
+  `repo_development_memory` skill, они коммитят только D1 repo episodes, а
+  D2/D3 memory оставляют под явный review.
 - Готово: `memory_calls` доступны в `MemoryLoopEngine`, CLI `loop run` и API
   `/v1/loop/run` с intent, read trace, evidence, compact prompt и deepening
   controls.

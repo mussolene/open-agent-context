@@ -22,3 +22,4 @@ class SkillManifest(BaseModel):
     namespace: str = "default"
     scope: list[str] = Field(default_factory=list)
     owner_actor_id: str | None = None
+    source_path: str | None = None

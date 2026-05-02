@@ -82,13 +82,16 @@ repository. It is not part of the standard surface:
 acs repo capture --task "tighten memory_calls" \
   --summary "Removed benchmark-specific shortcuts and kept selector metadata typed." --json
 
+acs skill scan examples/skills --json
 acs repo context --task "continue OACS development" --json
 acs repo autorun --task "verify OACS development" --command "pytest -q" --json
 ```
 
 `repo capture` stores a committed D1 episode. `repo context` builds an
 explainable capsule over the repo scope. `repo autorun` runs a local command
-and commits only a D1 repo episode with command outcome metadata.
+and commits only a D1 repo episode with command outcome metadata. The `repo`
+commands are non-standard convenience wrappers around the removable
+`repo_development_memory` skill in `examples/skills/`.
 
 ### LM Studio
 
@@ -206,13 +209,16 @@ Optional local dogfood использует generic OACS memory/context operatio
 acs repo capture --task "tighten memory_calls" \
   --summary "Removed benchmark-specific shortcuts and kept selector metadata typed." --json
 
+acs skill scan examples/skills --json
 acs repo context --task "continue OACS development" --json
 acs repo autorun --task "verify OACS development" --command "pytest -q" --json
 ```
 
 `repo capture` сохраняет committed D1 episode. `repo context` строит explainable
 capsule по repo scope. `repo autorun` запускает local command и коммитит только
-D1 repo episode с metadata результата команды.
+D1 repo episode с metadata результата команды. Команды `repo` являются
+non-standard convenience wrappers вокруг отключаемого
+`repo_development_memory` skill в `examples/skills/`.
 
 ### LM Studio
 

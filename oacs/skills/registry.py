@@ -52,7 +52,9 @@ class SkillRegistry:
         found: list[SkillManifest] = []
         base = Path(folder)
         for manifest_file in base.glob("*/skill.json"):
-            found.append(self.add(SkillManifest(**json.loads(manifest_file.read_text()))))
+            payload = json.loads(manifest_file.read_text())
+            payload.setdefault("source_path", str(manifest_file.parent))
+            found.append(self.add(SkillManifest(**payload)))
         return found
 
     def list(self) -> list[SkillManifest]:
