@@ -2,6 +2,8 @@
 
 ## EN
 The repository uses GitHub Actions in `.github/workflows/ci.yml`.
+Release publishing is handled separately by `.github/workflows/release.yml` and
+the checklist in `docs/RELEASE.md`.
 
 CI runs on pushes and pull requests to `main`:
 
@@ -17,13 +19,12 @@ CI runs on pushes and pull requests to `main`:
 Local equivalent:
 
 ```bash
-python3 -m pip install -e ".[dev,crypto]"
+python3 -m pip install -e ".[dev,crypto,release]"
 ruff check .
 mypy oacs
 pytest -q
 rm -rf dist build
 find . -maxdepth 1 -name "*.egg-info" -exec rm -rf {} +
-python3 -m pip install build
 python3 -m build
 SMOKE_DIR="${TMPDIR:-.}/oacs-wheel-smoke"
 python3 -m venv "$SMOKE_DIR"
@@ -33,6 +34,8 @@ python3 -m venv "$SMOKE_DIR"
 
 ## RU
 Репозиторий использует GitHub Actions в `.github/workflows/ci.yml`.
+Публикация релиза вынесена в `.github/workflows/release.yml` и чеклист
+`docs/RELEASE.md`.
 
 CI запускается на push и pull request в `main`:
 
@@ -48,13 +51,12 @@ CI запускается на push и pull request в `main`:
 Локальный эквивалент:
 
 ```bash
-python3 -m pip install -e ".[dev,crypto]"
+python3 -m pip install -e ".[dev,crypto,release]"
 ruff check .
 mypy oacs
 pytest -q
 rm -rf dist build
 find . -maxdepth 1 -name "*.egg-info" -exec rm -rf {} +
-python3 -m pip install build
 python3 -m build
 SMOKE_DIR="${TMPDIR:-.}/oacs-wheel-smoke"
 python3 -m venv "$SMOKE_DIR"

@@ -124,7 +124,8 @@ unavailable.
 ### Build Pipeline
 
 GitHub Actions runs lint, typecheck, tests, package build, wheel install, and
-CLI smoke checks. See `docs/BUILD.md`.
+CLI smoke checks. Public prerelease publishing uses trusted publishing and the
+checklist in `docs/RELEASE.md`; see `docs/BUILD.md` for local build parity.
 
 ### Security Model
 
@@ -265,7 +266,9 @@ Unit tests не требуют LM Studio; integration tests пропускают
 ### Сборочная линия
 
 GitHub Actions запускает lint, typecheck, tests, package build, wheel install и
-CLI smoke checks. См. `docs/BUILD.md`.
+CLI smoke checks. Публичные prerelease публикации используют trusted publishing
+и checklist в `docs/RELEASE.md`; локальный build parity описан в
+`docs/BUILD.md`.
 
 ### Security model
 

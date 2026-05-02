@@ -5,11 +5,26 @@ build-backend = "hatchling.build"
 [project]
 name = "oacs"
 version = "0.3.0"
-description = "Open Agent Context Standard proof-of-concept and Agent Context Shell"
+description = "Open Agent Context Standard draft reference implementation for governed agent memory and context"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "Apache-2.0" }
 authors = [{ name = "OACS Contributors" }]
+keywords = ["agents", "memory", "context", "ai", "mcp", "sqlite", "fastapi"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Framework :: FastAPI",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Database",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Typing :: Typed",
+]
 dependencies = [
   "cryptography>=42",
   "fastapi>=0.110",
@@ -30,9 +45,20 @@ dev = [
   "mypy>=1.10",
 ]
 pq = ["liboqs-python>=0.10; platform_system != 'Windows'"]
+release = [
+  "build>=1.2",
+  "twine>=5",
+]
 
 [project.scripts]
 acs = "oacs.cli.main:app"
+
+[project.urls]
+Homepage = "https://github.com/mussolene/open-agent-context"
+Repository = "https://github.com/mussolene/open-agent-context"
+Issues = "https://github.com/mussolene/open-agent-context/issues"
+Documentation = "https://github.com/mussolene/open-agent-context/tree/main/docs"
+Changelog = "https://github.com/mussolene/open-agent-context/blob/main/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
 packages = ["oacs"]
