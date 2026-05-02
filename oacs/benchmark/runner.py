@@ -245,7 +245,6 @@ def _full_context_prompt(task: BenchmarkTask) -> str:
 
 
 def estimate_tokens(text: str) -> int:
-    # Deterministic approximation for local reports; avoids tokenizer-specific dependencies.
     return max(1, (len(text) + 3) // 4)
 
 

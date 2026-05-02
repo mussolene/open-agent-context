@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.0a1 - Unreleased
+## 0.3.0a1 - 2026-05-02
 
 Initial public prerelease candidate for the OACS v0.1 draft reference
 implementation.
