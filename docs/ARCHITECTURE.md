@@ -22,6 +22,10 @@ The reference implementation is layered:
 7. Validation adapters and deterministic benchmark fixtures outside the core
    contract.
 
+`ToolRunner` is the reference execution boundary for `ToolBinding`. It checks
+capabilities, validates JSON schemas, executes the selected adapter, stores the
+result as an `EvidenceRef`, and writes audit events.
+
 Modules are intentionally small and framework-agnostic below CLI/API.
 
 ## RU
@@ -44,5 +48,9 @@ Reference implementation построена слоями:
 5. Сборщик Context Capsule и memory loop.
 6. CLI `acs` и HTTP API на FastAPI.
 7. Validation adapters и deterministic benchmark fixtures вне core contract.
+
+`ToolRunner` является reference execution boundary для `ToolBinding`. Он
+проверяет capabilities, валидирует JSON schemas, запускает выбранный adapter,
+сохраняет результат как `EvidenceRef` и пишет audit events.
 
 Модули ниже CLI/API небольшие и не зависят от агентных фреймворков.

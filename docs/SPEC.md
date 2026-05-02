@@ -33,6 +33,11 @@ Integration adapters keep the standard boundary explicit. `tool.call` and
 and scope checks. MCP bindings are metadata-first; optional stdio execution is a
 reference adapter behavior, not an OACS conformance requirement.
 
+`ToolBinding` execution produces a `ToolCallResult` envelope. The reference
+implementation records tool outputs as `tool_result` `EvidenceRef` records, so
+later context assembly can cite tool evidence without treating tool stdout as
+uncontrolled memory.
+
 This document is a draft standard contract, not a final standard. The Python
 package in this repository is the reference implementation for the draft.
 
@@ -91,6 +96,11 @@ Integration adapters сохраняют явную границу стандар
 checks и scope checks. MCP bindings остаются metadata-first; optional stdio
 execution является behavior reference adapter, а не OACS conformance
 requirement.
+
+Execution `ToolBinding` создаёт envelope `ToolCallResult`. Reference
+implementation записывает tool outputs как `tool_result` `EvidenceRef`, чтобы
+последующая сборка контекста могла ссылаться на evidence от tools без
+превращения stdout в uncontrolled memory.
 
 Этот документ является draft-контрактом стандарта, а не финальным стандартом.
 Python package в этом репозитории — reference implementation для draft.

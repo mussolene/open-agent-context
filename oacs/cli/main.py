@@ -23,8 +23,6 @@ from oacs.crypto.hybrid_pqc import HybridPQCKeyProvider
 from oacs.rules.models import RuleManifest
 from oacs.skills.models import SkillManifest
 from oacs.skills.runner import run_skill
-from oacs.tools.local import call_local_tool
-from oacs.tools.mcp_client import McpClientAdapter
 from oacs.tools.models import ToolBinding
 
 app = typer.Typer(help="acs - Agent Context Shell")
@@ -693,11 +691,28 @@ def skill_run(
 def tool_add(
     name: Annotated[str, typer.Option("--name")],
     type: Annotated[str, typer.Option("--type")] = "python_function",
+    command: Annotated[str | None, typer.Option("--command")] = None,
+    description: Annotated[str, typer.Option("--description")] = "",
+    risk_level: Annotated[str, typer.Option("--risk")] = "low",
+    namespace: Annotated[str, typer.Option("--namespace")] = "default",
+    scope: ScopeOpt = None,
     db: DbOpt = None,
     json_out: JsonOpt = False,
 ) -> None:
     emit(
-        services(db, require_key=False).tools.add(ToolBinding(name=name, type=type)).model_dump(),
+        services(db, require_key=False)
+        .tools.add(
+            ToolBinding(
+                name=name,
+                type=type,
+                command=command,
+                description=description,
+                risk_level=risk_level,
+                namespace=namespace,
+                scope=scope or [],
+            )
+        )
+        .model_dump(),
         json_out,
     )
 
@@ -726,40 +741,17 @@ def tool_call(
     json_out: JsonOpt = False,
 ) -> None:
     svc = services(db, require_key=False)
-    tool = svc.tools.inspect(name)
-    check_scope = tool.scope or scope or []
-    if not (
-        svc.policy.allows(
-            actor, "tool.call", scope=check_scope, namespace=tool.namespace, tool=tool.id
-        )
-        or svc.policy.allows(
-            actor, "tool.call", scope=check_scope, namespace=tool.namespace, tool=tool.name
-        )
-    ):
-        svc.policy.require(
-            actor, "tool.call", scope=check_scope, namespace=tool.namespace, tool=tool.id
-        )
     parsed_payload = json.loads(payload)
     if not isinstance(parsed_payload, dict):
         raise typer.BadParameter("--payload must be a JSON object")
-    result: dict[str, object]
-    if tool.type == "mcp":
-        if not execute_mcp:
-            result = {
-                "tool_id": tool.id,
-                "mcp_ref": tool.mcp_ref,
-                "executed": False,
-                "reason": "MCP execution requires --execute-mcp",
-            }
-        else:
-            if not tool.mcp_ref:
-                raise typer.BadParameter("MCP tool has no mcp_ref")
-            binding = svc.mcp.inspect(tool.mcp_ref)
-            result = McpClientAdapter().call(binding, tool, parsed_payload)
-    else:
-        result = call_local_tool(tool.name, parsed_payload or {"called": True})
-    svc.audit.record("tool.call", actor, tool.id, {"status": "completed", "type": tool.type})
-    emit(result, json_out)
+    result = svc.tool_runner.call(
+        name,
+        parsed_payload,
+        actor_id=actor,
+        scope=scope,
+        execute_mcp=execute_mcp,
+    )
+    emit(result.model_dump(), json_out)
 
 
 @mcp_app.command("import")

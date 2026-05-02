@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ToolCallResult",
+  "type": "object",
+  "required": ["id", "tool_id", "tool_name", "tool_type", "input", "output", "executed", "status"],
+  "properties": {
+    "id": {"type": "string"},
+    "tool_id": {"type": "string"},
+    "tool_name": {"type": "string"},
+    "tool_type": {"type": "string"},
+    "actor_id": {"type": ["string", "null"]},
+    "scope": {"type": "array", "items": {"type": "string"}},
+    "input": {"type": "object"},
+    "output": {"type": "object"},
+    "evidence_ref": {"type": ["string", "null"]},
+    "executed": {"type": "boolean"},
+    "status": {"type": "string"}
+  }
+}

@@ -13,6 +13,7 @@
 - **RuleManifest:** Policy or workflow rule applied to memory, context, tools, capsules, or loops.
 - **SkillManifest:** Declarative skill definition with instructions and required resources.
 - **ToolBinding:** Local, HTTP, Python, or MCP-addressable tool definition.
+- **ToolCallResult:** Auditable result envelope produced by a ToolBinding call.
 - **McpBinding:** Imported MCP server/tool metadata and adapter configuration.
 - **EvidenceRef:** Reference to evidence used to support memory or context decisions.
 - **AuditEvent:** Non-secret operation record used to trace actions.
@@ -31,6 +32,7 @@
 - **RuleManifest:** Policy или workflow rule для memory, context, tools, capsules или loops.
 - **SkillManifest:** Declarative skill definition с instructions и required resources.
 - **ToolBinding:** Local, HTTP, Python или MCP-addressable tool definition.
+- **ToolCallResult:** Auditable result envelope, созданный вызовом ToolBinding.
 - **McpBinding:** Imported MCP server/tool metadata и adapter configuration.
 - **EvidenceRef:** Ссылка на evidence, поддерживающее memory или context decisions.
 - **AuditEvent:** Non-secret operation record для трассировки действий.

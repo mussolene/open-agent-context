@@ -10,6 +10,7 @@ from oacs.api.server import create_app
 from oacs.app import services
 from oacs.cli.main import app
 from oacs.core.errors import AccessDenied
+from oacs.tools.models import ToolBinding
 
 
 def test_tool_and_skill_capability_allowlists_are_enforced(svc) -> None:
@@ -152,11 +153,75 @@ def test_api_tool_call_and_audit_verify(db, monkeypatch) -> None:
         json={"actor_id": actor.id, "payload": {"ok": True}},
     )
     assert response.status_code == 200
-    assert response.json()["echo"] == {"ok": True}
+    body = response.json()
+    assert body["output"]["echo"] == {"ok": True}
+    assert body["evidence_ref"].startswith("ev_")
 
     verify = client.get("/v1/audit/verify")
     assert verify.status_code == 200
     assert verify.json()["valid"] is True
+
+
+def test_tool_runner_records_evidence_and_validates_output_schema(svc) -> None:
+    actor = svc.actors.create("agent", "ToolRunnerAgent")
+    tool = svc.tools.add(
+        ToolBinding(
+            name="local_echo",
+            type="python_function",
+            output_schema={
+                "type": "object",
+                "required": ["echo"],
+                "properties": {"echo": {"type": "object"}},
+            },
+        )
+    )
+    svc.capabilities.grant(actor.id, "system", ["tool.call"], tools_allowed=[tool.id])
+
+    result = svc.tool_runner.call(tool.id, {"value": 42}, actor_id=actor.id)
+
+    assert result.output == {"echo": {"value": 42}}
+    assert result.evidence_ref is not None
+    evidence = svc.store.get("evidence_refs", result.evidence_ref)
+    assert evidence is not None
+    assert evidence["kind"] == "tool_result"
+    assert evidence["public_payload"]["tool_id"] == tool.id
+
+
+def test_local_cli_tool_binding_uses_json_stdin_and_evidence(svc, tmp_path) -> None:
+    script = tmp_path / "tool.py"
+    script.write_text(
+        "\n".join(
+            [
+                "import json, sys",
+                "payload = json.load(sys.stdin)",
+                "print(json.dumps({'seen': payload['value']}))",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    actor = svc.actors.create("agent", "LocalCliAgent")
+    tool = svc.tools.add(
+        ToolBinding(
+            name="json_cli",
+            type="local_cli",
+            command=f"python3 {script}",
+            output_schema={
+                "type": "object",
+                "required": ["json", "returncode"],
+                "properties": {
+                    "json": {"type": "object"},
+                    "returncode": {"const": 0},
+                },
+            },
+        )
+    )
+    svc.capabilities.grant(actor.id, "system", ["tool.call"], tools_allowed=[tool.id])
+
+    result = svc.tool_runner.call(tool.id, {"value": "ok"}, actor_id=actor.id)
+
+    assert result.output["returncode"] == 0
+    assert result.output["json"] == {"seen": "ok"}
+    assert result.evidence_ref is not None
 
 
 def test_mcp_import_creates_scoped_tools_and_blocks_unlisted_binding_tool(svc, tmp_path) -> None:

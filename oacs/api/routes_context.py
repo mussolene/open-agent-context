@@ -6,8 +6,6 @@ from pydantic import BaseModel
 from oacs.app import services
 from oacs.core.errors import AccessDenied
 from oacs.skills.runner import run_builtin_skill
-from oacs.tools.local import call_local_tool
-from oacs.tools.mcp_client import McpClientAdapter
 
 router = APIRouter(prefix="/v1")
 
@@ -230,37 +228,14 @@ def call_tool(tool_id: str, req: dict[str, object]) -> dict[str, object]:
     svc = services(require_key=False)
     raw_actor = req.get("actor_id")
     actor_id: str | None = raw_actor if isinstance(raw_actor, str) else None
-    tool = svc.tools.inspect(tool_id)
-    scope: list[str] = tool.scope or _string_list(req.get("scope")) or []
-    if not (
-        svc.policy.allows(
-            actor_id, "tool.call", scope=scope, namespace=tool.namespace, tool=tool.id
-        )
-        or svc.policy.allows(
-            actor_id, "tool.call", scope=scope, namespace=tool.namespace, tool=tool.name
-        )
-    ):
-        svc.policy.require(
-            actor_id, "tool.call", scope=scope, namespace=tool.namespace, tool=tool.id
-        )
     payload = _dict_payload(req.get("payload"))
-    if tool.type == "mcp":
-        execute = bool(req.get("execute_mcp", False))
-        if execute:
-            if not tool.mcp_ref:
-                return {"error": "MCP tool has no mcp_ref"}
-            result = McpClientAdapter().call(svc.mcp.inspect(tool.mcp_ref), tool, payload)
-        else:
-            result = {
-                "tool_id": tool.id,
-                "mcp_ref": tool.mcp_ref,
-                "executed": False,
-                "reason": "MCP execution requires execute_mcp=true",
-            }
-    else:
-        result = call_local_tool(tool.name, payload or {"called": True})
-    svc.audit.record("tool.call", actor_id, tool.id, {"status": "completed", "type": tool.type})
-    return result
+    return svc.tool_runner.call(
+        tool_id,
+        payload,
+        actor_id=actor_id,
+        scope=_string_list(req.get("scope")),
+        execute_mcp=bool(req.get("execute_mcp", False)),
+    ).model_dump()
 
 
 @router.get("/mcp")

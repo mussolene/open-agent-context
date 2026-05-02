@@ -23,6 +23,20 @@ class ToolBinding(BaseModel):
     owner_actor_id: str | None = None
 
 
+class ToolCallResult(BaseModel):
+    id: str = Field(default_factory=lambda: new_id("toolcall"))
+    tool_id: str
+    tool_name: str
+    tool_type: str
+    actor_id: str | None = None
+    scope: list[str] = Field(default_factory=list)
+    input: dict[str, object] = Field(default_factory=dict)
+    output: dict[str, object] = Field(default_factory=dict)
+    evidence_ref: str | None = None
+    executed: bool = True
+    status: str = "completed"
+
+
 class McpBinding(BaseModel):
     id: str = Field(default_factory=lambda: new_id("mcp"))
     name: str

@@ -26,6 +26,10 @@ skill inspection, guarded `POST /v1/tools/{id}/call`,
 Tool and skill calls are checked through `tool.call` / `skill.run`, explicit
 resource allowlists, namespace, and scope.
 
+Tool execution is normalized through `ToolRunner`. A tool call returns a
+`ToolCallResult` envelope and records a `tool_result` `EvidenceRef`; HTTP tools
+require explicit `http.allow_network=true`.
+
 Benchmark endpoints accept `provider` and `model` when running tasks. Task pack
 import uses schema and checksum validation; downloader paths remain explicit and
 network is never used by default.
@@ -55,6 +59,10 @@ Integration adapter endpoints включают capability definitions/grants, in
 `POST /v1/skills/{id}/run`, MCP import/inspection и `GET /v1/audit/verify`.
 Tool и skill calls проверяются через `tool.call` / `skill.run`, explicit
 resource allowlists, namespace и scope.
+
+Tool execution нормализован через `ToolRunner`. Tool call возвращает
+`ToolCallResult` envelope и записывает `tool_result` `EvidenceRef`; HTTP tools
+требуют явный `http.allow_network=true`.
 
 Benchmark endpoints принимают `provider` и `model` при запуске задач. Import
 task packs использует schema и checksum validation; download paths явные, а

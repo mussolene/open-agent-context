@@ -5,7 +5,7 @@ This roadmap keeps the OACS v0.1 draft standard small. Core work must define
 memory, context, permissions, audit, and deterministic operation contracts.
 Reference adapters prove integration, but they do not expand the standard.
 
-### Current Position: v0.3.0 Reference POC
+### Current Position: v0.3.1.dev0 Reference POC
 Core contract:
 
 - Done: OACS v0.1 draft terminology, schemas, encrypted `MemoryRecord`,
@@ -93,6 +93,16 @@ Reference adapters:
 - Done: add larger benchmark suites with real LM Studio mode reporting and native
   harness comparison where available.
 
+### v0.3.1 - ToolBinding Execution Contract
+- Done: normalize tool execution through one `ToolRunner` for
+  `python_function`, `local_cli`, `http`, and `mcp` bindings.
+- Done: validate tool inputs/outputs with declared JSON schemas when
+  provided.
+- Done: convert tool results into `EvidenceRef` records that can be
+  audited and later projected into Context Capsules.
+- Done: keep network-capable HTTP tools disabled unless the binding
+  explicitly opts in.
+
 ### v1.0
 - Freeze stable schemas for ContextCapsule, MemoryRecord, CapabilityGrant,
   RuleManifest, SkillManifest, ToolBinding, McpBinding, EvidenceRef, and
@@ -108,7 +118,7 @@ Reference adapters:
 определять memory, context, permissions, audit и deterministic operation
 contracts. Reference adapters доказывают интеграцию, но не расширяют стандарт.
 
-### Текущая позиция: v0.3.0 Reference POC
+### Текущая позиция: v0.3.1.dev0 Reference POC
 Core contract:
 
 - Готово: OACS v0.1 draft terminology, schemas, encrypted `MemoryRecord`,
@@ -195,6 +205,16 @@ Reference adapters:
 - Готово: добавить import/download task packs с schema и checksum validation.
 - Готово: расширить benchmark suites с real LM Studio mode reporting и native harness
   comparison там, где он доступен.
+
+### v0.3.1 - ToolBinding Execution Contract
+- Готово: нормализовать tool execution через единый `ToolRunner` для
+  `python_function`, `local_cli`, `http` и `mcp` bindings.
+- Готово: валидировать tool inputs/outputs по объявленным JSON schemas, если
+  они заданы.
+- Готово: превращать tool results в `EvidenceRef` records, которые можно
+  audit и позже включать в Context Capsules.
+- Готово: HTTP tools с network доступом отключены, пока binding явно не
+  разрешит это.
 
 ### v1.0
 - Заморозить stable schemas для ContextCapsule, MemoryRecord, CapabilityGrant,

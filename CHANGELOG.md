@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.1.dev0 - Unreleased
+
+### Added
+
+- Generic `ToolRunner` execution boundary for `ToolBinding`.
+- `ToolCallResult` envelope and schema.
+- Tool result evidence capture through `tool_result` `EvidenceRef` records.
+- JSON schema validation for declared tool inputs and outputs.
+
 ## 0.3.0a1 - 2026-05-02
 
 Initial public prerelease candidate for the OACS v0.1 draft reference

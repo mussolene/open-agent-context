@@ -18,6 +18,7 @@ from oacs.storage.repositories import Repository
 from oacs.storage.sqlite import SQLiteStore
 from oacs.tools.mcp import McpRegistry
 from oacs.tools.registry import ToolRegistry
+from oacs.tools.runner import ToolRunner
 
 
 @dataclass
@@ -33,6 +34,7 @@ class OacsServices:
     skills: SkillRegistry
     tools: ToolRegistry
     mcp: McpRegistry
+    tool_runner: ToolRunner
     context: ContextBuilder
     loop: MemoryLoopEngine
     audit: AuditService
@@ -62,6 +64,14 @@ def services(
     skills = SkillRegistry(Repository(store, "skills"))
     tools = ToolRegistry(Repository(store, "tools"))
     mcp = McpRegistry(Repository(store, "mcp_bindings"), tools)
+    audit = AuditService(Repository(store, "audit_events"))
+    tool_runner = ToolRunner(
+        tools,
+        mcp,
+        policy,
+        audit,
+        Repository(store, "evidence_refs"),
+    )
     context = ContextBuilder(
         Repository(store, "context_capsules"),
         memory,
@@ -83,7 +93,8 @@ def services(
         skills=skills,
         tools=tools,
         mcp=mcp,
+        tool_runner=tool_runner,
         context=context,
         loop=MemoryLoopEngine(memory, context),
-        audit=AuditService(Repository(store, "audit_events")),
+        audit=audit,
     )
