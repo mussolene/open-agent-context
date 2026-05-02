@@ -97,3 +97,4 @@ Current technical reports:
 
 - `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`
 - `examples/benchmarks/full_context_gemma_e2b_2026-05-02.md`
+- `examples/benchmarks/community_memory_gemma_e2b_2026-05-02.md`
