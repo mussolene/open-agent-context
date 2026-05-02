@@ -15,11 +15,13 @@ The benchmark compares:
 - `baseline_no_memory`: the model receives only the current task.
 - `baseline_full_context`: the model receives raw prior task context plus the current task.
 - `oacs_memory_loop`: OACS commits scoped memory, builds a Context Capsule, and prompts
-  the model with governed context.
+  the model with governed context. This is the reference Context Capsule
+  compatibility mode, not the preferred benchmark execution path.
 - `oacs_memory_call_loop`: OACS commits scoped memory, records deterministic
   `memory_calls`, extracts structured evidence, and gives the model a compact
-  evidence prompt. Benchmark-only deterministic scoring lives in this adapter,
-  not in the core memory loop.
+  evidence prompt. This is the preferred current execution path for benchmark
+  and product validation. Benchmark-only deterministic scoring lives in this
+  adapter, not in the core memory loop.
 
 Synthetic tasks are local and deterministic. External adapters are thin import
 layers for checking OACS memory/context compatibility, not a replacement for the
@@ -47,6 +49,11 @@ inside benchmark execution. It imports only rows where the reused plan item is
 unambiguous from structured answer overlap, writes typed `memory_selectors`, and
 skips ambiguous rows instead of guessing from phrases such as "same place".
 
+Current position: broad capsule prompting is kept to prove Context Capsule
+compatibility and portability. Structured `memory_calls` plus compact
+`EvidenceRef` projection are the recommended line for small models and
+long-memory tasks.
+
 ## RU
 Benchmarks - это validation fixtures для OACS v0.1 draft memory/context
 contract. Они не являются самим стандартом и не заменяют native public benchmark
@@ -61,11 +68,13 @@ Benchmark сравнивает:
 - `baseline_no_memory`: модель получает только текущую задачу.
 - `baseline_full_context`: модель получает сырой предыдущий контекст и текущую задачу.
 - `oacs_memory_loop`: OACS записывает scoped memory, строит Context Capsule и даёт
-  модели управляемый контекст.
+  модели управляемый контекст. Это reference compatibility mode для Context
+  Capsule, а не preferred benchmark execution path.
 - `oacs_memory_call_loop`: OACS записывает scoped memory, фиксирует
   deterministic `memory_calls`, извлекает structured evidence и даёт модели
-  compact evidence prompt. Benchmark-only deterministic scoring находится в
-  этом adapter, а не в core memory loop.
+  compact evidence prompt. Это текущий preferred execution path для benchmark и
+  product validation. Benchmark-only deterministic scoring находится в этом
+  adapter, а не в core memory loop.
 
 Синтетические задачи локальные и детерминированные. External adapters являются
 тонкими import layers для проверки OACS memory/context compatibility, а не
@@ -92,6 +101,11 @@ MemoryArena group-travel adapter не использует natural-language slot
 время benchmark execution. Он импортирует только строки, где reused plan item
 однозначен по structured answer overlap, записывает typed `memory_selectors` и
 пропускает неоднозначные строки вместо угадывания по фразам вроде "same place".
+
+Текущая позиция: broad capsule prompting остаётся для проверки Context Capsule
+compatibility и portability. Structured `memory_calls` плюс compact
+`EvidenceRef` projection являются рекомендованной линией для маленьких моделей
+и long-memory tasks.
 
 Current technical reports:
 

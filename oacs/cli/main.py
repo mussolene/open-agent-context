@@ -1001,7 +1001,16 @@ def benchmark_download(
 
 @benchmark_app.command("run")
 def benchmark_run(
-    mode: Annotated[str, typer.Option("--mode")],
+    mode: Annotated[
+        str,
+        typer.Option(
+            "--mode",
+            help=(
+                "Benchmark mode. Preferred: oacs_memory_call_loop. "
+                "Context Capsule compatibility: oacs_memory_loop."
+            ),
+        ),
+    ],
     model: Annotated[str | None, typer.Option("--model")] = None,
     provider: Annotated[str, typer.Option("--provider")] = "deterministic",
     actor: ActorOpt = None,

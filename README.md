@@ -86,11 +86,15 @@ purpose of OACS. `oacs_memory_call_loop` records deterministic OACS
 `memory_calls` such as `memory.query` and `memory.extract_evidence`; benchmark
 scoring stays in the benchmark adapter. Task pack import/download is schema and
 checksum validated; downloads require explicit `--allow-network`.
+`oacs_memory_call_loop` is the preferred execution path for benchmark and
+product validation. `oacs_memory_loop` remains a broad Context Capsule
+compatibility mode.
 
 Current technical reports:
 
 - `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`
 - `examples/benchmarks/full_context_gemma_e2b_2026-05-02.md`
+- `examples/benchmarks/community_memory_gemma_e2b_2026-05-02.md`
 
 ### Killer Demo
 
@@ -247,11 +251,15 @@ OACS. `oacs_memory_call_loop` записывает deterministic OACS `memory_ca
 например `memory.query` и `memory.extract_evidence`; scoring остаётся в
 benchmark adapter. Import/download task packs валидируется по schema и
 checksum; downloads требуют явный `--allow-network`.
+`oacs_memory_call_loop` - preferred execution path для benchmark и product
+validation. `oacs_memory_loop` остаётся broad Context Capsule compatibility
+mode.
 
 Текущие technical reports:
 
 - `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`
 - `examples/benchmarks/full_context_gemma_e2b_2026-05-02.md`
+- `examples/benchmarks/community_memory_gemma_e2b_2026-05-02.md`
 
 ### Killer Demo
 

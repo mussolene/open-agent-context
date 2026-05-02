@@ -21,6 +21,9 @@ Core contract:
 - Done: adaptive context policy added so tiny low-pressure tasks can use compact
   capsules, while structured evidence and medium/large contexts use
   `memory_calls`.
+- Done: preferred execution path clarified: `oacs_memory_call_loop` is the
+  practical benchmark/product-validation path; broad `oacs_memory_loop` remains
+  a Context Capsule compatibility mode.
 - Done: thin backend-neutral `StorageBackend` protocol added with SQLite kept as
   the reference backend.
 - Done: capability-scoped shared memory added for subagents through
@@ -51,8 +54,9 @@ Reference adapters:
   token use and relevance through compact evidence projection; tiny tasks can
   show overhead.
 - Current technical reports:
-  `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md` and
-  `examples/benchmarks/full_context_gemma_e2b_2026-05-02.md`.
+  `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`,
+  `examples/benchmarks/full_context_gemma_e2b_2026-05-02.md`, and
+  `examples/benchmarks/community_memory_gemma_e2b_2026-05-02.md`.
 
 ### v0.2.6 - Memory Standard Hardening
 - Done: core `memory_calls` now produce operation traces, selected evidence, and
