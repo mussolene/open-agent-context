@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RetrievalQuery",
+  "type": "object",
+  "required": ["text", "scope", "limit"],
+  "properties": {
+    "text": {"type": "string"},
+    "scope": {"type": "array", "items": {"type": "string"}},
+    "limit": {"type": "integer", "minimum": 1},
+    "provider": {"type": "string"}
+  },
+  "additionalProperties": false
+}

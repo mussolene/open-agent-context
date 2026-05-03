@@ -1,0 +1,19 @@
+{
+  "table": "memories",
+  "filters": {
+    "status": "active",
+    "lifecycle_status": "active",
+    "namespace": "default"
+  },
+  "order_by": [
+    {
+      "field": "updated_at",
+      "direction": "desc"
+    },
+    {
+      "field": "id",
+      "direction": "asc"
+    }
+  ],
+  "limit": 10
+}

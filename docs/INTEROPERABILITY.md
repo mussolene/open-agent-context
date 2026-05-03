@@ -18,15 +18,17 @@ Portable contract requirements:
    explicit `*`.
 5. Enforce namespace, depth, lifecycle, and status filters before retrieval
    ranking or evidence extraction.
-6. Treat D3-D5 memory as hypothesis/ranking context, not factual evidence.
-7. Keep tool outputs as `tool_result` `EvidenceRef` records unless a selected
+6. Use backend-neutral storage selectors: filters, ordered field/direction
+   pairs, and limits. Do not expose SQL fragments as standard selector data.
+7. Treat D3-D5 memory as hypothesis/ranking context, not factual evidence.
+8. Keep tool outputs as `tool_result` `EvidenceRef` records unless a selected
    memory explicitly references that evidence.
-8. Keep adapter execution boundaries explicit: tool, skill, MCP, model, storage,
+9. Keep adapter execution boundaries explicit: tool, skill, MCP, model, storage,
    and benchmark behavior may vary by implementation, but the records they
    produce must preserve the OACS contract.
-9. Record auditable operation envelopes for memory/context work without
+10. Record auditable operation envelopes for memory/context work without
    requiring plaintext sensitive content in operation metadata.
-10. Document which behaviors are runtime-specific extensions rather than core
+11. Document which behaviors are runtime-specific extensions rather than core
     OACS conformance behavior.
 
 Reference-only behavior:
@@ -56,15 +58,18 @@ Portable contract requirements:
    явного `*`.
 5. Применять namespace, depth, lifecycle и status filters до retrieval ranking
    или evidence extraction.
-6. Считать D3-D5 memory hypothesis/ranking context, а не factual evidence.
-7. Хранить outputs tools как `tool_result` `EvidenceRef`, пока выбранная memory
+6. Использовать backend-neutral storage selectors: filters, ordered
+   field/direction pairs и limits. Не раскрывать SQL fragments как standard
+   selector data.
+7. Считать D3-D5 memory hypothesis/ranking context, а не factual evidence.
+8. Хранить outputs tools как `tool_result` `EvidenceRef`, пока выбранная memory
    явно не ссылается на это evidence.
-8. Держать adapter execution boundaries явными: tool, skill, MCP, model,
+9. Держать adapter execution boundaries явными: tool, skill, MCP, model,
    storage и benchmark behavior могут отличаться по implementation, но records
    должны сохранять OACS contract.
-9. Записывать auditable operation envelopes для memory/context work без
+10. Записывать auditable operation envelopes для memory/context work без
    требования plaintext sensitive content в operation metadata.
-10. Документировать, какие behaviors являются runtime-specific extensions, а не
+11. Документировать, какие behaviors являются runtime-specific extensions, а не
     core OACS conformance behavior.
 
 Reference-only behavior:

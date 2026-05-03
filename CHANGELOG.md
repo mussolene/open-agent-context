@@ -6,6 +6,7 @@
 
 - Language-neutral conformance fixtures under `conformance/fixtures/`.
 - Negative adapter-boundary fixtures under `conformance/negative/`.
+- Retrieval and storage selector conformance schemas and fixtures.
 - Schema-only conformance tests that validate fixtures without importing OACS
   Python models.
 - `docs/INTEROPERABILITY.md` checklist for non-Python runtimes and adapters.

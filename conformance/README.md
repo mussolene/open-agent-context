@@ -25,6 +25,9 @@ Fixtures:
 - `fixtures/context_operation.json`
 - `fixtures/memory_loop_run.json`
 - `fixtures/tool_call_result.json`
+- `fixtures/storage_selector.json`
+- `fixtures/retrieval_query.json`
+- `fixtures/retrieval_result.json`
 
 Negative fixtures in `negative/` cover schema and semantic boundary failures
 that adapters should reject before projection into task context.
@@ -53,6 +56,9 @@ Fixtures:
 - `fixtures/context_operation.json`
 - `fixtures/memory_loop_run.json`
 - `fixtures/tool_call_result.json`
+- `fixtures/storage_selector.json`
+- `fixtures/retrieval_query.json`
+- `fixtures/retrieval_result.json`
 
 Negative fixtures в `negative/` покрывают schema и semantic boundary failures,
 которые adapters должны reject до projection в task context.

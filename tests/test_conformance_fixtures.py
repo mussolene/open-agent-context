@@ -22,6 +22,9 @@ FIXTURE_SCHEMAS = {
     "context_operation.json": "context_operation.schema.json",
     "memory_loop_run.json": "memory_loop_run.schema.json",
     "tool_call_result.json": "tool_call_result.schema.json",
+    "storage_selector.json": "storage_selector.schema.json",
+    "retrieval_query.json": "retrieval_query.schema.json",
+    "retrieval_result.json": "retrieval_result.schema.json",
 }
 
 
@@ -36,6 +39,9 @@ def schema(name: str) -> dict[str, object]:
         payload["properties"]["memory_calls"]["items"] = load_json(
             SCHEMAS / "memory_call.schema.json"
         )
+    if name == "retrieval_result.schema.json":
+        payload = json.loads(json.dumps(payload))
+        payload["properties"]["query"] = load_json(SCHEMAS / "retrieval_query.schema.json")
     return payload
 
 
@@ -93,3 +99,28 @@ def test_negative_semantic_fixture_rejects_unlinked_tool_evidence() -> None:
     known_evidence = load_json(FIXTURES / "evidence_ref.json")
 
     assert payload["evidence_ref"] != known_evidence["id"]
+
+
+def test_negative_schema_fixture_rejects_sql_storage_selector() -> None:
+    negative = load_json(NEGATIVE / "storage_selector_sql_fragment.json")
+
+    with pytest.raises(ValidationError):
+        validate(negative["payload"], schema(str(negative["schema"])))
+
+
+def test_negative_semantic_fixture_rejects_d4_as_factual_retrieval_evidence() -> None:
+    negative = load_json(NEGATIVE / "retrieval_result_d4_used_as_fact.json")
+    payload = negative["payload"]
+    assert isinstance(payload, dict)
+    validate(payload, schema(str(negative["schema"])))
+
+    hits = payload["hits"]
+    assert isinstance(hits, list)
+    invalid_hits = [
+        hit
+        for hit in hits
+        if isinstance(hit, dict)
+        and int(hit["depth"]) >= 3
+        and hit.get("used_as_factual_evidence") is True
+    ]
+    assert invalid_hits

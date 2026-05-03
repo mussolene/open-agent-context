@@ -1,0 +1,30 @@
+{
+  "provider": "hybrid_lexical_structured",
+  "query": {
+    "text": "Alpha report command",
+    "scope": [
+      "project",
+      "repo:oacs"
+    ],
+    "limit": 10,
+    "provider": "hybrid_lexical_structured"
+  },
+  "hits": [
+    {
+      "memory_id": "mem_conformance_001",
+      "depth": 2,
+      "score": 6.0,
+      "reasons": [
+        "evidence_overlap:command",
+        "lexical_text_overlap"
+      ],
+      "evidence_values": [
+        "make report-safe"
+      ],
+      "evidence_refs": [
+        "ev_conformance_001"
+      ],
+      "used_as_factual_evidence": true
+    }
+  ]
+}

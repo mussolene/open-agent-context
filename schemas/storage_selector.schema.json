@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "StorageSelector",
+  "type": "object",
+  "required": ["table"],
+  "properties": {
+    "table": {"type": "string"},
+    "filters": {"type": "object"},
+    "order_by": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["field", "direction"],
+        "properties": {
+          "field": {"type": "string"},
+          "direction": {"type": "string", "enum": ["asc", "desc"]}
+        },
+        "additionalProperties": false
+      }
+    },
+    "limit": {"type": ["integer", "null"], "minimum": 1}
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,9 @@
+{
+  "text": "Alpha report command",
+  "scope": [
+    "project",
+    "repo:oacs"
+  ],
+  "limit": 10,
+  "provider": "hybrid_lexical_structured"
+}

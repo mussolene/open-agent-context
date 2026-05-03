@@ -86,6 +86,9 @@ def test_interoperability_docs_link_conformance_fixtures_and_reference_boundary(
     )
     assert "Python-specific behavior is reference-only" in spec
     assert "docs/INTEROPERABILITY.md" in spec
+    assert "storage_selector.schema.json" in (
+        ROOT / "docs" / "MEMORY_MODEL.md"
+    ).read_text(encoding="utf-8")
 
 
 def test_agent_instructions_use_oacs_native_proof_loop() -> None:

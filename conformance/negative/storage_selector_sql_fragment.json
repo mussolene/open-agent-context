@@ -1,0 +1,12 @@
+{
+  "schema": "storage_selector.schema.json",
+  "reason": "Storage selectors must be backend-neutral objects, not SQL fragments.",
+  "payload": {
+    "table": "memories",
+    "filters": {
+      "status": "active"
+    },
+    "order_by": "updated_at DESC; DROP TABLE memories",
+    "limit": 10
+  }
+}

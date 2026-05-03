@@ -1,0 +1,25 @@
+{
+  "schema": "retrieval_result.schema.json",
+  "reason": "D3-D5 memories may rank hypotheses but must not be projected as factual evidence.",
+  "payload": {
+    "provider": "hybrid_lexical_structured",
+    "query": {
+      "text": "Alpha report command",
+      "scope": [
+        "project"
+      ],
+      "limit": 10
+    },
+    "hits": [
+      {
+        "memory_id": "mem_fuzzy_org_model",
+        "depth": 4,
+        "score": 3.0,
+        "reasons": [
+          "lexical_text_overlap"
+        ],
+        "used_as_factual_evidence": true
+      }
+    ]
+  }
+}

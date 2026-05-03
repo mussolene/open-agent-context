@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RetrievalResult",
+  "type": "object",
+  "required": ["provider", "query", "hits"],
+  "properties": {
+    "provider": {"type": "string"},
+    "query": {"$ref": "retrieval_query.schema.json"},
+    "hits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["memory_id", "depth", "score", "reasons"],
+        "properties": {
+          "memory_id": {"type": "string"},
+          "depth": {"type": "integer", "minimum": 0, "maximum": 5},
+          "score": {"type": "number"},
+          "reasons": {"type": "array", "items": {"type": "string"}},
+          "evidence_values": {"type": "array", "items": {"type": "string"}},
+          "evidence_refs": {"type": "array", "items": {"type": "string"}},
+          "used_as_factual_evidence": {"type": "boolean"}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

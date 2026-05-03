@@ -49,6 +49,12 @@ v0.2.8 defines retrieval as a provider contract over already-authorized
 - `EmbeddingRetrievalProvider` is disabled by default and never required for
   conformance.
 
+Portable retrieval conformance is expressed through
+`schemas/retrieval_query.schema.json`, `schemas/retrieval_result.schema.json`,
+and fixtures in `conformance/fixtures/`. Storage access uses
+`schemas/storage_selector.schema.json`: selector records carry filters,
+ordered field/direction pairs, and limits rather than backend-specific SQL.
+
 ## RU
 Глубины:
 
@@ -98,3 +104,9 @@ v0.2.8 определяет retrieval как provider contract поверх уж
   без benchmark-specific text parsing;
 - `EmbeddingRetrievalProvider` disabled by default и не требуется для
   conformance.
+
+Portable retrieval conformance выражен через
+`schemas/retrieval_query.schema.json`, `schemas/retrieval_result.schema.json` и
+fixtures в `conformance/fixtures/`. Storage access использует
+`schemas/storage_selector.schema.json`: selector records содержат filters,
+ordered field/direction pairs и limits вместо backend-specific SQL.
