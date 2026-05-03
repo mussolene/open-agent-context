@@ -58,7 +58,7 @@ Reference adapters:
   no-network-by-default download/import commands.
 - Done: benchmark comparisons report provider/model/task-pack compatibility and
   LM Studio usage metadata when the server returns it.
-- Done: repo dogfood moved to the removable `repo_development_memory` skill
+- Done: repo dogfood moved to the removable `codex_oacs_runtime` skill
   under `examples/skills/`; it is source-checkout validation, not standard
   surface.
 - Done: Agent Workflow UX added as reference CLI convenience:
@@ -293,7 +293,7 @@ Reference adapters:
   no-network-by-default download/import commands.
 - Готово: benchmark comparisons показывают provider/model/task-pack
   compatibility и LM Studio usage metadata, когда сервер её возвращает.
-- Готово: repo dogfood перенесён в отключаемый `repo_development_memory` skill
+- Готово: repo dogfood перенесён в отключаемый `codex_oacs_runtime` skill
   в `examples/skills/`; это source-checkout validation, а не standard surface.
 - Готово: Agent Workflow UX добавлен как reference CLI convenience:
   project-local discovery/status, resume aggregation, task checkpoints,

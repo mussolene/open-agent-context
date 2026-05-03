@@ -202,5 +202,5 @@ implementation.
 
 - This is an alpha prerelease of a draft standard reference implementation.
 - Public benchmark adapters are validation artifacts, not OACS conformance.
-- Repo dogfood lives in `examples/skills/repo_development_memory` and is not
+- Repo dogfood lives in `examples/skills/codex_oacs_runtime` and is not
   part of the installed core package surface.

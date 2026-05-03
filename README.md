@@ -120,14 +120,14 @@ documented in `docs/AGENT_WORKFLOW.md`.
 ### Development Dogfood
 
 Optional source-checkout dogfood lives in the removable
-`repo_development_memory` skill under `examples/skills/`. It is not part of the
+`codex_oacs_runtime` skill under `examples/skills/`. It is not part of the
 standard surface or the minimal installed-package path:
 
 ```bash
 acs skill scan examples/skills --json
-acs skill run repo_development_memory \
+acs skill run codex_oacs_runtime \
   --payload '{"action":"capture","task":"tighten memory_calls","summary":"Removed benchmark-specific shortcuts and kept selector metadata typed.","cwd":"."}' --json
-acs skill run repo_development_memory \
+acs skill run codex_oacs_runtime \
   --payload '{"action":"context","task":"continue OACS development","cwd":"."}' --json
 ```
 
@@ -292,14 +292,14 @@ policy helpers описаны в `docs/AGENT_WORKFLOW.md`.
 ### Development dogfood
 
 Optional source-checkout dogfood живёт в отключаемом
-`repo_development_memory` skill в `examples/skills/`. Это не часть standard
+`codex_oacs_runtime` skill в `examples/skills/`. Это не часть standard
 surface и не minimal installed-package path:
 
 ```bash
 acs skill scan examples/skills --json
-acs skill run repo_development_memory \
+acs skill run codex_oacs_runtime \
   --payload '{"action":"capture","task":"tighten memory_calls","summary":"Removed benchmark-specific shortcuts and kept selector metadata typed.","cwd":"."}' --json
-acs skill run repo_development_memory \
+acs skill run codex_oacs_runtime \
   --payload '{"action":"context","task":"continue OACS development","cwd":"."}' --json
 ```
 
