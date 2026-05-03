@@ -84,6 +84,23 @@ def test_stable_candidate_schemas_reject_additional_properties() -> None:
         assert payload.get("additionalProperties") is False, schema_name
 
 
+def test_stable_candidate_schema_properties_have_descriptions() -> None:
+    manifest = (ROOT / "docs" / "FREEZE_PREP.md").read_text(encoding="utf-8")
+    stable_candidates = re.findall(r"\| `([^`]+)` \| `stable_candidate` \|", manifest)
+
+    assert stable_candidates
+    for schema_name in sorted(set(stable_candidates)):
+        payload = json.loads((ROOT / "schemas" / f"{schema_name}.schema.json").read_text())
+        properties = payload.get("properties", {})
+        assert isinstance(properties, dict), schema_name
+        for property_name, property_schema in properties.items():
+            assert isinstance(property_schema, dict), f"{schema_name}.{property_name}"
+            description = property_schema.get("description")
+            assert isinstance(description, str) and description.strip(), (
+                f"{schema_name}.{property_name}"
+            )
+
+
 def test_public_docs_do_not_use_stale_reference_version() -> None:
     match = re.match(r"^(\d+)\.(\d+)\.(\d+)", __version__)
     assert match is not None

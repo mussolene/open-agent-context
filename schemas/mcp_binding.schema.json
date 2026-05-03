@@ -2,22 +2,104 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "McpBinding",
   "type": "object",
-  "required": ["id", "name", "server_name", "transport", "risk_level", "status"],
+  "required": [
+    "id",
+    "name",
+    "server_name",
+    "transport",
+    "risk_level",
+    "status"
+  ],
   "properties": {
-    "id": {"type": "string"},
-    "name": {"type": "string"},
-    "server_name": {"type": "string"},
-    "transport": {"type": "string", "enum": ["stdio", "sse", "http"]},
-    "command": {"type": ["string", "null"]},
-    "args": {"type": "array", "items": {"type": "string"}},
-    "env": {"type": "object"},
-    "capabilities": {"type": "array", "items": {"type": "string"}},
-    "allowed_tools": {"type": "array", "items": {"type": "string"}},
-    "risk_level": {"type": "string", "enum": ["low", "medium", "high"]},
-    "status": {"type": "string", "enum": ["active", "inactive", "deprecated"]},
-    "namespace": {"type": "string"},
-    "scope": {"type": "array", "items": {"type": "string"}},
-    "owner_actor_id": {"type": ["string", "null"]}
+    "id": {
+      "type": "string",
+      "description": "Stable identifier for this portable OACS record."
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable stable name for the manifest or binding."
+    },
+    "server_name": {
+      "type": "string",
+      "description": "Logical MCP server name for metadata and policy binding."
+    },
+    "transport": {
+      "type": "string",
+      "enum": [
+        "stdio",
+        "sse",
+        "http"
+      ],
+      "description": "MCP transport metadata for adapters; conformance does not require a specific transport."
+    },
+    "command": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Optional command metadata for an MCP adapter; stdio execution is not required by the standard."
+    },
+    "args": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Optional process arguments for an adapter; they are not required by the standard."
+    },
+    "env": {
+      "type": "object",
+      "description": "Optional environment variable names or bindings for an adapter; secrets must not be embedded."
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Portable capability metadata advertised by the binding."
+    },
+    "allowed_tools": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Allowed tool names or identifiers exposed through this binding."
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "description": "Risk classification used for policy and review decisions."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "deprecated"
+      ],
+      "description": "Lifecycle status for this record in the portable OACS model."
+    },
+    "namespace": {
+      "type": "string",
+      "description": "Logical namespace used to separate records without requiring a specific storage backend."
+    },
+    "scope": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Portable scope labels that constrain where the record applies."
+    },
+    "owner_actor_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Optional actor identifier for ownership or accountability metadata."
+    }
   },
   "additionalProperties": false
 }

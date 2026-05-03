@@ -2,20 +2,77 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "AuditEvent",
   "type": "object",
-  "required": ["id", "operation", "actor_id", "created_at", "content_hash"],
+  "required": [
+    "id",
+    "operation",
+    "actor_id",
+    "created_at",
+    "content_hash"
+  ],
   "properties": {
-    "id": {"type": "string"},
-    "operation": {"type": "string"},
-    "actor_id": {"type": ["string", "null"]},
-    "target_id": {"type": ["string", "null"]},
-    "created_at": {"type": "string"},
-    "metadata": {"type": "object"},
-    "previous_hash": {"type": ["string", "null"]},
-    "content_hash": {"type": "string"},
-    "status": {"type": "string"},
-    "namespace": {"type": "string"},
-    "scope": {"type": "array", "items": {"type": "string"}},
-    "owner_actor_id": {"type": ["string", "null"]}
+    "id": {
+      "type": "string",
+      "description": "Stable identifier for this portable OACS record."
+    },
+    "operation": {
+      "type": "string",
+      "description": "Operation name recorded for auditability across implementations."
+    },
+    "actor_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Optional actor identifier associated with this operation or projection."
+    },
+    "target_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Identifier of the record targeted by this operation or audit event."
+    },
+    "created_at": {
+      "type": "string",
+      "description": "Creation timestamp encoded as a portable string."
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Adapter-neutral audit metadata; protected values must be redacted or referenced externally."
+    },
+    "previous_hash": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Previous AuditEvent hash for chain integrity when available."
+    },
+    "content_hash": {
+      "type": "string",
+      "description": "Canonical content hash used for integrity checks across implementations."
+    },
+    "status": {
+      "type": "string",
+      "description": "Lifecycle status for this record in the portable OACS model."
+    },
+    "namespace": {
+      "type": "string",
+      "description": "Logical namespace used to separate records without requiring a specific storage backend."
+    },
+    "scope": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Portable scope labels that constrain where the record applies."
+    },
+    "owner_actor_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Optional actor identifier for ownership or accountability metadata."
+    }
   },
   "additionalProperties": false
 }

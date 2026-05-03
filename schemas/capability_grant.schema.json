@@ -2,25 +2,92 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "CapabilityGrant",
   "type": "object",
-  "required": ["id", "subject_actor_id", "issuer_actor_id", "allowed_operations", "status"],
+  "required": [
+    "id",
+    "subject_actor_id",
+    "issuer_actor_id",
+    "allowed_operations",
+    "status"
+  ],
   "properties": {
-    "id": {"type": "string"},
-    "subject_actor_id": {"type": "string"},
-    "issuer_actor_id": {"type": "string"},
+    "id": {
+      "type": "string",
+      "description": "Stable identifier for this portable OACS record."
+    },
+    "subject_actor_id": {
+      "type": "string",
+      "description": "Actor identifier that receives a capability grant."
+    },
+    "issuer_actor_id": {
+      "type": "string",
+      "description": "Actor identifier that issued a capability grant."
+    },
     "scope": {
       "type": "array",
       "description": "Requested operation scope must be a subset of this array. Empty scope matches only empty operation scope. Wildcard access requires explicit '*'.",
-      "items": {"type": "string"}
+      "items": {
+        "type": "string"
+      }
     },
-    "allowed_operations": {"type": "array", "items": {"type": "string"}},
-    "denied_operations": {"type": "array", "items": {"type": "string"}},
-    "memory_depth_allowed": {"type": "integer", "minimum": 0, "maximum": 5},
-    "namespaces_allowed": {"type": "array", "items": {"type": "string"}},
-    "tools_allowed": {"type": "array", "items": {"type": "string"}},
-    "skills_allowed": {"type": "array", "items": {"type": "string"}},
-    "expires_at": {"type": ["string", "null"]},
-    "signature": {"type": ["string", "null"]},
-    "status": {"type": "string"}
+    "allowed_operations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Explicit operations allowed by this capability grant."
+    },
+    "denied_operations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Explicit operations denied by this capability grant."
+    },
+    "memory_depth_allowed": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 5,
+      "description": "Maximum memory depth accessible under this grant."
+    },
+    "namespaces_allowed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Namespaces allowed under this grant; wildcard behavior must be explicit."
+    },
+    "tools_allowed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tool identifiers allowed under this grant."
+    },
+    "skills_allowed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Skill identifiers allowed under this grant."
+    },
+    "expires_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Optional expiration timestamp encoded as a portable string or null."
+    },
+    "signature": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Optional portable signature or signature reference for the grant."
+    },
+    "status": {
+      "type": "string",
+      "description": "Lifecycle status for this record in the portable OACS model."
+    }
   },
   "additionalProperties": false
 }

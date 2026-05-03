@@ -2,27 +2,102 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "ProtectedRef",
   "type": "object",
-  "required": ["id", "protected_type", "label", "sensitivity", "projection", "status"],
+  "required": [
+    "id",
+    "protected_type",
+    "label",
+    "sensitivity",
+    "projection",
+    "status"
+  ],
   "properties": {
-    "id": {"type": "string"},
-    "protected_type": {"type": "string", "enum": ["secret", "sensitive_fact"]},
-    "label": {"type": "string"},
-    "sensitivity": {"type": "string", "enum": ["internal", "confidential", "restricted"]},
-    "provider": {"type": "string"},
-    "uri": {"type": "string"},
-    "namespace": {"type": "string"},
-    "scope": {"type": "array", "items": {"type": "string"}},
-    "allowed_tools": {"type": "array", "items": {"type": "string"}},
-    "projection": {"type": "string", "enum": ["ref_only", "redacted"]},
-    "status": {"type": "string", "enum": ["active", "revoked", "expired"]}
+    "id": {
+      "type": "string",
+      "description": "Stable identifier for this portable OACS record."
+    },
+    "protected_type": {
+      "type": "string",
+      "enum": [
+        "secret",
+        "sensitive_fact"
+      ],
+      "description": "Kind of protected value represented without exposing plaintext."
+    },
+    "label": {
+      "type": "string",
+      "description": "Human-readable label that does not reveal protected plaintext."
+    },
+    "sensitivity": {
+      "type": "string",
+      "enum": [
+        "internal",
+        "confidential",
+        "restricted"
+      ],
+      "description": "Sensitivity classification used for policy decisions."
+    },
+    "provider": {
+      "type": "string",
+      "description": "External vault, keychain, or secret manager provider name; plaintext is not stored here."
+    },
+    "uri": {
+      "type": "string",
+      "description": "External locator for the protected value; agents use capabilities rather than embedded plaintext."
+    },
+    "namespace": {
+      "type": "string",
+      "description": "Logical namespace used to separate records without requiring a specific storage backend."
+    },
+    "scope": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Portable scope labels that constrain where the record applies."
+    },
+    "allowed_tools": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Allowed tool names or identifiers exposed through this binding."
+    },
+    "projection": {
+      "type": "string",
+      "enum": [
+        "ref_only",
+        "redacted"
+      ],
+      "description": "Projection mode that controls what may be shown in context or tool results."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "revoked",
+        "expired"
+      ],
+      "description": "Lifecycle status for this record in the portable OACS model."
+    }
   },
   "allOf": [
     {
       "if": {
-        "properties": {"protected_type": {"const": "secret"}},
-        "required": ["protected_type"]
+        "properties": {
+          "protected_type": {
+            "const": "secret"
+          }
+        },
+        "required": [
+          "protected_type"
+        ]
       },
-      "then": {"required": ["provider", "uri"]}
+      "then": {
+        "required": [
+          "provider",
+          "uri"
+        ]
+      }
     }
   ],
   "additionalProperties": false

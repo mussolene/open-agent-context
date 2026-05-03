@@ -1,1 +1,130 @@
-{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"ContextCapsule","type":"object","required":["id","version","capsule_type","purpose","scope","token_budget","permissions","checksum"],"properties":{"id":{"type":"string"},"version":{"const":"0.1"},"capsule_type":{"const":"context_capsule"},"purpose":{"type":"string"},"task_id":{"type":["string","null"]},"actor_id":{"type":["string","null"]},"agent_id":{"type":["string","null"]},"scope":{"type":"array","items":{"type":"string"}},"token_budget":{"type":"integer"},"included_memories":{"type":"array","items":{"type":"string"}},"included_rules":{"type":"array","items":{"type":"string"}},"included_skills":{"type":"array","items":{"type":"string"}},"included_tools":{"type":"array","items":{"type":"string"}},"evidence_refs":{"type":"array","items":{"type":"string"}},"forbidden_assumptions":{"type":"array","items":{"type":"string"}},"permissions":{"type":"object"},"expires_at":{"type":["string","null"]},"audit_refs":{"type":"array","items":{"type":"string"}},"checksum":{"type":"string"}},"additionalProperties":false}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ContextCapsule",
+  "type": "object",
+  "required": [
+    "id",
+    "version",
+    "capsule_type",
+    "purpose",
+    "scope",
+    "token_budget",
+    "permissions",
+    "checksum"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Stable identifier for this portable OACS record."
+    },
+    "version": {
+      "const": "0.1",
+      "description": "Portable schema or package version for this record."
+    },
+    "capsule_type": {
+      "const": "context_capsule",
+      "description": "Discriminator identifying the record as a ContextCapsule."
+    },
+    "purpose": {
+      "type": "string",
+      "description": "Intent or purpose for which the context capsule was built."
+    },
+    "task_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Optional task identifier associated with the context capsule."
+    },
+    "actor_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Optional actor identifier associated with this operation or projection."
+    },
+    "agent_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Optional agent identifier associated with this operation or projection."
+    },
+    "scope": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Portable scope labels that constrain where the record applies."
+    },
+    "token_budget": {
+      "type": "integer",
+      "description": "Token budget used when building the context projection."
+    },
+    "included_memories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "MemoryRecord identifiers projected into the context capsule."
+    },
+    "included_rules": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "RuleManifest identifiers projected into the context capsule."
+    },
+    "included_skills": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "SkillManifest identifiers projected into the context capsule."
+    },
+    "included_tools": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "ToolBinding identifiers projected into the context capsule."
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "EvidenceRef identifiers that support this record without embedding evidence payloads."
+    },
+    "forbidden_assumptions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Assumptions the consuming agent must not treat as facts."
+    },
+    "permissions": {
+      "type": "object",
+      "description": "Portable permission envelope; implementations enforce it through local policy adapters."
+    },
+    "expires_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Optional expiration timestamp encoded as a portable string or null."
+    },
+    "audit_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "AuditEvent identifiers associated with this projection."
+    },
+    "checksum": {
+      "type": "string",
+      "description": "Canonical checksum for the record projection."
+    }
+  },
+  "additionalProperties": false
+}

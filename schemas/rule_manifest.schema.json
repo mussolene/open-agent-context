@@ -2,27 +2,103 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "RuleManifest",
   "type": "object",
-  "required": ["id", "name", "rule_kind", "content", "enforcement_mode", "status"],
+  "required": [
+    "id",
+    "name",
+    "rule_kind",
+    "content",
+    "enforcement_mode",
+    "status"
+  ],
   "properties": {
-    "id": {"type": "string"},
-    "name": {"type": "string"},
-    "scope": {"type": "array", "items": {"type": "string"}},
-    "namespace": {"type": "string"},
-    "priority": {"type": "integer"},
-    "rule_kind": {"type": "string"},
-    "content": {"type": "string"},
-    "applies_to": {"type": "array", "items": {"type": "string"}},
+    "id": {
+      "type": "string",
+      "description": "Stable identifier for this portable OACS record."
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable stable name for the manifest or binding."
+    },
+    "scope": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Portable scope labels that constrain where the record applies."
+    },
+    "namespace": {
+      "type": "string",
+      "description": "Logical namespace used to separate records without requiring a specific storage backend."
+    },
+    "priority": {
+      "type": "integer",
+      "description": "Ordering priority used by policy engines without requiring a specific runtime."
+    },
+    "rule_kind": {
+      "type": "string",
+      "description": "Portable rule_kind field for the RuleManifest record."
+    },
+    "content": {
+      "type": "string",
+      "description": "Portable rule text or structured rule body; runtime enforcement remains adapter-specific."
+    },
+    "applies_to": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Portable target selectors that describe where a rule applies."
+    },
     "enforcement_mode": {
       "type": "string",
-      "enum": ["block", "warn", "confirm", "annotate", "rank"]
+      "enum": [
+        "block",
+        "warn",
+        "confirm",
+        "annotate",
+        "rank"
+      ],
+      "description": "Portable enforcement_mode field for the RuleManifest record."
     },
-    "blocking": {"type": "boolean"},
-    "evidence_refs": {"type": "array", "items": {"type": "string"}},
-    "status": {"type": "string", "enum": ["active", "inactive", "deprecated"]},
-    "owner_actor_id": {"type": ["string", "null"]},
-    "created_at": {"type": "string"},
-    "updated_at": {"type": "string"},
-    "content_hash": {"type": "string"}
+    "blocking": {
+      "type": "boolean",
+      "description": "Whether this rule can block an operation under policy."
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "EvidenceRef identifiers that support this record without embedding evidence payloads."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "deprecated"
+      ],
+      "description": "Lifecycle status for this record in the portable OACS model."
+    },
+    "owner_actor_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Optional actor identifier for ownership or accountability metadata."
+    },
+    "created_at": {
+      "type": "string",
+      "description": "Creation timestamp encoded as a portable string."
+    },
+    "updated_at": {
+      "type": "string",
+      "description": "Last update timestamp encoded as a portable string."
+    },
+    "content_hash": {
+      "type": "string",
+      "description": "Canonical content hash used for integrity checks across implementations."
+    }
   },
   "additionalProperties": false
 }

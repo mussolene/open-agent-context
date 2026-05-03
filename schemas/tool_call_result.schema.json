@@ -2,19 +2,70 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "ToolCallResult",
   "type": "object",
-  "required": ["id", "tool_id", "tool_name", "tool_type", "input", "output", "executed", "status"],
+  "required": [
+    "id",
+    "tool_id",
+    "tool_name",
+    "tool_type",
+    "input",
+    "output",
+    "executed",
+    "status"
+  ],
   "properties": {
-    "id": {"type": "string"},
-    "tool_id": {"type": "string"},
-    "tool_name": {"type": "string"},
-    "tool_type": {"type": "string"},
-    "actor_id": {"type": ["string", "null"]},
-    "scope": {"type": "array", "items": {"type": "string"}},
-    "input": {"type": "object"},
-    "output": {"type": "object"},
-    "evidence_ref": {"type": ["string", "null"]},
-    "executed": {"type": "boolean"},
-    "status": {"type": "string"}
+    "id": {
+      "type": "string",
+      "description": "Stable identifier for this portable OACS record."
+    },
+    "tool_id": {
+      "type": "string",
+      "description": "ToolBinding identifier for the tool that produced this result."
+    },
+    "tool_name": {
+      "type": "string",
+      "description": "Human-readable tool name captured with the result."
+    },
+    "tool_type": {
+      "type": "string",
+      "description": "Portable tool type captured with the result."
+    },
+    "actor_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Optional actor identifier associated with this operation or projection."
+    },
+    "scope": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Portable scope labels that constrain where the record applies."
+    },
+    "input": {
+      "type": "object",
+      "description": "Tool input captured as evidence metadata; sensitive values must be protected references."
+    },
+    "output": {
+      "type": "object",
+      "description": "Tool output captured as evidence metadata; sensitive values must be redacted or externalized."
+    },
+    "evidence_ref": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "EvidenceRef identifier created for this tool result."
+    },
+    "executed": {
+      "type": "boolean",
+      "description": "Whether the tool was actually executed when the result was captured."
+    },
+    "status": {
+      "type": "string",
+      "description": "Lifecycle status for this record in the portable OACS model."
+    }
   },
   "additionalProperties": false
 }

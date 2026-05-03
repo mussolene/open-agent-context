@@ -1,1 +1,38 @@
-{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"EvidenceRef","type":"object","required":["id","kind","uri","content_hash"],"properties":{"id":{"type":"string"},"kind":{"type":"string"},"uri":{"type":"string"},"content_hash":{"type":"string"},"sensitive":{"type":"boolean"},"public_payload":{"type":"object"}},"additionalProperties":false}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EvidenceRef",
+  "type": "object",
+  "required": [
+    "id",
+    "kind",
+    "uri",
+    "content_hash"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Stable identifier for this portable OACS record."
+    },
+    "kind": {
+      "type": "string",
+      "description": "Evidence kind used for policy and projection decisions."
+    },
+    "uri": {
+      "type": "string",
+      "description": "External URI or locator for the referenced resource, provider, or protected value."
+    },
+    "content_hash": {
+      "type": "string",
+      "description": "Canonical content hash used for integrity checks across implementations."
+    },
+    "sensitive": {
+      "type": "boolean",
+      "description": "Whether the evidence has sensitive material stored outside public projection."
+    },
+    "public_payload": {
+      "type": "object",
+      "description": "Non-sensitive evidence payload that may be projected into context; secrets must stay external."
+    }
+  },
+  "additionalProperties": false
+}

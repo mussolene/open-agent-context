@@ -2,23 +2,105 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "ToolBinding",
   "type": "object",
-  "required": ["id", "name", "type", "risk_level", "status"],
+  "required": [
+    "id",
+    "name",
+    "type",
+    "risk_level",
+    "status"
+  ],
   "properties": {
-    "id": {"type": "string"},
-    "name": {"type": "string"},
-    "type": {"type": "string", "enum": ["local_cli", "python_function", "http", "mcp"]},
-    "description": {"type": "string"},
-    "command": {"type": ["string", "null"]},
-    "http": {"type": ["object", "null"]},
-    "mcp_ref": {"type": ["string", "null"]},
-    "input_schema": {"type": "object"},
-    "output_schema": {"type": "object"},
-    "permissions": {"type": "object"},
-    "risk_level": {"type": "string", "enum": ["low", "medium", "high"]},
-    "status": {"type": "string", "enum": ["active", "inactive", "deprecated"]},
-    "namespace": {"type": "string"},
-    "scope": {"type": "array", "items": {"type": "string"}},
-    "owner_actor_id": {"type": ["string", "null"]}
+    "id": {
+      "type": "string",
+      "description": "Stable identifier for this portable OACS record."
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable stable name for the manifest or binding."
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "local_cli",
+        "python_function",
+        "http",
+        "mcp"
+      ],
+      "description": "Portable tool binding type discriminator; adapter execution details remain outside the core schema."
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of the manifest or binding."
+    },
+    "command": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Optional local command metadata for reference adapters; portable conformance must not require local CLI execution."
+    },
+    "http": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "Optional HTTP adapter metadata; HTTP is not required for conformance."
+    },
+    "mcp_ref": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Optional reference to an MCP binding; MCP stdio execution is adapter behavior."
+    },
+    "input_schema": {
+      "type": "object",
+      "description": "JSON Schema for portable input accepted by this skill or tool."
+    },
+    "output_schema": {
+      "type": "object",
+      "description": "JSON Schema for portable output produced by this skill or tool."
+    },
+    "permissions": {
+      "type": "object",
+      "description": "Portable permission envelope; implementations enforce it through local policy adapters."
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "description": "Risk classification used for policy and review decisions."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "deprecated"
+      ],
+      "description": "Lifecycle status for this record in the portable OACS model."
+    },
+    "namespace": {
+      "type": "string",
+      "description": "Logical namespace used to separate records without requiring a specific storage backend."
+    },
+    "scope": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Portable scope labels that constrain where the record applies."
+    },
+    "owner_actor_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Optional actor identifier for ownership or accountability metadata."
+    }
   },
   "additionalProperties": false
 }

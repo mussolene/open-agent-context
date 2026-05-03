@@ -2,9 +2,19 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "MemoryCall",
   "type": "object",
-  "required": ["id", "op", "status", "arguments", "result"],
+  "required": [
+    "id",
+    "op",
+    "status",
+    "arguments",
+    "result"
+  ],
   "properties": {
-    "id": {"type": "string", "pattern": "^mcall_[A-Za-z0-9_]+$"},
+    "id": {
+      "type": "string",
+      "pattern": "^mcall_[A-Za-z0-9_]+$",
+      "description": "Stable identifier for this portable OACS record."
+    },
     "op": {
       "type": "string",
       "enum": [
@@ -12,11 +22,26 @@
         "memory.query.deepen",
         "memory.read",
         "memory.extract_evidence"
-      ]
+      ],
+      "description": "Standard memory-call operation discriminator."
     },
-    "status": {"type": "string", "enum": ["completed", "denied", "failed"]},
-    "arguments": {"type": "object"},
-    "result": {"type": "object"}
+    "status": {
+      "type": "string",
+      "enum": [
+        "completed",
+        "denied",
+        "failed"
+      ],
+      "description": "Lifecycle status for this record in the portable OACS model."
+    },
+    "arguments": {
+      "type": "object",
+      "description": "Portable operation arguments; implementations may map them to local APIs."
+    },
+    "result": {
+      "type": "object",
+      "description": "Portable operation result envelope; implementations may include adapter-neutral details."
+    }
   },
   "additionalProperties": false
 }

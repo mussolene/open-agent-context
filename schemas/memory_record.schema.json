@@ -1,1 +1,162 @@
-{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"MemoryRecord","type":"object","required":["id","memory_type","depth","status","scope","namespace"],"properties":{"id":{"type":"string"},"memory_type":{"type":"string"},"depth":{"type":"integer","minimum":0,"maximum":5},"lifecycle_status":{"type":"string"},"status":{"type":"string"},"scope":{"type":"array","items":{"type":"string"}},"namespace":{"type":"string"},"owner_actor_id":{"type":["string","null"]},"content":{"type":"object","properties":{"text":{"type":"string"},"kind":{"type":"string"},"tags":{"type":"array","items":{"type":"string"}},"confidence":{"type":"number"},"evidence":{"type":"array","items":{"type":"object","required":["claim","value"],"properties":{"evidence_kind":{"type":"string"},"claim":{"type":"string"},"value":{"type":"string"},"source_ref":{"type":["string","null"]},"confidence":{"type":"number"},"depth":{"type":["integer","null"],"minimum":0,"maximum":5},"scope":{"type":"array","items":{"type":"string"}},"participant":{"type":["string","null"]},"day":{"type":["integer","null"]},"slot":{"type":"string"},"order":{"type":["integer","null"]},"trajectory_step":{"type":["integer","null"]}}}}}},"evidence_refs":{"type":"array","items":{"type":"string"}},"supersedes":{"type":["string","null"]}},"additionalProperties":false}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MemoryRecord",
+  "type": "object",
+  "required": [
+    "id",
+    "memory_type",
+    "depth",
+    "status",
+    "scope",
+    "namespace"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Stable identifier for this portable OACS record."
+    },
+    "memory_type": {
+      "type": "string",
+      "description": "Portable memory classification."
+    },
+    "depth": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 5,
+      "description": "Memory depth D0-D5; D3-D5 content is not factual evidence by itself."
+    },
+    "lifecycle_status": {
+      "type": "string",
+      "description": "Memory lifecycle state used for candidate, active, deprecated, or forgotten records."
+    },
+    "status": {
+      "type": "string",
+      "description": "Lifecycle status for this record in the portable OACS model."
+    },
+    "scope": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Portable scope labels that constrain where the record applies."
+    },
+    "namespace": {
+      "type": "string",
+      "description": "Logical namespace used to separate records without requiring a specific storage backend."
+    },
+    "owner_actor_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Optional actor identifier for ownership or accountability metadata."
+    },
+    "content": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "confidence": {
+          "type": "number"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "claim",
+              "value"
+            ],
+            "properties": {
+              "evidence_kind": {
+                "type": "string"
+              },
+              "claim": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              },
+              "source_ref": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "confidence": {
+                "type": "number"
+              },
+              "depth": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0,
+                "maximum": 5
+              },
+              "scope": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "participant": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "day": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "slot": {
+                "type": "string"
+              },
+              "order": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "trajectory_step": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "description": "Portable memory content envelope; protected or encrypted content must not be projected as plaintext."
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "EvidenceRef identifiers that support this record without embedding evidence payloads."
+    },
+    "supersedes": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Optional identifier of the memory record superseded by this record."
+    }
+  },
+  "additionalProperties": false
+}

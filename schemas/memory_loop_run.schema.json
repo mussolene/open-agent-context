@@ -11,23 +11,89 @@
     "operation_metrics"
   ],
   "properties": {
-    "final_answer": {"type": "string"},
-    "context_capsule_id": {"type": "string"},
-    "intent": {"type": "object"},
-    "memories_used": {"type": "array", "items": {"type": "string"}},
-    "tools_used": {"type": "array", "items": {"type": "string"}},
-    "rules_applied": {"type": "array", "items": {"type": "string"}},
-    "proposed_memories": {"type": "array", "items": {"type": "string"}},
-    "committed_memories": {"type": "array", "items": {"type": "string"}},
-    "audit_trail": {"type": "array", "items": {"type": "string"}},
+    "final_answer": {
+      "type": "string",
+      "description": "Optional final answer text captured after memory-loop execution."
+    },
+    "context_capsule_id": {
+      "type": "string",
+      "description": "Portable context_capsule_id field for the MemoryLoopRun record."
+    },
+    "intent": {
+      "type": "object",
+      "description": "Portable intent classification for the memory loop run."
+    },
+    "memories_used": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "MemoryRecord identifiers used during the loop run."
+    },
+    "tools_used": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tool identifiers used during the loop run."
+    },
+    "rules_applied": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "RuleManifest identifiers applied during the loop run."
+    },
+    "proposed_memories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "MemoryRecord identifiers proposed during the loop run."
+    },
+    "committed_memories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "MemoryRecord identifiers committed during the loop run."
+    },
+    "audit_trail": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "AuditEvent identifiers or summaries captured for the loop run."
+    },
     "memory_calls": {
       "type": "array",
-      "items": {"$ref": "memory_call.schema.json"}
+      "items": {
+        "$ref": "memory_call.schema.json"
+      },
+      "description": "Memory call envelopes executed during the loop run."
     },
-    "evidence": {"type": "array", "items": {"type": "object"}},
-    "model_prompt": {"type": ["string", "null"]},
-    "context_policy": {"type": "object"},
-    "operation_metrics": {"type": "object"}
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "EvidenceRef identifiers or summaries used during the loop run."
+    },
+    "model_prompt": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Prompt material captured for traceability; sensitive content must be protected or omitted."
+    },
+    "context_policy": {
+      "type": "object",
+      "description": "Policy summary used to build context for the loop run."
+    },
+    "operation_metrics": {
+      "type": "object",
+      "description": "Adapter-neutral metrics for operations executed during the loop run."
+    }
   },
   "additionalProperties": false
 }

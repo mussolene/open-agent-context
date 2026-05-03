@@ -2,23 +2,50 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "StorageSelector",
   "type": "object",
-  "required": ["table"],
+  "required": [
+    "table"
+  ],
   "properties": {
-    "table": {"type": "string"},
-    "filters": {"type": "object"},
+    "table": {
+      "type": "string",
+      "description": "Logical storage collection selector; it must not require SQL or any specific backend."
+    },
+    "filters": {
+      "type": "object",
+      "description": "Backend-neutral filter object; it must not contain backend-specific query fragments."
+    },
     "order_by": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["field", "direction"],
+        "required": [
+          "field",
+          "direction"
+        ],
         "properties": {
-          "field": {"type": "string"},
-          "direction": {"type": "string", "enum": ["asc", "desc"]}
+          "field": {
+            "type": "string"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ]
+          }
         },
         "additionalProperties": false
-      }
+      },
+      "description": "Backend-neutral ordering keys for retrieval or storage selection."
     },
-    "limit": {"type": ["integer", "null"], "minimum": 1}
+    "limit": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1,
+      "description": "Maximum number of records or hits requested by the portable query."
+    }
   },
   "additionalProperties": false
 }

@@ -2,12 +2,32 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "RetrievalQuery",
   "type": "object",
-  "required": ["text", "scope", "limit"],
+  "required": [
+    "text",
+    "scope",
+    "limit"
+  ],
   "properties": {
-    "text": {"type": "string"},
-    "scope": {"type": "array", "items": {"type": "string"}},
-    "limit": {"type": "integer", "minimum": 1},
-    "provider": {"type": "string"}
+    "text": {
+      "type": "string",
+      "description": "Portable query text or user intent text."
+    },
+    "scope": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Portable scope labels that constrain where the record applies."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Maximum number of records or hits requested by the portable query."
+    },
+    "provider": {
+      "type": "string",
+      "description": "Retrieval provider or adapter label; conformance must not depend on a specific backend."
+    }
   },
   "additionalProperties": false
 }

@@ -2,9 +2,18 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "MemoryOperation",
   "type": "object",
-  "required": ["id", "operation", "status", "actor_id", "created_at"],
+  "required": [
+    "id",
+    "operation",
+    "status",
+    "actor_id",
+    "created_at"
+  ],
   "properties": {
-    "id": {"type": "string"},
+    "id": {
+      "type": "string",
+      "description": "Stable identifier for this portable OACS record."
+    },
     "operation": {
       "type": "string",
       "enum": [
@@ -22,18 +31,72 @@
         "memory.audit",
         "memory.export",
         "memory.import"
-      ]
+      ],
+      "description": "Standard operation name represented by this envelope."
     },
-    "status": {"type": "string", "enum": ["requested", "completed", "denied", "failed"]},
-    "actor_id": {"type": ["string", "null"]},
-    "target_id": {"type": ["string", "null"]},
-    "scope": {"type": "array", "items": {"type": "string"}},
-    "namespace": {"type": "string"},
-    "depth": {"type": ["integer", "null"], "minimum": 0, "maximum": 5},
-    "arguments": {"type": "object"},
-    "result": {"type": "object"},
-    "audit_event_id": {"type": ["string", "null"]},
-    "created_at": {"type": "string"}
+    "status": {
+      "type": "string",
+      "enum": [
+        "requested",
+        "completed",
+        "denied",
+        "failed"
+      ],
+      "description": "Lifecycle status for this record in the portable OACS model."
+    },
+    "actor_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Optional actor identifier associated with this operation or projection."
+    },
+    "target_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Optional MemoryRecord identifier targeted by this operation."
+    },
+    "scope": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Portable scope labels that constrain where the record applies."
+    },
+    "namespace": {
+      "type": "string",
+      "description": "Logical namespace used to separate records without requiring a specific storage backend."
+    },
+    "depth": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 5,
+      "description": "Optional memory depth involved in this operation."
+    },
+    "arguments": {
+      "type": "object",
+      "description": "Portable operation arguments; implementations may map them to local APIs."
+    },
+    "result": {
+      "type": "object",
+      "description": "Portable operation result envelope; implementations may include adapter-neutral details."
+    },
+    "audit_event_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "AuditEvent identifier associated with this operation."
+    },
+    "created_at": {
+      "type": "string",
+      "description": "Creation timestamp encoded as a portable string."
+    }
   },
   "additionalProperties": false
 }
