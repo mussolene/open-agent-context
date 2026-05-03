@@ -12,15 +12,25 @@ Audit events store operation metadata and hashes, not secret content.
 
 Capsule integrity is checksum- and MAC-based. Raw capsules carry a
 deterministic checksum for tamper detection. Export envelopes add
-`integrity.payload_checksum` and `integrity.signature`; despite the field name,
-`signature` is an HMAC-SHA256 tag using the local master key, not asymmetric
-cryptographic signing. It should not be documented as non-repudiation,
-certificate-backed identity, or third-party-verifiable provenance.
+`integrity.payload_checksum` and `integrity.mac`. `integrity.signature` remains
+a deprecated compatibility alias for the same HMAC-SHA256 tag. The MAC uses the
+local master key; it is not asymmetric cryptographic signing and should not be
+documented as non-repudiation, certificate-backed identity, or
+third-party-verifiable provenance.
+
+Policy mode is explicit in the reference implementation. Dev mode preserves the
+local bootstrap path for `None`, empty actor, and `system`, and records
+`policy.bootstrap_bypass` audit events. `OACS_POLICY_MODE=strict` denies those
+bootstrap actors unless they hold ordinary `CapabilityGrant` records.
+
+Context permissions are separated by operation. Runtime read/explain,
+export/import, reduce/expand, and mount/lock state changes require their own
+`context.*` grants; `context.read` must not imply `context.export`.
 
 Required audit events: memory query/read/write operations
 (`observe`, `propose`, `commit`, `correct`, `deprecate`, `supersede`, `forget`,
-`blur`, `sharpen`, `export`, `import`) and context build/export/import/explain/
-reduce/expand/lock. Audit metadata may include counts, ids, query hashes, and
+`blur`, `sharpen`, `export`, `import`) and context build/read/export/import/
+explain/reduce/expand/lock/mount/unmount. Audit metadata may include counts, ids, query hashes, and
 content hashes; it must not include keys, passphrases, or plaintext sensitive
 memory.
 
@@ -54,15 +64,25 @@ Audit events содержат metadata и хэши, но не секретный
 
 Integrity capsules основана на checksum и MAC. Raw capsules содержат
 deterministic checksum для tamper detection. Export envelopes добавляют
-`integrity.payload_checksum` и `integrity.signature`; несмотря на имя поля,
-`signature` является HMAC-SHA256 tag на local master key, а не asymmetric
-cryptographic signing. Это нельзя описывать как non-repudiation,
-certificate-backed identity или third-party-verifiable provenance.
+`integrity.payload_checksum` и `integrity.mac`. `integrity.signature` остаётся
+deprecated compatibility alias для того же HMAC-SHA256 tag. MAC использует local
+master key; это не asymmetric cryptographic signing. Это нельзя описывать как
+non-repudiation, certificate-backed identity или third-party-verifiable
+provenance.
+
+Policy mode в reference implementation явный. Dev mode сохраняет local
+bootstrap path для `None`, empty actor и `system` и записывает audit events
+`policy.bootstrap_bypass`. `OACS_POLICY_MODE=strict` запрещает этих bootstrap
+actors, если у них нет обычных `CapabilityGrant` records.
+
+Context permissions разделены по операциям. Runtime read/explain,
+export/import, reduce/expand и mount/lock state changes требуют собственных
+`context.*` grants; `context.read` не должен означать `context.export`.
 
 Обязательные audit events: memory query/read/write operations
 (`observe`, `propose`, `commit`, `correct`, `deprecate`, `supersede`, `forget`,
-`blur`, `sharpen`, `export`, `import`) и context build/export/import/explain/
-reduce/expand/lock. Audit metadata может содержать counts, ids, query hashes и
+`blur`, `sharpen`, `export`, `import`) и context build/read/export/import/
+explain/reduce/expand/lock/mount/unmount. Audit metadata может содержать counts, ids, query hashes и
 content hashes; она не должна содержать keys, passphrases или plaintext
 sensitive memory.
 

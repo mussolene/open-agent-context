@@ -12,10 +12,11 @@ Capsule export can use a `context_capsule_export` envelope containing
 import/export packaging, not part of the v1.0 stable portable schema set. The
 capsule `checksum` is SHA-256 over canonical JSON excluding the `checksum`
 field. Export `integrity.payload_checksum` is SHA-256 over the exported capsule
-payload. `integrity.signature` is an HMAC-SHA256 tag computed with the local
-master key; it proves the export was produced by a holder of that local key, but
-it is not a public-key signature and does not prove author identity to third
-parties.
+payload. `integrity.mac` is an HMAC-SHA256 tag computed with the local master
+key; `integrity.signature` is accepted as a deprecated compatibility alias for
+the same value. The MAC proves the export was produced by a holder of that local
+key, but it is not a public-key signature and does not prove author identity to
+third parties.
 
 ## RU
 Context Capsule — переносимый объект, передаваемый агенту. Он содержит purpose,
@@ -29,6 +30,8 @@ Capsule export может использовать envelope
 является draft support для reference import/export packaging, а не частью v1.0
 stable portable schema set. Capsule `checksum` - это SHA-256 по canonical JSON
 без поля `checksum`. Export `integrity.payload_checksum` - SHA-256 по exported
-capsule payload. `integrity.signature` - HMAC-SHA256 tag, вычисленный с local
-master key; он показывает, что export создан держателем этого local key, но не
-является public-key signature и не доказывает author identity третьим сторонам.
+capsule payload. `integrity.mac` - HMAC-SHA256 tag, вычисленный с local
+master key; `integrity.signature` принимается как deprecated compatibility alias
+для того же значения. MAC показывает, что export создан держателем этого local
+key, но не является public-key signature и не доказывает author identity третьим
+сторонам.

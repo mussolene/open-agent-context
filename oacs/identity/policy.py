@@ -1,17 +1,23 @@
 from __future__ import annotations
 
+import os
 from collections.abc import Sequence
 
+from oacs.audit import AuditService
 from oacs.core.errors import AccessDenied
 from oacs.core.time import now_iso
 from oacs.identity.capabilities import CapabilityService
 
 DEFAULT_BOOTSTRAP_ACTOR = "system"
+POLICY_MODE_ENV = "OACS_POLICY_MODE"
+POLICY_MODE_DEV = "dev"
+POLICY_MODE_STRICT = "strict"
 
 
 class PolicyEngine:
-    def __init__(self, capabilities: CapabilityService):
+    def __init__(self, capabilities: CapabilityService, audit: AuditService | None = None):
         self.capabilities = capabilities
+        self.audit = audit
 
     def check(
         self,
@@ -24,7 +30,20 @@ class PolicyEngine:
         skill: str | None = None,
     ) -> bool:
         if actor_id in (None, "", DEFAULT_BOOTSTRAP_ACTOR):
-            return True
+            if policy_mode() == POLICY_MODE_DEV:
+                if self.audit is not None:
+                    self.audit.record(
+                        "policy.bootstrap_bypass",
+                        actor_id,
+                        None,
+                        {
+                            "mode": POLICY_MODE_DEV,
+                            "operation": operation,
+                            "bootstrap_bypass": True,
+                        },
+                    )
+                return True
+            raise AccessDenied(f"operation requires capability: {operation}")
         grants = self.capabilities.for_actor(str(actor_id))
         for grant in grants:
             if grant.expires_at and grant.expires_at <= now_iso():
@@ -96,3 +115,10 @@ class PolicyEngine:
         if resource is None:
             return True
         return "*" in allowed or resource in allowed
+
+
+def policy_mode() -> str:
+    mode = os.getenv(POLICY_MODE_ENV, POLICY_MODE_DEV).strip().lower()
+    if mode == POLICY_MODE_STRICT:
+        return POLICY_MODE_STRICT
+    return POLICY_MODE_DEV

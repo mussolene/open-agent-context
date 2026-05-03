@@ -47,7 +47,9 @@ following the checklist in `docs/INTEROPERABILITY.md`.
 
 Operations are JSON-first and auditable. Memory writes are explicit:
 `observe`, `propose`, and `commit` are separate operations. Fuzzy memories
-at D3-D5 are hypotheses, not facts.
+at D3-D5 are hypotheses, not facts. Active D3-D5 memory must be evidence-backed:
+either by `evidence_refs` or by embedded structured evidence that meets the
+documented depth threshold.
 
 v1.0 includes operation envelopes for `MemoryOperation`, `ContextOperation`,
 `memory_call`, and `MemoryLoopRun` plus conformance fixtures for
@@ -71,6 +73,14 @@ the grant scope and the resource scope. Empty grant scope matches only an empty
 requested scope. Broad access requires an explicit `*` in the grant. Namespace
 and memory depth limits are checked before content is decrypted for non-bootstrap
 actors.
+
+Context capability semantics are operation-specific. `context.read`,
+`context.explain`, `context.export`, `context.import`, `context.reduce`,
+`context.expand`, `context.lock`, `context.mount`, and `context.unmount` are
+separate permission checks. Read or explain access must not imply export rights.
+Reference implementations may provide a dev bootstrap path, but strict policy
+mode must deny `None`, empty actor, and `system` unless ordinary grants authorize
+the operation.
 
 Retrieval is pluggable but policy-bound. Providers receive only memories that
 already passed capability, scope, namespace, depth, lifecycle, and status
@@ -133,7 +143,9 @@ implementation записывает tool outputs как `tool_result` `EvidenceR
 
 Операции ориентированы на JSON и аудит. Запись памяти явная:
 `observe`, `propose` и `commit` разделены. Размытая память D3-D5 является
-гипотезой, а не фактом.
+гипотезой, а не фактом. Active D3-D5 memory должна быть evidence-backed:
+через `evidence_refs` или embedded structured evidence, проходящую documented
+depth threshold.
 
 v1.0 включает operation envelopes для `MemoryOperation`, `ContextOperation`,
 `memory_call` и `MemoryLoopRun`, а также conformance fixtures для
@@ -156,6 +168,14 @@ Scope semantics строгие. Requested operation scope должен быть 
 scope и resource scope. Empty grant scope совпадает только с empty requested
 scope. Broad access требует явного `*` в grant. Namespace и memory depth limits
 проверяются до decrypt content для non-bootstrap actors.
+
+Context capability semantics разделены по операциям. `context.read`,
+`context.explain`, `context.export`, `context.import`, `context.reduce`,
+`context.expand`, `context.lock`, `context.mount` и `context.unmount` являются
+отдельными permission checks. Read или explain access не должны означать export
+rights. Reference implementations могут иметь dev bootstrap path, но strict
+policy mode должен запрещать `None`, empty actor и `system`, если обычные grants
+не разрешают operation.
 
 Retrieval расширяемый, но всегда bound by policy. Providers получают только
 memories, которые уже прошли capability, scope, namespace, depth, lifecycle и

@@ -54,8 +54,11 @@ class MemoryService:
     def commit(self, memory_id: str, actor_id: str | None) -> MemoryRecord:
         mem = self.read(memory_id, actor_id)
         self.policy.require(actor_id, "memory.commit", mem.depth, mem.scope, mem.namespace)
-        if mem.depth >= 3 and not mem.evidence_refs:
-            raise ValidationFailure("D3-D5 memory requires sharpening evidence before commit")
+        if mem.depth >= 3 and not _has_deep_memory_evidence(mem):
+            raise ValidationFailure(
+                "D3-D5 memory requires evidence_refs or embedded structured evidence "
+                "meeting the depth confidence threshold before commit"
+            )
         return self._transition(mem, "active")
 
     def query(
@@ -302,3 +305,21 @@ def _safe_row_error(row: dict[str, object]) -> dict[str, object]:
         "memory_type": str(row.get("memory_type", "")),
         "created_at": row.get("created_at"),
     }
+
+
+def _has_deep_memory_evidence(mem: MemoryRecord) -> bool:
+    if mem.evidence_refs:
+        return True
+    threshold = _deep_memory_evidence_threshold(mem.depth)
+    for item in mem.content.evidence:
+        if item.confidence >= threshold and (mem.depth < 5 or item.source_ref):
+            return True
+    return False
+
+
+def _deep_memory_evidence_threshold(depth: int) -> float:
+    if depth <= 3:
+        return 0.5
+    if depth == 4:
+        return 0.7
+    return 0.8

@@ -23,15 +23,23 @@
         "schema_version",
         "algorithm",
         "payload_checksum",
-        "signature",
         "signed_at",
         "key_ref"
+      ],
+      "anyOf": [
+        {"required": ["mac"]},
+        {"required": ["signature"]}
       ],
       "properties": {
         "schema_version": {"const": "0.1"},
         "algorithm": {"const": "HMAC-SHA256"},
         "payload_checksum": {"type": "string"},
-        "signature": {"type": "string"},
+        "mac": {"type": "string"},
+        "signature": {
+          "type": "string",
+          "deprecated": true,
+          "description": "Deprecated compatibility alias for integrity.mac."
+        },
         "signed_at": {"type": "string"},
         "key_ref": {"type": "string"}
       },

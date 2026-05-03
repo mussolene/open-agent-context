@@ -18,10 +18,13 @@
       "type": "string",
       "enum": [
         "context.build",
+        "context.read",
         "context.explain",
         "context.reduce",
         "context.expand",
         "context.lock",
+        "context.mount",
+        "context.unmount",
         "context.export",
         "context.import"
       ],

@@ -14,8 +14,8 @@ Breaking changes after v1.0 include:
 - Changing encryption metadata format in a way that makes existing records unreadable.
 - Changing ContextCapsule checksum semantics.
 - Changing ContextCapsule export envelope or integrity metadata semantics,
-  including `integrity.payload_checksum`, `integrity.signature`, algorithm names,
-  or checksum canonicalization.
+  including `integrity.payload_checksum`, `integrity.mac`, the deprecated
+  `integrity.signature` alias, algorithm names, or checksum canonicalization.
 - Changing conformance fixture scoring semantics.
 
 Non-breaking changes after v1.0 include:
@@ -39,6 +39,12 @@ Scoped memory grants are part of the v1.0 stable permission surface. Exact
 matching rules may tighten only as documented security rejection examples;
 broadening access without an explicit grant is a compatibility and security
 regression.
+
+Context grants are operation-specific. `context.read` and `context.explain` do
+not imply `context.export`, and `context.export` does not imply runtime read,
+import, mount, lock, reduce, or expand permissions. Tightening a reference
+implementation that previously over-granted through `context.export` is a
+security fix when the portable operation names remain additive and documented.
 
 ### v1.0 Stable Surface
 
@@ -97,8 +103,8 @@ Breaking changes после v1.0:
 - Изменение encryption metadata format так, что существующие records нельзя читать.
 - Изменение semantics checksum для ContextCapsule.
 - Изменение ContextCapsule export envelope или integrity metadata semantics,
-  включая `integrity.payload_checksum`, `integrity.signature`, algorithm names
-  или checksum canonicalization.
+  включая `integrity.payload_checksum`, `integrity.mac`, deprecated alias
+  `integrity.signature`, algorithm names или checksum canonicalization.
 - Изменение conformance fixture scoring semantics.
 
 Non-breaking changes после v1.0:
@@ -122,6 +128,12 @@ Scoped memory grants являются частью v1.0 stable permission surfac
 правила matching могут ужесточаться только как documented security rejection
 examples; расширение доступа без явного grant является compatibility и security
 regression.
+
+Context grants разделены по операциям. `context.read` и `context.explain` не
+означают `context.export`, а `context.export` не означает runtime read, import,
+mount, lock, reduce или expand permissions. Ужесточение reference
+implementation, где раньше всё шло через `context.export`, является security fix,
+если portable operation names остаются additive и documented.
 
 ### v1.0 Stable Surface
 

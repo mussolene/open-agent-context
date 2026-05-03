@@ -60,13 +60,13 @@ def services(
         Repository(store, "capability_grants"),
         Repository(store, "capability_definitions"),
     )
-    policy = PolicyEngine(capabilities)
+    audit = AuditService(Repository(store, "audit_events"))
+    policy = PolicyEngine(capabilities, audit)
     memory = MemoryService(Repository(store, "memory_records"), policy, master_key)
     rules = RuleEngine(Repository(store, "rules"))
     skills = SkillRegistry(Repository(store, "skills"))
     tools = ToolRegistry(Repository(store, "tools"))
     mcp = McpRegistry(Repository(store, "mcp_bindings"), tools)
-    audit = AuditService(Repository(store, "audit_events"))
     evidence = EvidenceService(Repository(store, "evidence_refs"), policy, audit)
     tool_runner = ToolRunner(
         tools,

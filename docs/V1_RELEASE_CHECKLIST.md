@@ -41,7 +41,7 @@ python3 -m pytest -q
 python3 -m oacs.cli.main conformance validate --json
 python3 -m build
 python3 -m twine check dist/*
-rg -n '(-----BEGIN [A-Z ]*PRIVATE KEY-----|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9_]{30,}|github_pat_[A-Za-z0-9_]{30,}|sk-[A-Za-z0-9]{20,})' docs conformance tests schemas oacs README.md CHANGELOG.md pyproject.toml
+rg -n '(-----BEGIN [A-Z ]*PRIVATE KEY-----|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9_]{30,}|github_pat_[A-Za-z0-9_]{30,}|sk-[A-Za-z0-9]{20,})' docs conformance tests schemas oacs examples/skills README.md CHANGELOG.md pyproject.toml
 ```
 
 Reference published-package smoke:
@@ -95,7 +95,7 @@ python3 -m pytest -q
 python3 -m oacs.cli.main conformance validate --json
 python3 -m build
 python3 -m twine check dist/*
-rg -n '(-----BEGIN [A-Z ]*PRIVATE KEY-----|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9_]{30,}|github_pat_[A-Za-z0-9_]{30,}|sk-[A-Za-z0-9]{20,})' docs conformance tests schemas oacs README.md CHANGELOG.md pyproject.toml
+rg -n '(-----BEGIN [A-Z ]*PRIVATE KEY-----|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9_]{30,}|github_pat_[A-Za-z0-9_]{30,}|sk-[A-Za-z0-9]{20,})' docs conformance tests schemas oacs examples/skills README.md CHANGELOG.md pyproject.toml
 ```
 
 Reference published-package smoke:

@@ -1,0 +1,45 @@
+{
+  "schema": "memory_record.schema.json",
+  "reason": "D4 MemoryRecord commit support requires external evidence_refs or embedded structured evidence with confidence >= 0.7.",
+  "payload": {
+    "id": "mem_negative_d4_weak_evidence",
+    "memory_type": "pattern",
+    "depth": 4,
+    "lifecycle_status": "active",
+    "status": "active",
+    "namespace": "default",
+    "scope": [
+      "project",
+      "repo:oacs"
+    ],
+    "owner_actor_id": "act_agent_001",
+    "content": {
+      "text": "Project Alpha reports may use make report-safe.",
+      "kind": "pattern",
+      "tags": [
+        "reports"
+      ],
+      "confidence": 0.69,
+      "evidence": [
+        {
+          "evidence_kind": "pattern_support",
+          "claim": "Weak Alpha report command observation",
+          "value": "make report-safe",
+          "source_ref": "ev_conformance_001",
+          "confidence": 0.69,
+          "depth": 2,
+          "scope": [
+            "project"
+          ],
+          "participant": null,
+          "day": null,
+          "slot": "command",
+          "order": 1,
+          "trajectory_step": null
+        }
+      ]
+    },
+    "evidence_refs": [],
+    "supersedes": null
+  }
+}

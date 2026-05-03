@@ -14,6 +14,12 @@ D0-D2 may support factual answers. D3-D5 may only rank hypotheses, triage,
 prioritize context, personalize, or ask clarifying questions. High-risk actions
 must sharpen fuzzy memory into evidence-backed memory.
 
+D3-D5 commits require support. A reference implementation may accept either
+external `evidence_refs` or embedded structured `MemoryContent.evidence`.
+Embedded support must meet the depth threshold before commit: D3 >= 0.5
+confidence, D4 >= 0.7 confidence, and D5 >= 0.8 confidence with an explicit
+`source_ref`.
+
 Lifecycle: observed -> candidate -> clarifying -> confirmed -> active ->
 deprecated -> superseded -> forgotten.
 
@@ -103,6 +109,11 @@ Read/write boundaries while memory health is degraded:
 D0-D2 могут поддерживать фактические ответы. D3-D5 используются только для
 ранжирования гипотез, triage, приоритизации контекста, персонализации или
 уточняющих вопросов. Рискованные действия требуют sharpening.
+
+D3-D5 commits требуют support. Reference implementation может принять external
+`evidence_refs` или embedded structured `MemoryContent.evidence`. Embedded
+support должен пройти threshold до commit: D3 >= 0.5 confidence, D4 >= 0.7
+confidence, D5 >= 0.8 confidence с явным `source_ref`.
 
 Жизненный цикл: observed -> candidate -> clarifying -> confirmed -> active ->
 deprecated -> superseded -> forgotten.

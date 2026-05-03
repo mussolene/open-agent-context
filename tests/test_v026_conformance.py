@@ -162,7 +162,7 @@ def test_api_audits_memory_and_context_operations(db, monkeypatch) -> None:
     assert "memory.query" in operations
     assert "memory.read" in operations
     assert "context.build" in operations
-    assert "context.export" in operations
+    assert "context.read" in operations
 
 
 def test_api_denied_memory_read_and_query_are_audited(db, monkeypatch) -> None:

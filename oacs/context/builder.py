@@ -109,24 +109,17 @@ class ContextBuilder:
         return capsule
 
     def read(self, capsule_id: str, actor_id: str | None) -> ContextCapsule:
-        self.policy.require(actor_id, "context.export")
-        row = self.repo.get(capsule_id)
-        payload = loads(
-            decrypt_json_bytes(
-                self.master_key,
-                row["payload_nonce"],
-                row["payload_ciphertext"],
-                str(row["payload_aad"]).encode("utf-8"),
-            )
-        )
-        return ContextCapsule(**payload)
+        self.policy.require(actor_id, "context.read")
+        return self._load(capsule_id)
 
     def export_capsule(self, capsule_id: str, actor_id: str | None) -> ContextCapsuleExport:
-        capsule = self.read(capsule_id, actor_id)
+        self.policy.require(actor_id, "context.export")
+        capsule = self._load(capsule_id)
         return ContextCapsuleExport.create(capsule, self.master_key)
 
     def explain(self, capsule_id: str, actor_id: str | None) -> dict[str, object]:
-        capsule = self.read(capsule_id, actor_id)
+        self.policy.require(actor_id, "context.explain")
+        capsule = self._load(capsule_id)
         return {
             "capsule_id": capsule.id,
             "purpose": capsule.purpose,
@@ -138,7 +131,7 @@ class ContextBuilder:
         }
 
     def import_capsule(self, payload: dict[str, object], actor_id: str | None) -> ContextCapsule:
-        self.policy.require(actor_id, "context.export")
+        self.policy.require(actor_id, "context.import")
         if payload.get("export_type") == "context_capsule_export":
             export = ContextCapsuleExport.model_validate(payload)
             export.validate_integrity(self.master_key)
@@ -170,7 +163,7 @@ class ContextBuilder:
         }
 
     def set_status(self, capsule_id: str, actor_id: str | None, status: str) -> dict[str, object]:
-        self.policy.require(actor_id, "context.export")
+        self.policy.require(actor_id, _status_operation(status))
         row = self.repo.get(capsule_id)
         if not row:
             raise NotFound(f"context capsule not found: {capsule_id}")
@@ -178,6 +171,28 @@ class ContextBuilder:
         row["updated_at"] = now_iso()
         self.repo.save(row)
         return {"id": capsule_id, "status": status}
+
+    def reduce(self, capsule_id: str, actor_id: str | None, max_memories: int) -> ContextCapsule:
+        from oacs.context.reducer import reduce_capsule
+
+        self.policy.require(actor_id, "context.reduce")
+        return reduce_capsule(self._load(capsule_id), max_memories)
+
+    def expand(self, capsule_id: str, actor_id: str | None) -> ContextCapsule:
+        self.policy.require(actor_id, "context.expand")
+        return self._load(capsule_id)
+
+    def _load(self, capsule_id: str) -> ContextCapsule:
+        row = self.repo.get(capsule_id)
+        payload = loads(
+            decrypt_json_bytes(
+                self.master_key,
+                row["payload_nonce"],
+                row["payload_ciphertext"],
+                str(row["payload_aad"]).encode("utf-8"),
+            )
+        )
+        return ContextCapsule(**payload)
 
     def _save(self, capsule: ContextCapsule) -> None:
         payload = capsule.model_dump()
@@ -205,3 +220,13 @@ class ContextBuilder:
                 "content_hash": hash_json(payload),
             }
         )
+
+
+def _status_operation(status: str) -> str:
+    if status == "locked":
+        return "context.lock"
+    if status == "mounted":
+        return "context.mount"
+    if status == "active":
+        return "context.unmount"
+    return "context.lock"

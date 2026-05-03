@@ -2,6 +2,26 @@
 
 ## Unreleased
 
+## 1.0.6 - 2026-05-03
+
+### Changed
+
+- Split reference context capabilities so `context.read`, `context.explain`,
+  `context.export`, `context.import`, `context.reduce`, `context.expand`,
+  `context.lock`, `context.mount`, and `context.unmount` are checked separately
+  instead of routing read/import/status operations through `context.export`.
+- Added `OACS_POLICY_MODE=strict` so bootstrap actors (`None`, empty actor, and
+  `system`) are denied unless they hold explicit grants; dev mode keeps the
+  bootstrap path but records `policy.bootstrap_bypass` audit events.
+- Allowed D3-D5 commits to use reviewed embedded structured evidence when
+  `evidence_refs` are absent, with depth-specific confidence thresholds.
+- Added `integrity.mac` to context capsule export envelopes while keeping
+  `integrity.signature` as a deprecated compatibility alias.
+
+### Added
+
+- Added conformance coverage for low-confidence D4 embedded evidence rejection.
+
 ## 1.0.5 - 2026-05-03
 
 ### Fixed

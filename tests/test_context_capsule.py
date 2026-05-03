@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import pytest
+
+from oacs.core.errors import AccessDenied
+
 
 def test_context_build_and_explain(svc):
     mem = svc.memory.propose(
@@ -34,9 +38,22 @@ def test_context_capsule_export_envelope_round_trip(svc):
     assert exported.export_type == "context_capsule_export"
     assert exported.integrity.algorithm == "HMAC-SHA256"
     assert exported.integrity.payload_checksum
+    assert exported.integrity.mac
     assert exported.integrity.signature
-    assert validation["integrity"]["signature"] == exported.integrity.signature
+    assert validation["integrity"]["mac"] == exported.integrity.mac
+    assert validation["integrity"]["signature"] == exported.integrity.mac
     assert imported.id == capsule.id
+
+
+def test_context_capsule_export_accepts_deprecated_signature_alias(svc):
+    capsule = svc.context.build("legacy export", None, scope=["project"])
+    payload = svc.context.export_capsule(capsule.id, None).model_dump()
+    payload["integrity"].pop("mac")
+
+    validation = svc.context.validate_payload(payload)
+
+    assert validation["valid"] is True
+    assert validation["integrity"]["mac"] == payload["integrity"]["signature"]
 
 
 def test_context_capsule_export_rejects_tampered_integrity(svc):
@@ -76,3 +93,20 @@ def test_context_build_respects_subagent_shared_memory_scope(svc):
 
     assert allowed.id in capsule.included_memories
     assert denied.id not in capsule.included_memories
+
+
+def test_context_read_and_export_require_distinct_capabilities(svc):
+    actor = svc.actors.create("agent", "ContextReader")
+    capsule = svc.context.build("split permissions", None, scope=["project"])
+    svc.capabilities.grant(actor.id, "system", ["context.read"])
+
+    assert svc.context.read(capsule.id, actor.id).id == capsule.id
+    with pytest.raises(AccessDenied):
+        svc.context.export_capsule(capsule.id, actor.id)
+
+    exporter = svc.actors.create("agent", "ContextExporter")
+    svc.capabilities.grant(exporter.id, "system", ["context.export"])
+
+    assert svc.context.export_capsule(capsule.id, exporter.id).capsule.id == capsule.id
+    with pytest.raises(AccessDenied):
+        svc.context.read(capsule.id, exporter.id)

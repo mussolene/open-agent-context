@@ -12,11 +12,12 @@ endpoints may use system authority in this reference API.
 
 Context endpoints include `POST /v1/context/build`, `GET /v1/context/{id}`,
 `POST /v1/context/{id}/export`, `POST /v1/context/validate`, and
-`POST /v1/context/import`. `GET /v1/context/{id}` returns the raw capsule.
+`POST /v1/context/import`. `GET /v1/context/{id}` returns the raw capsule and
+checks `context.read`; export checks `context.export` separately.
 `POST /v1/context/{id}/export` returns a `context_capsule_export` envelope with
 `capsule` and `integrity` metadata. Validation/import accept either raw capsules
-or export envelopes. For envelopes, `integrity.signature` is an HMAC tag, not
-public-key signing.
+or export envelopes. For envelopes, `integrity.mac` is an HMAC tag, not
+public-key signing; `integrity.signature` is a deprecated compatibility alias.
 
 `POST /v1/loop/run` accepts `user_request`, optional `actor_id`, `agent_id`,
 `scope`, `token_budget`, `allowed_tools`, and `model_config`. The response
@@ -60,11 +61,12 @@ API.
 
 Context endpoints включают `POST /v1/context/build`, `GET /v1/context/{id}`,
 `POST /v1/context/{id}/export`, `POST /v1/context/validate` и
-`POST /v1/context/import`. `GET /v1/context/{id}` возвращает raw capsule.
+`POST /v1/context/import`. `GET /v1/context/{id}` возвращает raw capsule и
+проверяет `context.read`; export отдельно проверяет `context.export`.
 `POST /v1/context/{id}/export` возвращает `context_capsule_export` envelope с
 metadata `capsule` и `integrity`. Validation/import принимают raw capsules или
-export envelopes. Для envelopes `integrity.signature` является HMAC tag, а не
-public-key signing.
+export envelopes. Для envelopes `integrity.mac` является HMAC tag, а не
+public-key signing; `integrity.signature` - deprecated compatibility alias.
 
 `POST /v1/loop/run` принимает `user_request`, optional `actor_id`, `agent_id`,
 `scope`, `token_budget`, `allowed_tools` и `model_config`. Ответ включает id

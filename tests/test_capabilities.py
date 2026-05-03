@@ -21,6 +21,29 @@ def test_capability_allows_memory_read(svc):
     assert svc.memory.read(mem.id, actor.id).content.text == "allowed"
 
 
+def test_strict_policy_denies_bootstrap_bypass(svc, monkeypatch):
+    mem = svc.memory.propose("fact", 2, "strict seed", "system", ["project"])
+    mem.lifecycle_status = "active"
+    svc.memory._save(mem)
+    monkeypatch.setenv("OACS_POLICY_MODE", "strict")
+
+    with pytest.raises(AccessDenied):
+        svc.memory.read(mem.id, None)
+    with pytest.raises(AccessDenied):
+        svc.memory.read(mem.id, "")
+    with pytest.raises(AccessDenied):
+        svc.memory.read(mem.id, "system")
+
+
+def test_dev_policy_records_bootstrap_bypass_audit(svc):
+    mem = svc.memory.propose("fact", 2, "dev seed", None, ["project"])
+    svc.memory.commit(mem.id, None)
+
+    operations = [event["operation"] for event in svc.audit.list()]
+
+    assert "policy.bootstrap_bypass" in operations
+
+
 def test_shared_memory_grant_filters_query_by_scope_and_depth(svc):
     actor = svc.actors.create("agent", "ScopedSubagent")
     svc.capabilities.grant_shared_memory(
@@ -70,4 +93,6 @@ def test_shared_memory_grant_blocks_out_of_scope_write(svc):
 def test_capability_definitions_are_listable(svc):
     definitions = svc.capabilities.list_definitions()
     assert any(definition.operation == "memory.read" for definition in definitions)
+    assert any(definition.operation == "context.read" for definition in definitions)
+    assert any(definition.operation == "context.import" for definition in definitions)
     assert svc.capabilities.inspect_definition("cap_context_build").operation == "context.build"

@@ -218,6 +218,8 @@ def _rejects_negative(
         )
     if fixture_name == "memory_record_d4_factual_evidence.json":
         return _memory_record_embeds_deep_factual_evidence(payload_dict)
+    if fixture_name == "memory_record_d4_low_confidence_evidence.json":
+        return not _deep_memory_has_commit_evidence(payload_dict)
     if fixture_name == "skill_manifest_unlinked_required_tool.json":
         return tool_binding.get("id") not in _strings(payload_dict.get("required_tools"))
     if fixture_name == "retrieval_result_d4_used_as_fact.json":
@@ -281,6 +283,30 @@ def _memory_record_embeds_deep_factual_evidence(payload: dict[str, object]) -> b
     )
 
 
+def _deep_memory_has_commit_evidence(payload: dict[str, object]) -> bool:
+    depth = _depth(payload)
+    if depth < 3:
+        return True
+    if _strings(payload.get("evidence_refs")):
+        return True
+    content = payload.get("content")
+    if not isinstance(content, dict):
+        return False
+    threshold = _deep_memory_evidence_threshold(depth)
+    for item in _list(content.get("evidence")):
+        if _confidence(item) >= threshold and (depth < 5 or item.get("source_ref")):
+            return True
+    return False
+
+
+def _deep_memory_evidence_threshold(depth: int) -> float:
+    if depth <= 3:
+        return 0.5
+    if depth == 4:
+        return 0.7
+    return 0.8
+
+
 def _list(value: object) -> list[dict[str, object]]:
     if not isinstance(value, list):
         return []
@@ -300,3 +326,12 @@ def _depth(hit: dict[str, object]) -> int:
     if isinstance(value, str):
         return int(value)
     return 0
+
+
+def _confidence(hit: dict[str, object]) -> float:
+    value = hit.get("confidence", 0)
+    if isinstance(value, int | float):
+        return float(value)
+    if isinstance(value, str):
+        return float(value)
+    return 0.0

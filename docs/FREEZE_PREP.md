@@ -22,7 +22,7 @@ or semantic rejection rule.
 | `audit_event` | `stable_candidate` | yes | yes | Freeze content hash semantics, chain metadata, metadata redaction, scope, namespace, and lifecycle fields. |
 | `benchmark_task` | `reference_only` | no | no | Keep benchmark pack internals outside core conformance unless explicitly promoted. |
 | `benchmark_task_pack` | `reference_only` | no | no | Keep benchmark pack internals outside core conformance unless explicitly promoted. |
-| `capability_grant` | `stable_candidate` | yes | yes | Freeze deny-by-default, explicit wildcard semantics, scope subset rules, namespace allowlists, and depth limits. |
+| `capability_grant` | `stable_candidate` | yes | yes | Freeze deny-by-default, explicit wildcard semantics, scope subset rules, namespace allowlists, depth limits, and distinct context operation grants. |
 | `context_capsule` | `stable_candidate` | yes | yes | Freeze canonical checksum, projection rules, permission envelope, evidence references, expiry, and forbidden assumptions. |
 | `context_capsule_export` | `draft_support` | no | no | Keep export integrity envelopes outside v1.0 stable schemas; raw ContextCapsule remains the portable record, while signed import/export packaging remains reference support. |
 | `context_operation` | `stable_candidate` | yes | yes | Freeze operation envelope fields, actor/scope/status metadata, and audit reference semantics. |
@@ -31,7 +31,7 @@ or semantic rejection rule.
 | `memory_call` | `stable_candidate` | yes | yes | Freeze operation names, intent/read/evidence trace shape, compact prompt metadata, and no final-answer synthesis rule. |
 | `memory_loop_run` | `stable_candidate` | yes | yes | Freeze loop trace metadata, operation metrics, memory call linkage, and adapter-neutral result shape. |
 | `memory_operation` | `stable_candidate` | yes | yes | Freeze observe/propose/commit/query/read/correct/forget/blur/sharpen operation envelope fields. |
-| `memory_record` | `stable_candidate` | yes | yes | Freeze lifecycle, depth, scope, encrypted content boundary, evidence refs, and status metadata. |
+| `memory_record` | `stable_candidate` | yes | yes | Freeze lifecycle, depth, scope, encrypted content boundary, evidence refs, D3-D5 embedded evidence thresholds, and status metadata. |
 | `protected_ref` | `stable_candidate` | yes | yes | Freeze external provider/URI requirement for secrets, redacted projection, no plaintext/masked values, and status fields. |
 | `retrieval_query` | `stable_candidate` | yes | no | Freeze policy-first query filters, scope/depth/status inputs, and backend-neutral options. |
 | `retrieval_result` | `stable_candidate` | yes | yes | Freeze hit shape, evidence projection rules, and D3-D5 non-factual semantics. |
@@ -79,7 +79,7 @@ adapter-boundary или semantic rejection rule.
 | `audit_event` | `stable_candidate` | yes | yes | Заморозить content hash semantics, chain metadata, metadata redaction, scope, namespace и lifecycle fields. |
 | `benchmark_task` | `reference_only` | no | no | Оставить benchmark pack internals вне core conformance, если они явно не promoted. |
 | `benchmark_task_pack` | `reference_only` | no | no | Оставить benchmark pack internals вне core conformance, если они явно не promoted. |
-| `capability_grant` | `stable_candidate` | yes | yes | Заморозить deny-by-default, explicit wildcard semantics, scope subset rules, namespace allowlists и depth limits. |
+| `capability_grant` | `stable_candidate` | yes | yes | Заморозить deny-by-default, explicit wildcard semantics, scope subset rules, namespace allowlists, depth limits и distinct context operation grants. |
 | `context_capsule` | `stable_candidate` | yes | yes | Заморозить canonical checksum, projection rules, permission envelope, evidence references, expiry и forbidden assumptions. |
 | `context_capsule_export` | `draft_support` | no | no | Оставить export integrity envelopes вне v1.0 stable schemas; raw ContextCapsule остаётся portable record, а signed import/export packaging остаётся reference support. |
 | `context_operation` | `stable_candidate` | yes | yes | Заморозить operation envelope fields, actor/scope/status metadata и audit reference semantics. |
@@ -88,7 +88,7 @@ adapter-boundary или semantic rejection rule.
 | `memory_call` | `stable_candidate` | yes | yes | Заморозить operation names, intent/read/evidence trace shape, compact prompt metadata и no final-answer synthesis rule. |
 | `memory_loop_run` | `stable_candidate` | yes | yes | Заморозить loop trace metadata, operation metrics, memory call linkage и adapter-neutral result shape. |
 | `memory_operation` | `stable_candidate` | yes | yes | Заморозить observe/propose/commit/query/read/correct/forget/blur/sharpen operation envelope fields. |
-| `memory_record` | `stable_candidate` | yes | yes | Заморозить lifecycle, depth, scope, encrypted content boundary, evidence refs и status metadata. |
+| `memory_record` | `stable_candidate` | yes | yes | Заморозить lifecycle, depth, scope, encrypted content boundary, evidence refs, D3-D5 embedded evidence thresholds и status metadata. |
 | `protected_ref` | `stable_candidate` | yes | yes | Заморозить external provider/URI requirement для secrets, redacted projection, отсутствие plaintext/masked values и status fields. |
 | `retrieval_query` | `stable_candidate` | yes | no | Заморозить policy-first query filters, scope/depth/status inputs и backend-neutral options. |
 | `retrieval_result` | `stable_candidate` | yes | yes | Заморозить hit shape, evidence projection rules и D3-D5 non-factual semantics. |

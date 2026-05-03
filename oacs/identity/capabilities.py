@@ -121,7 +121,8 @@ class CapabilityService:
                 "memory.query",
                 "memory.read",
                 "context.build",
-                "context.export",
+                "context.read",
+                "context.explain",
             ],
             scope=scope,
             memory_depth_allowed=memory_depth_allowed,
@@ -210,10 +211,60 @@ def builtin_capabilities() -> list[CapabilityDefinition]:
             description="Allows building context capsules from allowed memory and registries.",
         ),
         CapabilityDefinition(
+            id="cap_context_read",
+            name="context_read",
+            operation="context.read",
+            description=(
+                "Allows reading a context capsule inside the runtime without export rights."
+            ),
+        ),
+        CapabilityDefinition(
+            id="cap_context_explain",
+            name="context_explain",
+            operation="context.explain",
+            description="Allows reading an explain-only projection of a context capsule.",
+        ),
+        CapabilityDefinition(
             id="cap_context_export",
             name="context_export",
             operation="context.export",
             description="Allows exporting a context capsule after policy checks.",
+        ),
+        CapabilityDefinition(
+            id="cap_context_import",
+            name="context_import",
+            operation="context.import",
+            description="Allows importing a raw or exported context capsule.",
+        ),
+        CapabilityDefinition(
+            id="cap_context_reduce",
+            name="context_reduce",
+            operation="context.reduce",
+            description="Allows creating a reduced projection of a context capsule.",
+        ),
+        CapabilityDefinition(
+            id="cap_context_expand",
+            name="context_expand",
+            operation="context.expand",
+            description="Allows expanding or reading a full context capsule projection.",
+        ),
+        CapabilityDefinition(
+            id="cap_context_lock",
+            name="context_lock",
+            operation="context.lock",
+            description="Allows locking a context capsule.",
+        ),
+        CapabilityDefinition(
+            id="cap_context_mount",
+            name="context_mount",
+            operation="context.mount",
+            description="Allows mounting a context capsule for runtime use.",
+        ),
+        CapabilityDefinition(
+            id="cap_context_unmount",
+            name="context_unmount",
+            operation="context.unmount",
+            description="Allows unmounting a context capsule.",
         ),
         CapabilityDefinition(
             id="cap_tool_call",
@@ -236,7 +287,7 @@ def builtin_capabilities() -> list[CapabilityDefinition]:
         CapabilityDefinition(
             id="cap_shared_memory",
             name="shared_memory",
-            operation="memory.query,memory.read,context.build,context.export",
+            operation="memory.query,memory.read,context.build,context.read,context.explain",
             description="Allows scoped subagent memory and context access.",
         ),
         CapabilityDefinition(

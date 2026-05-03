@@ -86,13 +86,15 @@ Reference adapters:
 - Done: add `memory_call` schema for OACS-native memory operation traces.
 - Done: specify scope semantics: requested scope must be a subset of granted/resource
   scope; wildcard access requires explicit `*`.
-- Done: specify audit requirements for memory read/query/write and context build/export.
+- Done: specify audit requirements for memory read/query/write and distinct
+  context build/read/export/import/explain/reduce/expand/lock/mount operations.
 - Done: add deterministic conformance tests for capability-safe memory operations.
 
 ### v0.2.7 - Context Capsule Integrity
 - Done: add `context_capsule_export` envelope with checksum and HMAC integrity
-  metadata. `integrity.signature` is a local HMAC tag, not a public-key digital
-  signature or third-party-verifiable signing claim.
+  metadata. `integrity.mac` is a local HMAC tag; `integrity.signature` is a
+  deprecated compatibility alias, not a public-key digital signature or
+  third-party-verifiable signing claim.
 - Done: tighten capsule import/export validation and compatibility notes.
 - Done: expand API tests for context export/import validation and audit behavior.
 
@@ -327,8 +329,9 @@ Reference adapters:
 
 ### v0.2.7 - Context Capsule Integrity
 - Готово: добавить `context_capsule_export` envelope с checksum и HMAC integrity
-  metadata. `integrity.signature` является local HMAC tag, а не public-key
-  digital signature и не third-party-verifiable signing claim.
+  metadata. `integrity.mac` является local HMAC tag; `integrity.signature` -
+  deprecated compatibility alias, а не public-key digital signature или
+  third-party-verifiable signing claim.
 - Готово: усилить capsule import/export validation и compatibility notes.
 - Готово: расширить API tests для context export/import validation и audit behavior.
 

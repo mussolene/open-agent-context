@@ -10,7 +10,7 @@
     "memory.query",
     "memory.read",
     "context.build",
-    "context.export",
+    "context.read",
     "tool.call"
   ],
   "denied_operations": [],

@@ -61,6 +61,11 @@ memory. `auto-finish` and `autorun` commit only D1 repo episodes. D2 facts,
 procedures, rules, and D3-D5 patterns still require explicit OACS
 `memory propose` / `memory commit` review.
 
+When running dogfood in `OACS_POLICY_MODE=strict`, grant the active actor
+ordinary memory/query/read, `context.build`, `context.explain`, evidence,
+checkpoint, and audit permissions first. The dogfood skill is a reference
+adapter and must not depend on bootstrap authority in strict mode.
+
 Canonical proof outputs should be ingested as evidence:
 
 ```bash

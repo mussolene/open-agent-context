@@ -3,7 +3,7 @@ from __future__ import annotations
 import hmac
 from hashlib import sha256
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from oacs.core.errors import ValidationFailure
 from oacs.core.ids import new_id
@@ -53,9 +53,20 @@ class CapsuleIntegrity(BaseModel):
     schema_version: str = "0.1"
     algorithm: str = "HMAC-SHA256"
     payload_checksum: str
-    signature: str
+    mac: str | None = None
+    signature: str | None = None
     signed_at: str = Field(default_factory=now_iso)
     key_ref: str = "local-master-key"
+
+    @model_validator(mode="after")
+    def sync_deprecated_signature_alias(self) -> CapsuleIntegrity:
+        if self.mac is None and self.signature is not None:
+            self.mac = self.signature
+        if self.signature is None and self.mac is not None:
+            self.signature = self.mac
+        if self.mac is None:
+            raise ValidationFailure("context capsule export integrity mac is required")
+        return self
 
 
 class ContextCapsuleExport(BaseModel):
@@ -69,12 +80,13 @@ class ContextCapsuleExport(BaseModel):
         capsule.validate_checksum()
         payload = capsule.model_dump()
         payload_checksum = hash_json(payload)
-        signature = sign_capsule_payload(payload, signing_key)
+        mac = mac_capsule_payload(payload, signing_key)
         return cls(
             capsule=capsule,
             integrity=CapsuleIntegrity(
                 payload_checksum=payload_checksum,
-                signature=signature,
+                mac=mac,
+                signature=mac,
             ),
         )
 
@@ -87,10 +99,14 @@ class ContextCapsuleExport(BaseModel):
             raise ValidationFailure("context capsule export payload checksum mismatch")
         if self.integrity.algorithm != "HMAC-SHA256":
             raise ValidationFailure("unsupported context capsule export integrity algorithm")
-        expected = sign_capsule_payload(payload, signing_key)
-        if not hmac.compare_digest(self.integrity.signature, expected):
-            raise ValidationFailure("context capsule export signature mismatch")
+        expected = mac_capsule_payload(payload, signing_key)
+        if not hmac.compare_digest(self.integrity.mac or "", expected):
+            raise ValidationFailure("context capsule export mac mismatch")
+
+
+def mac_capsule_payload(payload: dict[str, object], signing_key: bytes) -> str:
+    return hmac.new(signing_key, dumps(payload).encode("utf-8"), sha256).hexdigest()
 
 
 def sign_capsule_payload(payload: dict[str, object], signing_key: bytes) -> str:
-    return hmac.new(signing_key, dumps(payload).encode("utf-8"), sha256).hexdigest()
+    return mac_capsule_payload(payload, signing_key)

@@ -34,6 +34,9 @@ Policy:
   through `memory propose`, `memory commit`, and `memory sharpen`.
 - Standalone tool-result evidence does not enter context by itself; attach the
   evidence ref to reviewed memory if it should guide future context builds.
+- In strict policy mode, the actor running this skill needs ordinary
+  `context.build`, `context.explain`, memory, evidence, checkpoint, and audit
+  grants; the skill must not rely on `system` bootstrap authority.
 
 ## Start or Resume
 
@@ -207,4 +210,3 @@ Do not claim completion unless:
 - OACS evidence exists for checks and important command outputs;
 - an OACS checkpoint records outcome, evidence refs, and next step;
 - all subagents spawned for the task are closed or explicitly handed off.
-

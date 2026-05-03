@@ -18,7 +18,6 @@ from oacs.benchmark.packs import download_task_pack, load_task_pack, tasks_from_
 from oacs.benchmark.reports import compare_runs, select_comparison_runs
 from oacs.benchmark.runner import MemoryCriticalBenchmark
 from oacs.conformance import validate_conformance
-from oacs.context.reducer import reduce_capsule
 from oacs.core.config import OacsConfig
 from oacs.core.errors import AccessDenied, MemoryDecryptError, NotFound
 from oacs.core.ids import new_id
@@ -804,7 +803,7 @@ def context_reduce(
     json_out: JsonOpt = False,
 ) -> None:
     svc = services(db)
-    capsule = reduce_capsule(svc.context.read(capsule_id, actor), max_memories)
+    capsule = svc.context.reduce(capsule_id, actor, max_memories)
     svc.audit.record("context.reduce", actor, capsule_id)
     emit(capsule.model_dump(), json_out)
 
@@ -814,7 +813,7 @@ def context_expand(
     capsule_id: str, actor: ActorOpt = None, db: DbOpt = None, json_out: JsonOpt = False
 ) -> None:
     svc = services(db)
-    capsule = svc.context.read(capsule_id, actor)
+    capsule = svc.context.expand(capsule_id, actor)
     svc.audit.record("context.expand", actor, capsule_id)
     emit(capsule.model_dump(), json_out)
 
@@ -904,7 +903,7 @@ def capsule_grant(
 ) -> None:
     svc = services(db)
     svc.context.read(capsule_id, None)
-    emit(svc.capabilities.grant(subject, "system", ["context.export"]).model_dump(), json_out)
+    emit(svc.capabilities.grant(subject, "system", ["context.read"]).model_dump(), json_out)
 
 
 @capsule_app.command("revoke")
@@ -921,7 +920,10 @@ def capsule_revoke(
     for grant in svc.store.list(
         "capability_grants", filters={"subject_actor_id": subject, "status": "active"}
     ):
-        if "context.export" in grant["allowed_operations"] or "*" in grant["allowed_operations"]:
+        if any(
+            operation in grant["allowed_operations"]
+            for operation in ("context.read", "context.export", "*")
+        ):
             grant["status"] = "revoked"
             grant["updated_at"] = now_iso()
             svc.store.put_json("capability_grants", grant)

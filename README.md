@@ -165,6 +165,11 @@ OACS is not a vault. Protected values are represented as external `ProtectedRef`
 records; secret storage, rotation, revocation, and plaintext release belong to
 external vaults or runtime adapters. See `docs/VAULT.md`.
 
+Context permissions are operation-specific: read/explain access is distinct from
+export/import and mount/lock/reduce/expand. The reference runtime defaults to dev
+bootstrap behavior for local setup and supports `OACS_POLICY_MODE=strict` when
+`None`, empty actor, and `system` must use ordinary grants.
+
 ### Limitations
 
 This is a local reference implementation, not a hosted multi-tenant system. MCP
@@ -337,6 +342,12 @@ integration point для key wrapping; если optional PQ libraries отсут
 OACS не является vault. Protected values представлены как внешние
 `ProtectedRef` records; secret storage, rotation, revocation и plaintext release
 относятся к external vaults или runtime adapters. См. `docs/VAULT.md`.
+
+Context permissions разделены по операциям: read/explain access отдельно от
+export/import и mount/lock/reduce/expand. Reference runtime по умолчанию
+использует dev bootstrap behavior для local setup и поддерживает
+`OACS_POLICY_MODE=strict`, где `None`, empty actor и `system` используют обычные
+grants.
 
 ### Ограничения
 

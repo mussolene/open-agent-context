@@ -50,9 +50,9 @@ def get_context(capsule_id: str, actor_id: str | None = None) -> dict[str, objec
     try:
         capsule = svc.context.read(capsule_id, actor_id)
     except AccessDenied as exc:
-        svc.audit.record("context.export", actor_id, capsule_id, {"status": "denied"})
+        svc.audit.record("context.read", actor_id, capsule_id, {"status": "denied"})
         raise exc
-    svc.audit.record("context.export", actor_id, capsule.id, {"status": "completed"})
+    svc.audit.record("context.read", actor_id, capsule.id, {"status": "completed"})
     return capsule.model_dump()
 
 
@@ -103,7 +103,7 @@ def explain(capsule_id: str, req: dict[str, str | None]) -> dict[str, object]:
 @router.post("/capsules/{capsule_id}/grant")
 def grant(capsule_id: str, req: dict[str, str]) -> dict[str, object]:
     grant_obj = services(require_key=False).capabilities.grant(
-        req["subject_actor_id"], "system", ["context.export"]
+        req["subject_actor_id"], "system", ["context.read"]
     )
     return {"capsule_id": capsule_id, "grant": grant_obj.model_dump()}
 
@@ -117,7 +117,10 @@ def revoke(capsule_id: str, req: dict[str, str]) -> dict[str, object]:
         "capability_grants",
         filters={"subject_actor_id": req["subject_actor_id"], "status": "active"},
     ):
-        if "context.export" in grant["allowed_operations"] or "*" in grant["allowed_operations"]:
+        if any(
+            operation in grant["allowed_operations"]
+            for operation in ("context.read", "context.export", "*")
+        ):
             grant["status"] = "revoked"
             svc.store.put_json("capability_grants", grant)
             revoked += 1
