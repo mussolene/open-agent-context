@@ -60,12 +60,6 @@ jobs:
           python -m pip install build
           python -m build
 
-      - name: Upload package artifacts
-        uses: actions/upload-artifact@v5
-        with:
-          name: oacs-dist
-          path: dist/*
-
       - name: Install wheel and smoke test CLI
         run: |
           SMOKE_DIR="$RUNNER_TEMP/oacs-wheel-smoke"

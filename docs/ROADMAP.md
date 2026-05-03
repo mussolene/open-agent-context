@@ -5,7 +5,7 @@ This roadmap keeps the OACS v1.0 standard small. Core work must define
 memory, context, permissions, audit, and deterministic operation contracts.
 Reference adapters prove integration, but they do not expand the standard.
 
-### Current Position: v1.0 Freeze Prep
+### Current Position: v1.0 Released / Post-1.0 Hardening
 Core contract:
 
 - Done: OACS v1.0 terminology, schemas, encrypted `MemoryRecord`,
@@ -37,6 +37,8 @@ Core contract:
 - Done: stable-candidate schemas reject unknown top-level fields and carry
   portable field descriptions so implementers can distinguish standard
   semantics from reference adapter behavior.
+- Done: v1.0.0 is tagged, published to PyPI, smoke-tested from a fresh install,
+  and recorded with OACS release evidence.
 
 Reference adapters:
 
@@ -195,9 +197,9 @@ Reference adapters:
 - Done: `actor` and `context_capsule_export` remain draft support for v1.0;
   stable records reference actor IDs, and raw ContextCapsule JSON remains the
   portable context record.
-- In progress: define compatibility and migration rules for schema changes,
+- Done: define compatibility and migration rules for schema changes,
   semantic checks, and adapter-boundary behavior.
-- In progress: make the conformance boundary explicit: positive fixtures are
+- Done: make the conformance boundary explicit: positive fixtures are
   portable examples, negative fixtures are required rejection examples, and
   Python `acs conformance validate` remains a reference checker.
 - Done: decide which draft support schemas, if any, are promoted into the v1.0
@@ -207,29 +209,41 @@ Reference adapters:
   tests, secret scans, and OACS proof.
 
 ### v1.0
-- Freeze stable schemas for `ContextCapsule`, `MemoryRecord`,
+- Done: freeze stable schemas for `ContextCapsule`, `MemoryRecord`,
   `CapabilityGrant`, `RuleManifest`, `SkillManifest`, `ToolBinding`,
   `McpBinding`, `EvidenceRef`, `AuditEvent`, `ProtectedRef`,
   `MemoryOperation`, `ContextOperation`, `memory_call`, `MemoryLoopRun`,
   `ToolCallResult`, `StorageSelector`, `RetrievalQuery`, and
   `RetrievalResult`.
-- Define compatibility guarantees and migration policy for stable schemas,
+- Done: define compatibility guarantees and migration policy for stable schemas,
   semantic checks, checksum/hash behavior, and adapter-boundary rejection
   examples.
-- Provide backend, retrieval, protected-ref, and adapter-boundary conformance
+- Done: provide backend, retrieval, protected-ref, and adapter-boundary conformance
   tests without requiring SQLite, Python, LM Studio, hosted APIs, or MCP stdio
   execution.
-- Publish conformance fixtures for memory/context records, permissions,
+- Done: publish conformance fixtures for memory/context records, permissions,
   manifests, bindings, evidence, audit, protected refs, operation envelopes,
   retrieval/storage selectors, and negative boundary cases.
-- Keep public benchmark packs as optional validation artifacts.
+- Done: keep public benchmark packs as optional validation artifacts.
+
+### v1.0.x - Post-Release Hardening
+- Done: publish a GitHub Release entry for `v1.0.0` in addition to the PyPI
+  package publication.
+- Done: remove CI/release workflow dependency on Node.js 20 artifact actions by
+  building distributions inside the selected trusted-publishing job.
+- Keep changes patch-safe: docs drift, release automation, conformance
+  clarification, and bug fixes that do not change stable schema semantics.
+- Add implementation-neutral guidance where needed so new runtimes can treat the
+  Python package as a reference implementation rather than the standard itself.
+- Track non-breaking conformance fixture additions separately from schema or
+  semantic changes that require a new draft/stable version.
 
 ## RU
 Этот roadmap удерживает OACS v1.0 standard небольшим. Core work должен
 определять memory, context, permissions, audit и deterministic operation
 contracts. Reference adapters доказывают интеграцию, но не расширяют стандарт.
 
-### Текущая позиция: v1.0 Freeze Prep
+### Текущая позиция: v1.0 Released / Post-1.0 Hardening
 Core contract:
 
 - Готово: OACS v1.0 terminology, schemas, encrypted `MemoryRecord`,
@@ -259,6 +273,8 @@ Core contract:
 - Готово: stable-candidate schemas отвергают unknown top-level fields и имеют
   portable field descriptions, чтобы implementers отличали standard semantics
   от reference adapter behavior.
+- Готово: v1.0.0 помечен tag, опубликован в PyPI, проверен fresh install smoke
+  test и записан с OACS release evidence.
 
 Reference adapters:
 
@@ -419,9 +435,9 @@ Reference adapters:
 - Готово: `actor` и `context_capsule_export` остаются draft support для v1.0;
   stable records ссылаются на actor IDs, а raw ContextCapsule JSON остаётся
   portable context record.
-- В работе: определить compatibility и migration rules для schema changes,
+- Готово: определить compatibility и migration rules для schema changes,
   semantic checks и adapter-boundary behavior.
-- В работе: сделать conformance boundary явной: positive fixtures являются
+- Готово: сделать conformance boundary явной: positive fixtures являются
   portable examples, negative fixtures являются required rejection examples, а
   Python `acs conformance validate` остаётся reference checker.
 - Готово: решить, какие draft support schemas, если такие есть, продвигаются в
@@ -431,16 +447,28 @@ Reference adapters:
   published-package smoke tests, secret scans и OACS proof.
 
 ### v1.0
-- Заморозить stable schemas для `ContextCapsule`, `MemoryRecord`,
+- Готово: заморозить stable schemas для `ContextCapsule`, `MemoryRecord`,
   `CapabilityGrant`, `RuleManifest`, `SkillManifest`, `ToolBinding`,
   `McpBinding`, `EvidenceRef`, `AuditEvent`, `ProtectedRef`,
   `MemoryOperation`, `ContextOperation`, `memory_call`, `MemoryLoopRun`,
   `ToolCallResult`, `StorageSelector`, `RetrievalQuery` и `RetrievalResult`.
-- Зафиксировать compatibility guarantees и migration policy для stable schemas,
+- Готово: зафиксировать compatibility guarantees и migration policy для stable schemas,
   semantic checks, checksum/hash behavior и adapter-boundary rejection examples.
-- Добавить backend, retrieval, protected-ref и adapter-boundary conformance tests
+- Готово: добавить backend, retrieval, protected-ref и adapter-boundary conformance tests
   без требования SQLite, Python, LM Studio, hosted APIs или MCP stdio execution.
-- Опубликовать conformance fixtures для memory/context records, permissions,
+- Готово: опубликовать conformance fixtures для memory/context records, permissions,
   manifests, bindings, evidence, audit, protected refs, operation envelopes,
   retrieval/storage selectors и negative boundary cases.
-- Оставить public benchmark packs как optional validation artifacts.
+- Готово: оставить public benchmark packs как optional validation artifacts.
+
+### v1.0.x - Post-Release Hardening
+- Готово: опубликовать GitHub Release entry для `v1.0.0` дополнительно к PyPI
+  package publication.
+- Готово: убрать dependency CI/release workflow от Node.js 20 artifact actions,
+  собирая distributions внутри selected trusted-publishing job.
+- Держать изменения patch-safe: docs drift, release automation, conformance
+  clarification и bug fixes, которые не меняют stable schema semantics.
+- Добавлять implementation-neutral guidance, когда нужно, чтобы новые runtimes
+  рассматривали Python package как reference implementation, а не сам standard.
+- Отслеживать non-breaking conformance fixture additions отдельно от schema или
+  semantic changes, требующих новую draft/stable version.

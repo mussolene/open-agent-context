@@ -59,7 +59,10 @@ git push origin "$TAG"
 ```
 
 6. Watch `.github/workflows/release.yml`.
-7. Smoke-test the published package.
+7. Confirm the workflow created or refreshed the GitHub Release entry for the
+   tag. Stable releases use GitHub Releases plus PyPI publication; prerelease
+   tags publish packages according to the target index policy.
+8. Smoke-test the published package.
 
 For TestPyPI prereleases:
 
@@ -99,6 +102,15 @@ packages that shadow production dependencies.
 Publishing uses GitHub trusted publishing through `.github/workflows/release.yml`.
 Configure PyPI and TestPyPI projects for this repository before publishing. Do
 not store PyPI API tokens in the repository.
+
+### Release Automation Maintenance
+
+Keep release automation free of deprecated action runtimes. The workflow builds
+distributions inside the selected trusted-publishing job instead of passing
+artifacts between jobs, so it does not depend on `actions/upload-artifact` or
+`actions/download-artifact` while those actions use a deprecated Node.js
+runtime. If artifact handoff returns, verify the referenced action versions use
+the current GitHub Actions runtime before cutting a release.
 
 ## RU
 OACS использует SemVer как человеческую release policy и PEP 440 spelling для
@@ -159,7 +171,10 @@ git push origin "$TAG"
 ```
 
 6. Проверить `.github/workflows/release.yml`.
-7. Smoke-test опубликованного package.
+7. Подтвердить, что workflow создал или обновил GitHub Release entry для tag.
+   Stable releases используют GitHub Releases вместе с PyPI publication;
+   prerelease tags публикуют packages согласно target index policy.
+8. Smoke-test опубликованного package.
 
 Для TestPyPI prereleases:
 
@@ -199,3 +214,12 @@ TestPyPI smoke test.
 Публикация использует GitHub trusted publishing через
 `.github/workflows/release.yml`. До публикации нужно настроить PyPI и TestPyPI
 projects для этого repository. Не храните PyPI API tokens в репозитории.
+
+### Release Automation Maintenance
+
+Release automation не должна зависеть от deprecated action runtimes. Workflow
+собирает distributions внутри selected trusted-publishing job вместо передачи
+artifacts между jobs, поэтому он не зависит от `actions/upload-artifact` или
+`actions/download-artifact`, пока эти actions используют deprecated Node.js
+runtime. Если artifact handoff вернётся, перед релизом нужно проверить, что
+referenced action versions используют текущий GitHub Actions runtime.

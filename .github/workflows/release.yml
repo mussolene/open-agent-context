@@ -19,37 +19,8 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    name: Build package
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v5
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.11"
-
-      - name: Install build tools
-        run: python -m pip install --upgrade pip build twine
-
-      - name: Build distributions
-        run: python -m build
-
-      - name: Check distributions
-        run: python -m twine check dist/*
-
-      - name: Upload distributions
-        uses: actions/upload-artifact@v5
-        with:
-          name: oacs-dist
-          path: dist/*
-          if-no-files-found: error
-
   publish-testpypi:
     name: Publish to TestPyPI
-    needs: build
     runs-on: ubuntu-latest
     if: >-
       github.event_name == 'workflow_dispatch' && inputs.target == 'testpypi'
@@ -65,11 +36,19 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - name: Download distributions
-        uses: actions/download-artifact@v5
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
         with:
-          name: oacs-dist
-          path: dist
+          python-version: "3.11"
+
+      - name: Build and check distributions
+        run: |
+          python -m pip install --upgrade pip build twine
+          python -m build
+          python -m twine check dist/*
 
       - name: Publish package
         uses: pypa/gh-action-pypi-publish@release/v1
@@ -78,7 +57,6 @@ jobs:
 
   publish-pypi:
     name: Publish to PyPI
-    needs: build
     runs-on: ubuntu-latest
     if: >-
       github.event_name == 'workflow_dispatch' && inputs.target == 'pypi'
@@ -91,14 +69,38 @@ jobs:
       name: pypi
       url: https://pypi.org/project/oacs/
     permissions:
-      contents: read
+      contents: write
       id-token: write
     steps:
-      - name: Download distributions
-        uses: actions/download-artifact@v5
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
         with:
-          name: oacs-dist
-          path: dist
+          python-version: "3.11"
+
+      - name: Build and check distributions
+        run: |
+          python -m pip install --upgrade pip build twine
+          python -m build
+          python -m twine check dist/*
 
       - name: Publish package
         uses: pypa/gh-action-pypi-publish@release/v1
+
+      - name: Create GitHub Release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release edit "$GITHUB_REF_NAME" --title "OACS ${VERSION}" --latest
+          else
+            gh release create "$GITHUB_REF_NAME" \
+              --verify-tag \
+              --title "OACS ${VERSION}" \
+              --generate-notes \
+              --latest
+          fi

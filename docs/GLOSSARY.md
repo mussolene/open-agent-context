@@ -1,9 +1,11 @@
 # Glossary / Глоссарий
 
 ## EN
-- **OACS v1.0:** Draft contract for agent context assembly and governance.
+- **OACS v1.0:** Stable portable contract for agent context assembly and
+  governance.
 - **Reference implementation:** This Python package plus local CLI/API, storage,
-  and optional adapters that exercise the draft contract.
+  and optional adapters that exercise the standard contract without becoming
+  the only implementation strategy.
 - **acs:** Reference CLI for local OACS memory, context, capability, and audit operations.
 - **Actor:** Human, agent, application, tool, service, or organization identity.
 - **CapabilityGrant:** Permission record that allows or denies operations for an actor.
@@ -20,9 +22,11 @@
 - **Memory Loop:** Deterministic flow that observes, retrieves memory, builds a capsule, acts, evaluates, and proposes memory.
 
 ## RU
-- **OACS v1.0:** Draft-контракт для сборки и управления агентским контекстом.
+- **OACS v1.0:** Stable portable contract для сборки и управления агентским
+  контекстом.
 - **Reference implementation:** Этот Python package плюс local CLI/API, storage
-  и optional adapters, проверяющие draft contract.
+  и optional adapters, проверяющие standard contract, но не становящиеся
+  единственной strategy implementation.
 - **acs:** Reference CLI для локальных OACS memory, context, capability и audit operations.
 - **Actor:** Human, agent, application, tool, service или organization identity.
 - **CapabilityGrant:** Permission record, разрешающий или запрещающий операции actor.

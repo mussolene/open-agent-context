@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- Removed CI/release workflow dependency on `actions/upload-artifact` and
+  `actions/download-artifact` while those actions still declare a deprecated
+  Node.js runtime; trusted-publishing jobs now build and check distributions
+  directly before publishing.
+- Added GitHub Release creation to the stable tag publishing path.
+- Updated roadmap and glossary language for the post-1.0 state while preserving
+  Python as one reference implementation rather than the standard itself.
+
 ## 1.0.0 - 2026-05-03
 
 ### Added
