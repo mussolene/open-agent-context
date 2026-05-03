@@ -84,6 +84,16 @@ def test_cli_repo_is_not_core_surface():
     assert result.exit_code != 0
 
 
+def test_cli_conformance_validate_json():
+    result = CliRunner().invoke(app, ["conformance", "validate", "--json"])
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["valid"] is True
+    assert payload["positive_fixtures"] >= 1
+    assert payload["negative_fixtures"] >= 1
+
+
 def test_cli_loop_run_emits_memory_calls(tmp_path):
     db = tmp_path / "oacs.db"
     runner = CliRunner()

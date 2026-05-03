@@ -17,6 +17,7 @@ from oacs.benchmark.models import BenchmarkTask
 from oacs.benchmark.packs import download_task_pack, load_task_pack, tasks_from_pack
 from oacs.benchmark.reports import compare_runs, select_comparison_runs
 from oacs.benchmark.runner import MemoryCriticalBenchmark
+from oacs.conformance import validate_conformance
 from oacs.context.reducer import reduce_capsule
 from oacs.core.config import OacsConfig
 from oacs.core.errors import NotFound
@@ -47,6 +48,7 @@ audit_app = typer.Typer()
 capability_app = typer.Typer()
 checkpoint_app = typer.Typer()
 policy_app = typer.Typer()
+conformance_app = typer.Typer()
 
 app.add_typer(actor_app, name="actor")
 app.add_typer(capability_app, name="capability")
@@ -65,6 +67,7 @@ app.add_typer(server_app, name="server")
 app.add_typer(audit_app, name="audit")
 app.add_typer(checkpoint_app, name="checkpoint")
 app.add_typer(policy_app, name="policy")
+app.add_typer(conformance_app, name="conformance")
 
 
 DbOpt = Annotated[str | None, typer.Option("--db")]
@@ -873,6 +876,18 @@ def policy_add_deny_pattern(
         )
     )
     emit(rule.model_dump(), json_out)
+
+
+@conformance_app.command("validate")
+def conformance_validate(
+    conformance_root: Annotated[Path | None, typer.Option("--conformance-root")] = None,
+    schema_root: Annotated[Path | None, typer.Option("--schema-root")] = None,
+    json_out: JsonOpt = False,
+) -> None:
+    result = validate_conformance(conformance_root, schema_root)
+    emit(result, json_out)
+    if not result["valid"]:
+        raise typer.Exit(1)
 
 
 @checkpoint_app.command("add")

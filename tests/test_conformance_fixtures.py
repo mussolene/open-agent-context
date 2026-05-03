@@ -7,6 +7,8 @@ from pathlib import Path
 import pytest
 from jsonschema import ValidationError, validate
 
+from oacs.conformance import validate_conformance
+
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "conformance" / "fixtures"
 NEGATIVE = ROOT / "conformance" / "negative"
@@ -124,3 +126,12 @@ def test_negative_semantic_fixture_rejects_d4_as_factual_retrieval_evidence() ->
         and hit.get("used_as_factual_evidence") is True
     ]
     assert invalid_hits
+
+
+def test_reference_conformance_checker_validates_bundled_fixtures() -> None:
+    result = validate_conformance(ROOT / "conformance", ROOT / "schemas")
+
+    assert result["valid"] is True
+    assert result["positive_fixtures"] == len(FIXTURE_SCHEMAS)
+    assert result["negative_fixtures"] == len(list(NEGATIVE.glob("*.json")))
+    assert result["errors"] == []

@@ -34,6 +34,8 @@ Portable contract requirements:
 Reference-only behavior:
 
 - The `acs` CLI and FastAPI server are Python reference interfaces.
+- `acs conformance validate` is a reference checker for bundled fixtures, not a
+  required OACS transport or runtime feature.
 - SQLite is the bundled reference backend, not a required backend.
 - `StorageBackend`, `ToolRunner`, LM Studio adapters, benchmark runners, repo
   dogfood, and agent workflow commands are reference implementation choices.
@@ -75,6 +77,8 @@ Portable contract requirements:
 Reference-only behavior:
 
 - `acs` CLI и FastAPI server являются Python reference interfaces.
+- `acs conformance validate` является reference checker для bundled fixtures, а
+  не обязательным OACS transport или runtime feature.
 - SQLite является bundled reference backend, а не обязательным backend.
 - `StorageBackend`, `ToolRunner`, LM Studio adapters, benchmark runners, repo
   dogfood и agent workflow commands являются choices reference implementation.

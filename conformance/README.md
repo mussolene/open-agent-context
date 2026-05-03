@@ -14,6 +14,16 @@ surface.
 Use `docs/INTEROPERABILITY.md` as the implementation checklist when building a
 runtime, SDK, adapter, or validation harness outside Python.
 
+The Python reference package includes a convenience checker:
+
+```bash
+acs conformance validate --json
+```
+
+This command is a reference validation harness for the bundled fixtures. Passing
+it is useful for package and adapter development, but the portable contract
+remains the JSON records and schemas.
+
 Fixtures:
 
 - `fixtures/context_capsule.json`
@@ -44,6 +54,16 @@ checksum canonicalization, scope semantics и evidence references.
 
 Используйте `docs/INTEROPERABILITY.md` как implementation checklist при
 создании runtime, SDK, adapter или validation harness вне Python.
+
+Python reference package включает convenience checker:
+
+```bash
+acs conformance validate --json
+```
+
+Эта команда является reference validation harness для bundled fixtures. Она
+полезна для package и adapter development, но portable contract остаётся в JSON
+records и schemas.
 
 Fixtures:
 
