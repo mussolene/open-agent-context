@@ -4,7 +4,7 @@ import copy
 import json
 from hashlib import sha256
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from jsonschema import ValidationError, validate
 
@@ -58,12 +58,12 @@ def validate_conformance(
     for path in sorted((conformance / "negative").glob("*.json")):
         negative_checked += 1
         fixture = _load_json(path)
-        payload = fixture.get("payload")
+        negative_payload: object = fixture.get("payload")
         schema_name = str(fixture.get("schema", ""))
         reason = str(fixture.get("reason", ""))
         try:
             schema = _schema(schemas, schema_name)
-            rejected = _rejects_negative(path.name, payload, schema, evidence)
+            rejected = _rejects_negative(path.name, negative_payload, schema, evidence)
         except Exception as exc:  # noqa: BLE001 - returned as validation data.
             errors.append({"fixture": path.name, "schema": schema_name, "error": str(exc)})
             continue
@@ -85,12 +85,15 @@ def validate_conformance(
 
 
 def _load_json(path: Path) -> dict[str, object]:
-    return json.loads(path.read_text(encoding="utf-8"))
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError(f"expected JSON object: {path}")
+    return cast(dict[str, object], payload)
 
 
 def _schema(schema_root: Path, name: str) -> dict[str, object]:
     schema = _load_json(schema_root / name)
-    return _inline_local_refs(schema_root, schema)
+    return cast(dict[str, object], _inline_local_refs(schema_root, schema))
 
 
 def _inline_local_refs(schema_root: Path, payload: Any) -> Any:
@@ -117,7 +120,7 @@ def _validate_positive_semantics(fixture_name: str, payload: dict[str, object]) 
             raise ValueError("context capsule checksum mismatch")
     if fixture_name == "retrieval_result.json":
         for hit in _list(payload.get("hits")):
-            if int(hit.get("depth", 0)) >= 3 and hit.get("used_as_factual_evidence") is True:
+            if _depth(hit) >= 3 and hit.get("used_as_factual_evidence") is True:
                 raise ValueError("D3-D5 retrieval hit used as factual evidence")
 
 
@@ -133,16 +136,17 @@ def _rejects_negative(
         return True
     if not isinstance(payload, dict):
         return True
+    payload_dict = cast(dict[str, object], payload)
     if fixture_name == "context_capsule_bad_checksum.json":
-        capsule = copy.deepcopy(payload)
+        capsule = cast(dict[str, object], copy.deepcopy(payload_dict))
         checksum = capsule.pop("checksum", None)
-        return checksum != _hash_json(capsule)
+        return bool(checksum != _hash_json(capsule))
     if fixture_name == "tool_call_result_unlinked_evidence.json":
-        return payload.get("evidence_ref") != evidence.get("id")
+        return bool(payload_dict.get("evidence_ref") != evidence.get("id"))
     if fixture_name == "retrieval_result_d4_used_as_fact.json":
         return any(
-            int(hit.get("depth", 0)) >= 3 and hit.get("used_as_factual_evidence") is True
-            for hit in _list(payload.get("hits"))
+            _depth(hit) >= 3 and hit.get("used_as_factual_evidence") is True
+            for hit in _list(payload_dict.get("hits"))
         )
     return False
 
@@ -151,3 +155,12 @@ def _list(value: object) -> list[dict[str, object]]:
     if not isinstance(value, list):
         return []
     return [item for item in value if isinstance(item, dict)]
+
+
+def _depth(hit: dict[str, object]) -> int:
+    value = hit.get("depth", 0)
+    if isinstance(value, int):
+        return value
+    if isinstance(value, str):
+        return int(value)
+    return 0
