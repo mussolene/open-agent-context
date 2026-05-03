@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+## 1.0.3 - 2026-05-03
+
+### Added
+
+- Added `acs capability grant-evidence` for tool-scoped `evidence.ingest`
+  grants used by `acs tool ingest-result`.
+
+### Changed
+
+- `acs tool ingest-result` now reports a clear capability error with the
+  matching `grant-evidence` command instead of exposing a raw traceback.
+- Documented that `grant-tool` authorizes `tool.call`, while ingesting results
+  produced by another orchestrator requires tool-scoped `evidence.ingest`.
+
 ## 1.0.2 - 2026-05-03
 
 ### Changed

@@ -20,7 +20,7 @@ from oacs.benchmark.runner import MemoryCriticalBenchmark
 from oacs.conformance import validate_conformance
 from oacs.context.reducer import reduce_capsule
 from oacs.core.config import OacsConfig
-from oacs.core.errors import MemoryDecryptError, NotFound
+from oacs.core.errors import AccessDenied, MemoryDecryptError, NotFound
 from oacs.core.ids import new_id
 from oacs.core.json import hash_json
 from oacs.core.time import now_iso
@@ -497,6 +497,27 @@ def capability_grant_tool(
         subject,
         issuer,
         ["tool.call"],
+        scope=scope,
+        namespaces_allowed=namespace,
+        tools_allowed=tool,
+    )
+    emit(grant.model_dump(), json_out)
+
+
+@capability_app.command("grant-evidence")
+def capability_grant_evidence(
+    subject: Annotated[str, typer.Option("--subject")],
+    tool: Annotated[list[str], typer.Option("--tool")],
+    issuer: Annotated[str, typer.Option("--issuer")] = "system",
+    scope: ScopeOpt = None,
+    namespace: Annotated[list[str] | None, typer.Option("--namespace")] = None,
+    db: DbOpt = None,
+    json_out: JsonOpt = False,
+) -> None:
+    grant = services(db, require_key=False).capabilities.grant(
+        subject,
+        issuer,
+        ["evidence.ingest"],
         scope=scope,
         namespaces_allowed=namespace,
         tools_allowed=tool,
@@ -1265,19 +1286,26 @@ def tool_ingest_result(
         {"text": _policy_payload_text({"input": parsed_input, "output": parsed_output})},
         json_out,
     )
-    result = svc.evidence.ingest_tool_result(
-        tool_id=tool_id,
-        tool_name=tool_name,
-        tool_type=tool_type,
-        output=parsed_output,
-        input_payload=parsed_input,
-        actor_id=actor,
-        scope=scope or [],
-        namespace=namespace,
-        source_uri=source_uri,
-        status=status,
-        executed=executed,
-    )
+    try:
+        result = svc.evidence.ingest_tool_result(
+            tool_id=tool_id,
+            tool_name=tool_name,
+            tool_type=tool_type,
+            output=parsed_output,
+            input_payload=parsed_input,
+            actor_id=actor,
+            scope=scope or [],
+            namespace=namespace,
+            source_uri=source_uri,
+            status=status,
+            executed=executed,
+        )
+    except AccessDenied as exc:
+        subject = actor or "<actor>"
+        raise typer.BadParameter(
+            f"{exc}. Grant evidence ingest for this tool with: "
+            f"acs capability grant-evidence --subject {subject} --tool {tool_id}"
+        ) from None
     emit(result.model_dump() | {"policy_warnings": policy_warnings}, json_out)
 
 

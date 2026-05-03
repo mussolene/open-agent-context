@@ -40,7 +40,13 @@ If another orchestrator already executed a tool, submit the result instead of
 asking OACS to run it:
 
 ```bash
+acs capability grant-evidence \
+  --subject agent_retriever \
+  --tool external_search \
+  --json
+
 acs tool ingest-result \
+  --actor agent_retriever \
   --tool-id external_search \
   --tool-name "External Search" \
   --output '{"answer":"OACS stores governed context."}' \
@@ -51,6 +57,11 @@ acs tool ingest-result \
 This writes the same `tool_result` evidence shape and an
 `evidence.ingest_tool_result` audit event. OACS governs provenance, scope,
 hashing, and later context projection; it does not choose or schedule the tool.
+For non-bootstrap actors, evidence ingestion is tool-scoped: grant
+`evidence.ingest` through `acs capability grant-evidence --tool <tool-id>` or an
+equivalent `acs capability grant --operation evidence.ingest --tool <tool-id>`.
+`acs capability grant-tool` grants `tool.call` for executing a tool; it does not
+authorize ingesting a result that another orchestrator already produced.
 
 Canonical retrieval pattern for external knowledge:
 
@@ -127,7 +138,13 @@ object, OACS добавляет его в `output.json`. Каждый успеш
 OACS запускать tool:
 
 ```bash
+acs capability grant-evidence \
+  --subject agent_retriever \
+  --tool external_search \
+  --json
+
 acs tool ingest-result \
+  --actor agent_retriever \
   --tool-id external_search \
   --tool-name "External Search" \
   --output '{"answer":"OACS stores governed context."}' \
@@ -138,6 +155,12 @@ acs tool ingest-result \
 Это пишет тот же `tool_result` evidence shape и audit event
 `evidence.ingest_tool_result`. OACS отвечает за provenance, scope, hashing и
 последующую projection в context; он не выбирает и не планирует tool.
+Для non-bootstrap actors evidence ingestion ограничен конкретными tools:
+выдавайте `evidence.ingest` через
+`acs capability grant-evidence --tool <tool-id>` или эквивалентный
+`acs capability grant --operation evidence.ingest --tool <tool-id>`.
+`acs capability grant-tool` выдаёт `tool.call` для выполнения tool; он не
+разрешает ingest результата, который уже произвёл другой orchestrator.
 
 Canonical retrieval pattern для внешних знаний:
 

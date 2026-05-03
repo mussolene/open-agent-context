@@ -429,6 +429,79 @@ def test_cli_ingests_external_tool_result(tmp_path) -> None:
     assert [record["id"] for record in evidence_refs] == [body["evidence_ref"]]
 
 
+def test_cli_grant_evidence_helper_allows_tool_result_ingest(tmp_path) -> None:
+    db = tmp_path / "oacs.db"
+    runner = CliRunner()
+
+    grant = runner.invoke(
+        app,
+        [
+            "capability",
+            "grant-evidence",
+            "--db",
+            str(db),
+            "--subject",
+            "agent_cli",
+            "--tool",
+            "external_cli",
+            "--json",
+        ],
+    )
+    assert grant.exit_code == 0, grant.output
+    grant_body = json.loads(grant.output)
+    assert grant_body["allowed_operations"] == ["evidence.ingest"]
+    assert grant_body["tools_allowed"] == ["external_cli"]
+
+    ingest = runner.invoke(
+        app,
+        [
+            "tool",
+            "ingest-result",
+            "--db",
+            str(db),
+            "--actor",
+            "agent_cli",
+            "--tool-id",
+            "external_cli",
+            "--input",
+            '{"query":"alpha"}',
+            "--output",
+            '{"result":"alpha evidence"}',
+            "--json",
+        ],
+    )
+
+    assert ingest.exit_code == 0, ingest.output
+    assert json.loads(ingest.output)["evidence_ref"].startswith("ev_")
+
+
+def test_cli_ingest_result_denial_explains_tool_scoped_grant(tmp_path) -> None:
+    db = tmp_path / "oacs.db"
+    runner = CliRunner()
+
+    ingest = runner.invoke(
+        app,
+        [
+            "tool",
+            "ingest-result",
+            "--db",
+            str(db),
+            "--actor",
+            "agent_cli",
+            "--tool-id",
+            "external_cli",
+            "--output",
+            '{"result":"alpha evidence"}',
+            "--json",
+        ],
+    )
+
+    assert ingest.exit_code != 0
+    assert "Traceback" not in ingest.output
+    assert "grant-evidence --subject" in ingest.output
+    assert "agent_cli --tool external_cli" in ingest.output
+
+
 def test_api_ingests_external_tool_result(db, monkeypatch) -> None:
     monkeypatch.setenv("OACS_DB", str(db))
     svc = services(str(db))
