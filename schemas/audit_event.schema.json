@@ -1,1 +1,21 @@
-{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"AuditEvent","type":"object","required":["id","operation","actor_id","created_at","content_hash"],"properties":{"id":{"type":"string"},"operation":{"type":"string"},"actor_id":{"type":["string","null"]},"target_id":{"type":["string","null"]},"created_at":{"type":"string"},"metadata":{"type":"object"},"previous_hash":{"type":["string","null"]},"content_hash":{"type":"string"}}}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AuditEvent",
+  "type": "object",
+  "required": ["id", "operation", "actor_id", "created_at", "content_hash"],
+  "properties": {
+    "id": {"type": "string"},
+    "operation": {"type": "string"},
+    "actor_id": {"type": ["string", "null"]},
+    "target_id": {"type": ["string", "null"]},
+    "created_at": {"type": "string"},
+    "metadata": {"type": "object"},
+    "previous_hash": {"type": ["string", "null"]},
+    "content_hash": {"type": "string"},
+    "status": {"type": "string"},
+    "namespace": {"type": "string"},
+    "scope": {"type": "array", "items": {"type": "string"}},
+    "owner_actor_id": {"type": ["string", "null"]}
+  },
+  "additionalProperties": false
+}

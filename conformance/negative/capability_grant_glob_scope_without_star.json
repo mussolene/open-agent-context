@@ -1,0 +1,20 @@
+{
+  "schema": "capability_grant.schema.json",
+  "reason": "Broad scope or namespace access requires explicit '*' rather than glob-like partial wildcards.",
+  "payload": {
+    "id": "cap_negative_glob_scope",
+    "subject_actor_id": "act_agent_001",
+    "issuer_actor_id": "act_human_001",
+    "scope": [
+      "project:*"
+    ],
+    "allowed_operations": [
+      "memory.query"
+    ],
+    "memory_depth_allowed": 2,
+    "namespaces_allowed": [
+      "default*"
+    ],
+    "status": "active"
+  }
+}

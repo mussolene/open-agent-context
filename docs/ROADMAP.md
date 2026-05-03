@@ -5,7 +5,7 @@ This roadmap keeps the OACS v0.1 draft standard small. Core work must define
 memory, context, permissions, audit, and deterministic operation contracts.
 Reference adapters prove integration, but they do not expand the standard.
 
-### Current Position: v0.3.3a1 Reference POC
+### Current Position: v0.3.4a1 Conformance Freeze Prep
 Core contract:
 
 - Done: OACS v0.1 draft terminology, schemas, encrypted `MemoryRecord`,
@@ -142,6 +142,23 @@ Reference adapters:
 - Done: add positive operation-envelope fixtures and negative adapter-boundary
   fixtures for schema and semantic rejection checks.
 
+### v0.3.4 - Conformance Freeze Prep
+
+- Done: add language-neutral conformance fixtures for `RuleManifest`,
+  `SkillManifest`, `ToolBinding`, `McpBinding`, and `AuditEvent`.
+- Done: tighten manifest, binding, and audit event schemas with explicit
+  status/risk enums, additional-property rejection, and reference-runtime
+  extension fields where the Python implementation already emits them.
+- Done: add negative adapter-boundary fixtures for audit hash mismatch,
+  capability depth overflow, implicit wildcard scope/namespace grants, and HTTP
+  tool bindings without explicit network opt-in.
+- Done: extend the reference conformance checker so semantic rejection examples
+  cover checksum, audit hash, D3-D5 factual projection, evidence linkage,
+  explicit wildcard semantics, and HTTP adapter opt-in.
+- Done: keep these fixtures language-neutral; Python, SQLite, CLI/API, MCP
+  stdio execution, LM Studio, benchmarks, and repo dogfood remain reference
+  implementation choices unless promoted by schemas/spec.
+
 ### v1.0
 - Freeze stable schemas for ContextCapsule, MemoryRecord, CapabilityGrant,
   RuleManifest, SkillManifest, ToolBinding, McpBinding, EvidenceRef, and
@@ -157,7 +174,7 @@ Reference adapters:
 определять memory, context, permissions, audit и deterministic operation
 contracts. Reference adapters доказывают интеграцию, но не расширяют стандарт.
 
-### Текущая позиция: v0.3.3a1 Reference POC
+### Текущая позиция: v0.3.4a1 Conformance Freeze Prep
 Core contract:
 
 - Готово: OACS v0.1 draft terminology, schemas, encrypted `MemoryRecord`,
@@ -291,6 +308,23 @@ Reference adapters:
   повышает их до core contract.
 - Готово: добавить positive operation-envelope fixtures и negative
   adapter-boundary fixtures для schema и semantic rejection checks.
+
+### v0.3.4 - Conformance Freeze Prep
+
+- Готово: добавить language-neutral conformance fixtures для `RuleManifest`,
+  `SkillManifest`, `ToolBinding`, `McpBinding` и `AuditEvent`.
+- Готово: усилить manifest, binding и audit event schemas через explicit
+  status/risk enums, rejection лишних полей и reference-runtime extension
+  fields там, где Python implementation уже их пишет.
+- Готово: добавить negative adapter-boundary fixtures для audit hash mismatch,
+  capability depth overflow, implicit wildcard scope/namespace grants и HTTP
+  tool bindings без explicit network opt-in.
+- Готово: расширить reference conformance checker: semantic rejection examples
+  покрывают checksum, audit hash, D3-D5 factual projection, evidence linkage,
+  explicit wildcard semantics и HTTP adapter opt-in.
+- Готово: сохранить fixtures language-neutral; Python, SQLite, CLI/API, MCP
+  stdio execution, LM Studio, benchmarks и repo dogfood остаются choices
+  reference implementation, если schemas/spec не продвигают их в core.
 
 ### v1.0
 - Заморозить stable schemas для ContextCapsule, MemoryRecord, CapabilityGrant,

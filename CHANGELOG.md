@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.3.4a1 - 2026-05-03
+
+### Added
+
+- Conformance fixtures for `RuleManifest`, `SkillManifest`, `ToolBinding`,
+  `McpBinding`, and `AuditEvent`.
+- Negative conformance fixtures for audit hash mismatch, capability depth
+  overflow, implicit wildcard scope/namespace grants, and HTTP tool bindings
+  without explicit network opt-in.
+
+### Changed
+
+- Tightened manifest, binding, and audit event schemas with explicit status/risk
+  enums, additional-property rejection, and reference-runtime extension fields.
+- Extended `acs conformance validate` to check audit hashes, explicit wildcard
+  semantics, and HTTP adapter opt-in semantics.
+
 ## 0.3.3a1 - 2026-05-03
 
 ### Added

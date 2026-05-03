@@ -1,0 +1,55 @@
+{
+  "id": "skill_conformance_trace_distiller",
+  "name": "task_trace_distiller",
+  "description": "Distills task traces into reviewed OACS memory candidates.",
+  "version": "0.1.0",
+  "entrypoint": "scripts/distill.py",
+  "instructions": "Return a compact summary and candidate memory metadata.",
+  "required_memory_types": [
+    "trace",
+    "procedure"
+  ],
+  "required_rules": [
+    "rule_conformance_no_fuzzy_fact"
+  ],
+  "required_tools": [
+    "tool_conformance_http_lookup"
+  ],
+  "input_schema": {
+    "type": "object",
+    "required": [
+      "task",
+      "summary"
+    ],
+    "properties": {
+      "task": {
+        "type": "string"
+      },
+      "summary": {
+        "type": "string"
+      }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "required": [
+      "candidate_text"
+    ],
+    "properties": {
+      "candidate_text": {
+        "type": "string"
+      }
+    }
+  },
+  "permissions": {
+    "memory.propose": true
+  },
+  "status": "active",
+  "namespace": "default",
+  "scope": [
+    "project",
+    "repo:oacs"
+  ],
+  "owner_actor_id": null,
+  "source_path": null
+}

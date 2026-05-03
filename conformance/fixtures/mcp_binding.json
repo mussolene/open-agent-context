@@ -1,0 +1,25 @@
+{
+  "id": "mcp_conformance_docs",
+  "name": "docs_server",
+  "server_name": "docs",
+  "transport": "stdio",
+  "command": "node",
+  "args": [
+    "server.js"
+  ],
+  "env": {},
+  "capabilities": [
+    "tools"
+  ],
+  "allowed_tools": [
+    "search_docs"
+  ],
+  "risk_level": "medium",
+  "status": "active",
+  "namespace": "default",
+  "scope": [
+    "project",
+    "repo:oacs"
+  ],
+  "owner_actor_id": null
+}

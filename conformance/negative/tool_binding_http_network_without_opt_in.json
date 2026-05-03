@@ -1,0 +1,30 @@
+{
+  "schema": "tool_binding.schema.json",
+  "reason": "HTTP ToolBinding execution is adapter behavior and must explicitly opt in to network access.",
+  "payload": {
+    "id": "tool_negative_http_no_opt_in",
+    "name": "remote_lookup",
+    "type": "http",
+    "description": "Network-capable tool without explicit opt-in.",
+    "command": null,
+    "http": {
+      "method": "POST",
+      "url": "https://example.test/query"
+    },
+    "mcp_ref": null,
+    "input_schema": {
+      "type": "object"
+    },
+    "output_schema": {
+      "type": "object"
+    },
+    "permissions": {},
+    "risk_level": "medium",
+    "status": "active",
+    "namespace": "default",
+    "scope": [
+      "project"
+    ],
+    "owner_actor_id": null
+  }
+}

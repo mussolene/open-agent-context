@@ -19,6 +19,11 @@ FIXTURE_SCHEMAS = {
     "memory_record.json": "memory_record.schema.json",
     "capability_grant.json": "capability_grant.schema.json",
     "evidence_ref.json": "evidence_ref.schema.json",
+    "rule_manifest.json": "rule_manifest.schema.json",
+    "skill_manifest.json": "skill_manifest.schema.json",
+    "tool_binding.json": "tool_binding.schema.json",
+    "mcp_binding.json": "mcp_binding.schema.json",
+    "audit_event.json": "audit_event.schema.json",
     "memory_call.json": "memory_call.schema.json",
     "memory_operation.json": "memory_operation.schema.json",
     "context_operation.json": "context_operation.schema.json",
@@ -69,11 +74,23 @@ def test_conformance_fixtures_link_memory_capsule_tool_and_evidence() -> None:
     memory = load_json(FIXTURES / "memory_record.json")
     evidence = load_json(FIXTURES / "evidence_ref.json")
     tool_result = load_json(FIXTURES / "tool_call_result.json")
+    tool_binding = load_json(FIXTURES / "tool_binding.json")
+    skill = load_json(FIXTURES / "skill_manifest.json")
+    rule = load_json(FIXTURES / "rule_manifest.json")
 
     assert capsule["included_memories"] == [memory["id"]]
     assert capsule["evidence_refs"] == [evidence["id"]]
     assert memory["evidence_refs"] == [evidence["id"]]
     assert tool_result["evidence_ref"] == evidence["id"]
+    assert skill["required_tools"] == [tool_binding["id"]]
+    assert skill["required_rules"] == [rule["id"]]
+
+
+def test_audit_event_fixture_hash_uses_canonical_json() -> None:
+    event = load_json(FIXTURES / "audit_event.json")
+    provided = event.pop("content_hash")
+
+    assert provided == hash_json(event)
 
 
 def test_negative_schema_fixture_rejects_unknown_memory_call_operation() -> None:
@@ -108,6 +125,45 @@ def test_negative_schema_fixture_rejects_sql_storage_selector() -> None:
 
     with pytest.raises(ValidationError):
         validate(negative["payload"], schema(str(negative["schema"])))
+
+
+def test_negative_schema_fixture_rejects_depth_outside_d0_d5() -> None:
+    negative = load_json(NEGATIVE / "capability_grant_depth_overflow.json")
+
+    with pytest.raises(ValidationError):
+        validate(negative["payload"], schema(str(negative["schema"])))
+
+
+def test_negative_semantic_fixture_rejects_implicit_wildcards() -> None:
+    negative = load_json(NEGATIVE / "capability_grant_glob_scope_without_star.json")
+    payload = negative["payload"]
+    assert isinstance(payload, dict)
+    validate(payload, schema(str(negative["schema"])))
+
+    wildcard_values = [*payload["scope"], *payload["namespaces_allowed"]]
+    assert any(
+        isinstance(value, str) and "*" in value and value != "*" for value in wildcard_values
+    )
+
+
+def test_negative_semantic_fixture_rejects_http_tool_without_network_opt_in() -> None:
+    negative = load_json(NEGATIVE / "tool_binding_http_network_without_opt_in.json")
+    payload = negative["payload"]
+    assert isinstance(payload, dict)
+    validate(payload, schema(str(negative["schema"])))
+
+    assert payload["type"] == "http"
+    assert payload["permissions"].get("allow_network") is not True
+
+
+def test_negative_semantic_fixture_rejects_bad_audit_hash() -> None:
+    negative = load_json(NEGATIVE / "audit_event_bad_hash.json")
+    payload = negative["payload"]
+    assert isinstance(payload, dict)
+    validate(payload, schema(str(negative["schema"])))
+    provided = payload.pop("content_hash")
+
+    assert provided != hash_json(payload)
 
 
 def test_negative_semantic_fixture_rejects_d4_as_factual_retrieval_evidence() -> None:

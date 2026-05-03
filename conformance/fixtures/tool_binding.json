@@ -1,0 +1,45 @@
+{
+  "id": "tool_conformance_http_lookup",
+  "name": "local_http_lookup",
+  "type": "http",
+  "description": "Example HTTP adapter with explicit network opt-in.",
+  "command": null,
+  "http": {
+    "method": "POST",
+    "url": "http://127.0.0.1:8080/query"
+  },
+  "mcp_ref": null,
+  "input_schema": {
+    "type": "object",
+    "required": [
+      "query"
+    ],
+    "properties": {
+      "query": {
+        "type": "string"
+      }
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "required": [
+      "answer"
+    ],
+    "properties": {
+      "answer": {
+        "type": "string"
+      }
+    }
+  },
+  "permissions": {
+    "allow_network": true
+  },
+  "risk_level": "medium",
+  "status": "active",
+  "namespace": "default",
+  "scope": [
+    "project",
+    "repo:oacs"
+  ],
+  "owner_actor_id": null
+}

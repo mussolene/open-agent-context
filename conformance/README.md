@@ -30,6 +30,11 @@ Fixtures:
 - `fixtures/memory_record.json`
 - `fixtures/capability_grant.json`
 - `fixtures/evidence_ref.json`
+- `fixtures/rule_manifest.json`
+- `fixtures/skill_manifest.json`
+- `fixtures/tool_binding.json`
+- `fixtures/mcp_binding.json`
+- `fixtures/audit_event.json`
 - `fixtures/memory_call.json`
 - `fixtures/memory_operation.json`
 - `fixtures/context_operation.json`
@@ -71,6 +76,11 @@ Fixtures:
 - `fixtures/memory_record.json`
 - `fixtures/capability_grant.json`
 - `fixtures/evidence_ref.json`
+- `fixtures/rule_manifest.json`
+- `fixtures/skill_manifest.json`
+- `fixtures/tool_binding.json`
+- `fixtures/mcp_binding.json`
+- `fixtures/audit_event.json`
 - `fixtures/memory_call.json`
 - `fixtures/memory_operation.json`
 - `fixtures/context_operation.json`

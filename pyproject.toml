@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "oacs"
-version = "0.3.3a1"
+version = "0.3.4a1"
 description = "Open Agent Context Standard draft reference implementation for governed agent memory and context"
 readme = "README.md"
 requires-python = ">=3.11"

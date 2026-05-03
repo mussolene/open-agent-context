@@ -13,6 +13,11 @@ FIXTURE_SCHEMAS = {
     "memory_record.json": "memory_record.schema.json",
     "capability_grant.json": "capability_grant.schema.json",
     "evidence_ref.json": "evidence_ref.schema.json",
+    "rule_manifest.json": "rule_manifest.schema.json",
+    "skill_manifest.json": "skill_manifest.schema.json",
+    "tool_binding.json": "tool_binding.schema.json",
+    "mcp_binding.json": "mcp_binding.schema.json",
+    "audit_event.json": "audit_event.schema.json",
     "memory_call.json": "memory_call.schema.json",
     "memory_operation.json": "memory_operation.schema.json",
     "context_operation.json": "context_operation.schema.json",
@@ -118,6 +123,15 @@ def _validate_positive_semantics(fixture_name: str, payload: dict[str, object]) 
         checksum = capsule.pop("checksum")
         if checksum != _hash_json(capsule):
             raise ValueError("context capsule checksum mismatch")
+    if (
+        fixture_name == "audit_event.json"
+        and payload.get("content_hash") != _hash_without(payload, "content_hash")
+    ):
+        raise ValueError("audit event content_hash mismatch")
+    if fixture_name == "tool_binding.json":
+        _validate_tool_binding_semantics(payload)
+    if fixture_name == "capability_grant.json":
+        _validate_capability_grant_semantics(payload)
     if fixture_name == "retrieval_result.json":
         for hit in _list(payload.get("hits")):
             if _depth(hit) >= 3 and hit.get("used_as_factual_evidence") is True:
@@ -141,14 +155,51 @@ def _rejects_negative(
         capsule = cast(dict[str, object], copy.deepcopy(payload_dict))
         checksum = capsule.pop("checksum", None)
         return bool(checksum != _hash_json(capsule))
+    if fixture_name == "audit_event_bad_hash.json":
+        return bool(payload_dict.get("content_hash") != _hash_without(payload_dict, "content_hash"))
+    if fixture_name == "capability_grant_glob_scope_without_star.json":
+        return _has_implicit_wildcard(payload_dict, "scope") or _has_implicit_wildcard(
+            payload_dict, "namespaces_allowed"
+        )
     if fixture_name == "tool_call_result_unlinked_evidence.json":
         return bool(payload_dict.get("evidence_ref") != evidence.get("id"))
+    if fixture_name == "tool_binding_http_network_without_opt_in.json":
+        try:
+            _validate_tool_binding_semantics(payload_dict)
+        except ValueError:
+            return True
+        return False
     if fixture_name == "retrieval_result_d4_used_as_fact.json":
         return any(
             _depth(hit) >= 3 and hit.get("used_as_factual_evidence") is True
             for hit in _list(payload_dict.get("hits"))
         )
     return False
+
+
+def _hash_without(payload: dict[str, object], field: str) -> str:
+    return _hash_json({key: value for key, value in payload.items() if key != field})
+
+
+def _validate_tool_binding_semantics(payload: dict[str, object]) -> None:
+    if payload.get("type") != "http":
+        return
+    permissions = payload.get("permissions")
+    if not isinstance(permissions, dict) or permissions.get("allow_network") is not True:
+        raise ValueError("http ToolBinding requires permissions.allow_network=true")
+
+
+def _validate_capability_grant_semantics(payload: dict[str, object]) -> None:
+    for field in ("scope", "namespaces_allowed", "tools_allowed", "skills_allowed"):
+        if _has_implicit_wildcard(payload, field):
+            raise ValueError(f"{field} wildcard access requires explicit '*'")
+
+
+def _has_implicit_wildcard(payload: dict[str, object], field: str) -> bool:
+    value = payload.get(field)
+    if not isinstance(value, list):
+        return False
+    return any(isinstance(item, str) and "*" in item and item != "*" for item in value)
 
 
 def _list(value: object) -> list[dict[str, object]]:

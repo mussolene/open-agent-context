@@ -1,0 +1,23 @@
+{
+  "id": "aud_conformance_001",
+  "operation": "memory.query",
+  "actor_id": "act_agent_001",
+  "target_id": "mem_conformance_001",
+  "created_at": "2026-05-03T00:00:00Z",
+  "metadata": {
+    "status": "completed",
+    "scope": [
+      "project",
+      "repo:oacs"
+    ]
+  },
+  "previous_hash": null,
+  "content_hash": "2a9a72fc67a608360a891f7ad0c95abf586e8d7981b117318815fb5115ab2bb8",
+  "status": "active",
+  "namespace": "default",
+  "scope": [
+    "project",
+    "repo:oacs"
+  ],
+  "owner_actor_id": "act_agent_001"
+}

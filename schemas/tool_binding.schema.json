@@ -1,1 +1,24 @@
-{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"ToolBinding","type":"object","required":["id","name","type","risk_level","status"],"properties":{"id":{"type":"string"},"name":{"type":"string"},"type":{"enum":["local_cli","python_function","http","mcp"]},"description":{"type":"string"},"command":{"type":["string","null"]},"http":{"type":["object","null"]},"mcp_ref":{"type":["string","null"]},"input_schema":{"type":"object"},"output_schema":{"type":"object"},"permissions":{"type":"object"},"risk_level":{"type":"string"},"status":{"type":"string"},"namespace":{"type":"string"},"scope":{"type":"array","items":{"type":"string"}},"owner_actor_id":{"type":["string","null"]}}}
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ToolBinding",
+  "type": "object",
+  "required": ["id", "name", "type", "risk_level", "status"],
+  "properties": {
+    "id": {"type": "string"},
+    "name": {"type": "string"},
+    "type": {"type": "string", "enum": ["local_cli", "python_function", "http", "mcp"]},
+    "description": {"type": "string"},
+    "command": {"type": ["string", "null"]},
+    "http": {"type": ["object", "null"]},
+    "mcp_ref": {"type": ["string", "null"]},
+    "input_schema": {"type": "object"},
+    "output_schema": {"type": "object"},
+    "permissions": {"type": "object"},
+    "risk_level": {"type": "string", "enum": ["low", "medium", "high"]},
+    "status": {"type": "string", "enum": ["active", "inactive", "deprecated"]},
+    "namespace": {"type": "string"},
+    "scope": {"type": "array", "items": {"type": "string"}},
+    "owner_actor_id": {"type": ["string", "null"]}
+  },
+  "additionalProperties": false
+}

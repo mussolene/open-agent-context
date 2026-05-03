@@ -1,0 +1,22 @@
+{
+  "schema": "audit_event.schema.json",
+  "reason": "AuditEvent.content_hash must match canonical JSON excluding content_hash.",
+  "payload": {
+    "id": "aud_negative_bad_hash",
+    "operation": "memory.query",
+    "actor_id": "act_agent_001",
+    "target_id": "mem_conformance_001",
+    "created_at": "2026-05-03T00:00:00Z",
+    "metadata": {
+      "status": "completed"
+    },
+    "previous_hash": null,
+    "content_hash": "bad-hash",
+    "status": "active",
+    "namespace": "default",
+    "scope": [
+      "project"
+    ],
+    "owner_actor_id": "act_agent_001"
+  }
+}

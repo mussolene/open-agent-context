@@ -1,0 +1,17 @@
+{
+  "schema": "capability_grant.schema.json",
+  "reason": "CapabilityGrant.memory_depth_allowed must stay within D0-D5.",
+  "payload": {
+    "id": "cap_negative_depth_overflow",
+    "subject_actor_id": "act_agent_001",
+    "issuer_actor_id": "act_human_001",
+    "scope": [
+      "project"
+    ],
+    "allowed_operations": [
+      "memory.query"
+    ],
+    "memory_depth_allowed": 6,
+    "status": "active"
+  }
+}
