@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.2a2 - 2026-05-03
+
+### Added
+
+- `acs --version` / `acs -V` for CLI and release smoke checks.
+
 ## 0.3.2a1 - 2026-05-03
 
 ### Added

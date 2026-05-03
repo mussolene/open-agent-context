@@ -9,6 +9,12 @@ from oacs.cli.main import app
 from oacs.context.capsule import ContextCapsule
 
 
+def test_cli_version():
+    result = CliRunner().invoke(app, ["--version"])
+    assert result.exit_code == 0
+    assert result.output.strip() == "acs 0.3.2a2"
+
+
 def test_cli_init_key_actor_memory(tmp_path):
     db = tmp_path / "oacs.db"
     runner = CliRunner()

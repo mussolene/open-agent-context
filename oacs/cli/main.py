@@ -9,6 +9,7 @@ import typer
 import uvicorn
 from rich import print as rprint
 
+from oacs import __version__
 from oacs.app import OacsServices, services
 from oacs.benchmark.external import AmaBenchImporter, MemoryArenaImporter
 from oacs.benchmark.generator import SyntheticTaskGenerator
@@ -83,6 +84,28 @@ def emit(data: object, json_out: bool) -> None:
 
 def fail(message: str) -> None:
     raise typer.BadParameter(message)
+
+
+def _version_callback(value: bool) -> None:
+    if value:
+        typer.echo(f"acs {__version__}")
+        raise typer.Exit()
+
+
+@app.callback()
+def main(
+    version: Annotated[
+        bool,
+        typer.Option(
+            "--version",
+            "-V",
+            help="Show the acs version and exit.",
+            callback=_version_callback,
+            is_eager=True,
+        ),
+    ] = False,
+) -> None:
+    _ = version
 
 
 def _public_recent(row: dict[str, object]) -> dict[str, object]:

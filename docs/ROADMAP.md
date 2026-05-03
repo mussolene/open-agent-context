@@ -5,7 +5,7 @@ This roadmap keeps the OACS v0.1 draft standard small. Core work must define
 memory, context, permissions, audit, and deterministic operation contracts.
 Reference adapters prove integration, but they do not expand the standard.
 
-### Current Position: v0.3.2a1 Reference POC
+### Current Position: v0.3.2a2 Reference POC
 Core contract:
 
 - Done: OACS v0.1 draft terminology, schemas, encrypted `MemoryRecord`,
@@ -53,6 +53,7 @@ Reference adapters:
 - Done: Agent Workflow UX added as reference CLI convenience:
   project-local discovery/status, resume aggregation, task checkpoints,
   governed command evidence, and deny-pattern policy helpers.
+- Done: CLI release smoke UX includes `acs --version` / `acs -V`.
 - Observed on `google/gemma-4-e2b`: medium/large/long memory tasks can improve
   token use and relevance through compact evidence projection; tiny tasks can
   show overhead.
@@ -139,7 +140,7 @@ Reference adapters:
 определять memory, context, permissions, audit и deterministic operation
 contracts. Reference adapters доказывают интеграцию, но не расширяют стандарт.
 
-### Текущая позиция: v0.3.2a1 Reference POC
+### Текущая позиция: v0.3.2a2 Reference POC
 Core contract:
 
 - Готово: OACS v0.1 draft terminology, schemas, encrypted `MemoryRecord`,
@@ -182,6 +183,7 @@ Reference adapters:
 - Готово: Agent Workflow UX добавлен как reference CLI convenience:
   project-local discovery/status, resume aggregation, task checkpoints,
   governed command evidence и deny-pattern policy helpers.
+- Готово: CLI release smoke UX включает `acs --version` / `acs -V`.
 - Наблюдение на `google/gemma-4-e2b`: medium/large/long memory tasks могут
   улучшать token use и relevance через compact evidence projection; tiny tasks
   могут показывать overhead.
