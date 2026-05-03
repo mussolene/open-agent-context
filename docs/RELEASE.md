@@ -15,8 +15,9 @@ packages. The Git tag is the release trigger.
   `v0.4.0rc1`.
 
 Prerelease tags publish to TestPyPI. Stable tags publish to PyPI. Manual
-workflow dispatch remains available for recovery/debugging, but the normal path
-is tag-driven.
+workflow dispatch remains available for recovery/debugging and for explicitly
+publishing a prerelease package to PyPI after TestPyPI smoke checks pass, but
+the normal path is tag-driven.
 
 ### Normal Release
 
@@ -88,6 +89,10 @@ python3 -m venv "$SMOKE_DIR"
 "$SMOKE_DIR/bin/acs" key init --db "$SMOKE_DIR/oacs.db" --passphrase smoke-pass --json
 ```
 
+For an approved PyPI alpha, rerun the release workflow with
+`workflow_dispatch.target=pypi` for the same checked version after the TestPyPI
+smoke test passes.
+
 Do not make TestPyPI the dependency source. TestPyPI can contain unrelated
 packages that shadow production dependencies.
 
@@ -110,8 +115,9 @@ Python packages. Git tag является release trigger.
   `v0.4.0rc1`.
 
 Prerelease tags публикуются в TestPyPI. Stable tags публикуются в PyPI. Manual
-workflow dispatch остаётся для recovery/debugging, но обычный путь теперь
-tag-driven.
+workflow dispatch остаётся для recovery/debugging и для явной публикации
+prerelease package в PyPI после успешного TestPyPI smoke check, но обычный путь
+остаётся tag-driven.
 
 ### Обычный релиз
 
@@ -182,6 +188,10 @@ python3 -m venv "$SMOKE_DIR"
 "$SMOKE_DIR/bin/acs" init --db "$SMOKE_DIR/oacs.db" --json
 "$SMOKE_DIR/bin/acs" key init --db "$SMOKE_DIR/oacs.db" --passphrase smoke-pass --json
 ```
+
+Для одобренной PyPI alpha повторно запустите release workflow с
+`workflow_dispatch.target=pypi` для той же checked version после успешного
+TestPyPI smoke test.
 
 Не используйте TestPyPI как dependency source. На TestPyPI могут быть
 посторонние packages, которые перекрывают production dependencies по имени.

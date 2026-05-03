@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.3.2a1 - 2026-05-03
+
+### Added
+
+- Agent Workflow UX commands: `acs status`, `acs resume`, `acs checkpoint`,
+  and `acs run`.
+- Project-local database discovery for `.agent/oacs/oacs.db` and
+  `.oacs/oacs.db`.
+- `acs init --project` for repo-local `.agent/oacs/oacs.db` setup.
+- `acs policy add-deny-pattern` with blocking/warn-only checks for memory
+  proposals, evidence ingest, governed command evidence, and checkpoints.
+- `docs/AGENT_WORKFLOW.md` for long agent development sessions.
+
+### Notes
+
+- Workflow UX remains reference CLI/adapters and does not expand the OACS v0.1
+  draft core conformance surface or make OACS an orchestrator.
+
 ## 0.3.1a2 - 2026-05-02
 
 ### Added

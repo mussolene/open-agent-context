@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 from typing import Annotated
 
@@ -18,6 +19,7 @@ from oacs.benchmark.runner import MemoryCriticalBenchmark
 from oacs.context.reducer import reduce_capsule
 from oacs.core.config import OacsConfig
 from oacs.core.errors import NotFound
+from oacs.core.ids import new_id
 from oacs.core.json import hash_json
 from oacs.core.time import now_iso
 from oacs.crypto.hybrid_pqc import HybridPQCKeyProvider
@@ -42,6 +44,8 @@ benchmark_app = typer.Typer()
 server_app = typer.Typer()
 audit_app = typer.Typer()
 capability_app = typer.Typer()
+checkpoint_app = typer.Typer()
+policy_app = typer.Typer()
 
 app.add_typer(actor_app, name="actor")
 app.add_typer(capability_app, name="capability")
@@ -58,6 +62,8 @@ app.add_typer(loop_app, name="loop")
 app.add_typer(benchmark_app, name="benchmark")
 app.add_typer(server_app, name="server")
 app.add_typer(audit_app, name="audit")
+app.add_typer(checkpoint_app, name="checkpoint")
+app.add_typer(policy_app, name="policy")
 
 
 DbOpt = Annotated[str | None, typer.Option("--db")]
@@ -79,10 +85,211 @@ def fail(message: str) -> None:
     raise typer.BadParameter(message)
 
 
+def _public_recent(row: dict[str, object]) -> dict[str, object]:
+    keys = (
+        "id",
+        "kind",
+        "uri",
+        "operation",
+        "target_id",
+        "status",
+        "created_at",
+        "updated_at",
+    )
+    return {
+        key: row.get(key)
+        for key in keys
+        if key in row
+    }
+
+
+def _policy_payload_text(data: object) -> str:
+    return json.dumps(data, ensure_ascii=False, sort_keys=True, default=str)
+
+
+def _enforce_policy(
+    db: str | None,
+    operation: str,
+    payload: dict[str, object],
+    json_out: bool,
+) -> list[dict[str, object]]:
+    checks = services(db, require_key=False).rules.check(operation, payload)
+    failures = [item for item in checks if item.blocking]
+    if failures:
+        emit(
+            {
+                "status": "blocked",
+                "operation": operation,
+                "policy_results": [item.model_dump() for item in checks],
+            },
+            json_out,
+        )
+        raise typer.Exit(2)
+    return [item.model_dump() for item in checks if item.status != "pass"]
+
+
 @app.command()
-def init(db: DbOpt = None, json_out: JsonOpt = False) -> None:
+def init(
+    db: DbOpt = None,
+    project: Annotated[bool, typer.Option("--project")] = False,
+    json_out: JsonOpt = False,
+) -> None:
+    resolved_db = db or (".agent/oacs/oacs.db" if project else None)
+    svc = services(resolved_db, require_key=False)
+    emit({"db": str(svc.config.db_path), "status": "initialized", "project": project}, json_out)
+
+
+@app.command()
+def status(db: DbOpt = None, json_out: JsonOpt = False) -> None:
     svc = services(db, require_key=False)
-    emit({"db": str(svc.config.db_path), "status": "initialized"}, json_out)
+    key_status = svc.key_provider.status()
+    tables = (
+        "memory_records",
+        "context_capsules",
+        "evidence_refs",
+        "audit_events",
+        "task_traces",
+        "rules",
+    )
+    emit(
+        {
+            "db": str(svc.config.db_path),
+            "db_exists": svc.config.db_path.exists(),
+            "base_dir": str(svc.config.base_dir),
+            "key": key_status.__dict__,
+            "counts": {table: len(svc.store.list(table, limit=None)) for table in tables},
+        },
+        json_out,
+    )
+
+
+@app.command()
+def resume(
+    scope: ScopeOpt = None,
+    limit: Annotated[int, typer.Option("--limit", min=1)] = 5,
+    db: DbOpt = None,
+    json_out: JsonOpt = False,
+) -> None:
+    svc = services(db, require_key=False)
+    requested_scope = scope or []
+    checkpoint_rows = svc.store.list(
+        "task_traces",
+        filters={"status": "active"},
+        order_by=[("created_at", "desc"), ("id", "desc")],
+        limit=limit,
+    )
+    evidence_rows = svc.evidence.list_refs(kind="tool_result", limit=limit)
+    memory_rows = svc.store.list(
+        "memory_records",
+        filters={"status": "active"},
+        order_by=[("updated_at", "desc"), ("id", "desc")],
+        limit=limit,
+    )
+    capsule_rows = svc.store.list(
+        "context_capsules",
+        filters={"status": "active"},
+        order_by=[("updated_at", "desc"), ("id", "desc")],
+        limit=limit,
+    )
+    audit_rows = list(reversed(svc.audit.list()))[:limit]
+    latest_checkpoint = checkpoint_rows[0]["payload"] if checkpoint_rows else None
+    emit(
+        {
+            "db": str(svc.config.db_path),
+            "scope": requested_scope,
+            "latest_checkpoint": latest_checkpoint,
+            "recent_checkpoints": [row["payload"] for row in checkpoint_rows],
+            "recent_tool_results": [
+                _public_recent(row) | {"payload": row.get("public_payload")}
+                for row in evidence_rows
+            ],
+            "recent_memories": [
+                {
+                    "id": row["id"],
+                    "memory_type": row["memory_type"],
+                    "depth": row["depth"],
+                    "lifecycle_status": row["lifecycle_status"],
+                    "scope": row["scope"],
+                    "updated_at": row["updated_at"],
+                }
+                for row in memory_rows
+            ],
+            "recent_context_capsules": [
+                _public_recent(row) | {"purpose": row.get("purpose")}
+                for row in capsule_rows
+            ],
+            "recent_audit": [
+                _public_recent(row) | {"metadata": row.get("metadata")}
+                for row in audit_rows
+            ],
+        },
+        json_out,
+    )
+
+
+@app.command("run")
+def run_command(
+    command: Annotated[list[str], typer.Argument(help="Command to execute after --")],
+    label: Annotated[str, typer.Option("--label")],
+    actor: ActorOpt = None,
+    scope: ScopeOpt = None,
+    namespace: Annotated[str, typer.Option("--namespace")] = "default",
+    timeout: Annotated[int, typer.Option("--timeout", min=1)] = 300,
+    db: DbOpt = None,
+    json_out: JsonOpt = False,
+) -> None:
+    if not command:
+        raise typer.BadParameter("command is required")
+    command_text = " ".join(command)
+    _enforce_policy(db, "tool.call", {"text": command_text}, json_out)
+    try:
+        completed = subprocess.run(
+            command,
+            cwd=Path.cwd(),
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+        status_text = "completed" if completed.returncode == 0 else "failed"
+        output = {
+            "command": command,
+            "label": label,
+            "exit_code": completed.returncode,
+            "stdout": completed.stdout[-8000:],
+            "stderr": completed.stderr[-8000:],
+        }
+    except subprocess.TimeoutExpired as exc:
+        status_text = "timeout"
+        output = {
+            "command": command,
+            "label": label,
+            "exit_code": 124,
+            "stdout": (exc.stdout or "")[-8000:] if isinstance(exc.stdout, str) else "",
+            "stderr": (exc.stderr or "")[-8000:] if isinstance(exc.stderr, str) else "",
+            "timeout": timeout,
+        }
+    policy_warnings = _enforce_policy(
+        db,
+        "evidence.ingest",
+        {"text": _policy_payload_text(output)},
+        json_out,
+    )
+    svc = services(db, require_key=False)
+    result = svc.evidence.ingest_tool_result(
+        tool_id=f"run_{hash_json(command_text)[:12]}",
+        tool_name=label,
+        tool_type="local_cli",
+        output=output,
+        input_payload={"command": command, "timeout": timeout},
+        actor_id=actor,
+        scope=scope or [],
+        namespace=namespace,
+        source_uri=f"command://{hash_json(command_text)}",
+        status=status_text,
+        executed=True,
+    )
+    emit(result.model_dump() | {"policy_warnings": policy_warnings}, json_out)
 
 
 @key_app.command("init")
@@ -274,10 +481,11 @@ def memory_propose(
     db: DbOpt = None,
     json_out: JsonOpt = False,
 ) -> None:
+    policy_warnings = _enforce_policy(db, "memory.propose", {"text": text}, json_out)
     svc = services(db)
     mem = svc.memory.propose(type, depth, text, actor, scope or [])
     svc.audit.record("memory.propose", actor, mem.id)
-    emit(mem.model_dump(), json_out)
+    emit(mem.model_dump() | {"policy_warnings": policy_warnings}, json_out)
 
 
 @memory_app.command("commit")
@@ -621,6 +829,123 @@ def rule_add(
     emit(rule.model_dump(), json_out)
 
 
+@policy_app.command("add-deny-pattern")
+def policy_add_deny_pattern(
+    pattern: str,
+    name: Annotated[str | None, typer.Option("--name")] = None,
+    applies_to: Annotated[list[str] | None, typer.Option("--applies-to")] = None,
+    blocking: Annotated[bool, typer.Option("--blocking/--warn-only")] = True,
+    db: DbOpt = None,
+    json_out: JsonOpt = False,
+) -> None:
+    rule = services(db, require_key=False).rules.add(
+        RuleManifest(
+            name=name or f"deny_pattern_{hash_json(pattern)[:8]}",
+            rule_kind="deny_pattern",
+            content=pattern,
+            applies_to=applies_to or ["memory.propose", "tool.call", "evidence.ingest"],
+            enforcement_mode="block" if blocking else "warn",
+            blocking=blocking,
+            priority=10,
+        )
+    )
+    emit(rule.model_dump(), json_out)
+
+
+@checkpoint_app.command("add")
+def checkpoint_add(
+    task: Annotated[str, typer.Option("--task")],
+    summary: Annotated[str, typer.Option("--summary")],
+    next_step: Annotated[str | None, typer.Option("--next")] = None,
+    evidence: Annotated[list[str] | None, typer.Option("--evidence")] = None,
+    actor: ActorOpt = None,
+    scope: ScopeOpt = None,
+    namespace: Annotated[str, typer.Option("--namespace")] = "default",
+    db: DbOpt = None,
+    json_out: JsonOpt = False,
+) -> None:
+    payload = {
+        "kind": "checkpoint",
+        "task": task,
+        "summary": summary,
+        "next": next_step,
+        "evidence_refs": evidence or [],
+    }
+    policy_warnings = _enforce_policy(
+        db, "task.checkpoint", {"text": _policy_payload_text(payload)}, json_out
+    )
+    svc = services(db, require_key=False)
+    now = now_iso()
+    record = {
+        "id": new_id("trace"),
+        "payload": payload,
+        "created_at": now,
+        "updated_at": now,
+        "status": "active",
+        "namespace": namespace,
+        "scope": scope or [],
+        "owner_actor_id": actor,
+        "content_hash": hash_json(payload),
+    }
+    svc.store.put_json("task_traces", record)
+    svc.audit.record(
+        "task.checkpoint",
+        actor,
+        str(record["id"]),
+        {"task_hash": hash_json(task), "evidence_refs": evidence or []},
+    )
+    emit(record | {"policy_warnings": policy_warnings}, json_out)
+
+
+@checkpoint_app.command("latest")
+def checkpoint_latest(
+    task: Annotated[str | None, typer.Option("--task")] = None,
+    db: DbOpt = None,
+    json_out: JsonOpt = False,
+) -> None:
+    svc = services(db, require_key=False)
+    rows = svc.store.list(
+        "task_traces",
+        filters={"status": "active"},
+        order_by=[("created_at", "desc"), ("id", "desc")],
+        limit=None,
+    )
+    for row in rows:
+        payload = row.get("payload")
+        if (
+            isinstance(payload, dict)
+            and payload.get("kind") == "checkpoint"
+            and (task is None or payload.get("task") == task)
+        ):
+            emit(row, json_out)
+            return
+    raise typer.BadParameter("checkpoint not found")
+
+
+@checkpoint_app.command("list")
+def checkpoint_list(
+    task: Annotated[str | None, typer.Option("--task")] = None,
+    limit: Annotated[int, typer.Option("--limit", min=1)] = 20,
+    db: DbOpt = None,
+    json_out: JsonOpt = False,
+) -> None:
+    svc = services(db, require_key=False)
+    rows = svc.store.list(
+        "task_traces",
+        filters={"status": "active"},
+        order_by=[("created_at", "desc"), ("id", "desc")],
+        limit=None,
+    )
+    checkpoints = [
+        row
+        for row in rows
+        if isinstance(row.get("payload"), dict)
+        and row["payload"].get("kind") == "checkpoint"
+        and (task is None or row["payload"].get("task") == task)
+    ][:limit]
+    emit(checkpoints, json_out)
+
+
 @rule_app.command("list")
 def rule_list(db: DbOpt = None, json_out: JsonOpt = False) -> None:
     emit([r.model_dump() for r in services(db, require_key=False).rules.list()], json_out)
@@ -809,6 +1134,12 @@ def tool_ingest_result(
         raise typer.BadParameter("--input must be a JSON object")
     if not isinstance(parsed_output, dict):
         raise typer.BadParameter("--output must be a JSON object")
+    policy_warnings = _enforce_policy(
+        db,
+        "evidence.ingest",
+        {"text": _policy_payload_text({"input": parsed_input, "output": parsed_output})},
+        json_out,
+    )
     result = svc.evidence.ingest_tool_result(
         tool_id=tool_id,
         tool_name=tool_name,
@@ -822,7 +1153,7 @@ def tool_ingest_result(
         status=status,
         executed=executed,
     )
-    emit(result.model_dump(), json_out)
+    emit(result.model_dump() | {"policy_warnings": policy_warnings}, json_out)
 
 
 @evidence_app.command("list")

@@ -13,7 +13,7 @@ class OacsConfig:
 
     @classmethod
     def from_values(cls, db: str | None = None, passphrase: str | None = None) -> OacsConfig:
-        db_value = db or os.getenv("OACS_DB") or "./.oacs/oacs.db"
+        db_value = db or os.getenv("OACS_DB") or discover_project_db() or "./.oacs/oacs.db"
         db_path = Path(db_value).expanduser()
         return cls(
             db_path=db_path,
@@ -28,3 +28,15 @@ class OacsConfig:
     @property
     def unlocked_file(self) -> Path:
         return self.base_dir / "unlocked.key"
+
+
+def discover_project_db(start: Path | None = None) -> str | None:
+    current = (start or Path.cwd()).resolve()
+    for folder in (current, *current.parents):
+        for candidate in (
+            folder / ".agent" / "oacs" / "oacs.db",
+            folder / ".oacs" / "oacs.db",
+        ):
+            if candidate.exists():
+                return str(candidate)
+    return None

@@ -112,6 +112,9 @@ Raw artifacts are written to the output directory; start with `SUMMARY.md` and
 `summary.json`.
 
 Tool onboarding is documented in `docs/TOOL_BINDINGS.md`.
+Long agent workflow conveniences such as `acs status`, `acs resume`,
+`acs checkpoint`, `acs run`, and project deny-pattern policy helpers are
+documented in `docs/AGENT_WORKFLOW.md`.
 
 ### Development Dogfood
 
@@ -276,7 +279,9 @@ python3 examples/killer_demo/run_demo.py --out .oacs/killer-demo --force
 Raw artifacts пишутся в output directory; начинать стоит с `SUMMARY.md` и
 `summary.json`.
 
-Tool onboarding описан в `docs/TOOL_BINDINGS.md`.
+Tool onboarding описан в `docs/TOOL_BINDINGS.md`. Длинный agent workflow UX:
+`acs status`, `acs resume`, `acs checkpoint`, `acs run` и project deny-pattern
+policy helpers описаны в `docs/AGENT_WORKFLOW.md`.
 
 ### Development dogfood
 

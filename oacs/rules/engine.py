@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import builtins
+import re
 from typing import Any, cast
 
 from oacs.rules.builtin import builtin_rules
@@ -45,6 +46,15 @@ class RuleEngine:
                     if isinstance(mem, dict) and int(str(mem.get("depth", 0))) >= 3:
                         status = "warn"
                         message = "D3-D5 memory included as hypothesis only."
+            elif rule.rule_kind == "deny_pattern":
+                text = str(payload.get("text", ""))
+                try:
+                    if re.search(rule.content, text, flags=re.IGNORECASE | re.MULTILINE):
+                        status = "fail" if rule.blocking else "warn"
+                        message = f"Payload matches deny pattern rule {rule.name}."
+                except re.error:
+                    status = "fail" if rule.blocking else "warn"
+                    message = f"Invalid deny pattern rule {rule.name}: {rule.content}"
             results.append(
                 RuleResult(
                     rule_id=rule.id,

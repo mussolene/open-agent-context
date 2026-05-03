@@ -5,7 +5,7 @@ This roadmap keeps the OACS v0.1 draft standard small. Core work must define
 memory, context, permissions, audit, and deterministic operation contracts.
 Reference adapters prove integration, but they do not expand the standard.
 
-### Current Position: v0.3.1a2 Reference POC
+### Current Position: v0.3.2a1 Reference POC
 Core contract:
 
 - Done: OACS v0.1 draft terminology, schemas, encrypted `MemoryRecord`,
@@ -50,6 +50,9 @@ Reference adapters:
 - Done: repo dogfood moved to the removable `repo_development_memory` skill
   under `examples/skills/`; it is source-checkout validation, not standard
   surface.
+- Done: Agent Workflow UX added as reference CLI convenience:
+  project-local discovery/status, resume aggregation, task checkpoints,
+  governed command evidence, and deny-pattern policy helpers.
 - Observed on `google/gemma-4-e2b`: medium/large/long memory tasks can improve
   token use and relevance through compact evidence projection; tiny tasks can
   show overhead.
@@ -107,6 +110,20 @@ Reference adapters:
 - Done: keep network-capable HTTP tools disabled unless the binding
   explicitly opts in.
 
+### v0.3.2 - Agent Workflow UX
+
+- Done: add project-local discovery for `.agent/oacs/oacs.db` and
+  `.oacs/oacs.db`, plus `acs init --project` and `acs status`.
+- Done: add `acs resume --scope ...` as an aggregate view over recent
+  checkpoints, evidence, memory metadata, Context Capsules, and audit events.
+- Done: add lightweight `acs checkpoint add/latest/list` backed by task traces.
+- Done: add `acs run --label ... -- <cmd>` as a governed execution wrapper that
+  records command output as `tool_result` evidence without becoming an
+  orchestrator.
+- Done: add project-local deny-pattern policy helpers and checks for memory,
+  evidence, command evidence, and checkpoint capture.
+- Done: keep all workflow UX outside OACS v0.1 draft core conformance.
+
 ### v1.0
 - Freeze stable schemas for ContextCapsule, MemoryRecord, CapabilityGrant,
   RuleManifest, SkillManifest, ToolBinding, McpBinding, EvidenceRef, and
@@ -122,7 +139,7 @@ Reference adapters:
 определять memory, context, permissions, audit и deterministic operation
 contracts. Reference adapters доказывают интеграцию, но не расширяют стандарт.
 
-### Текущая позиция: v0.3.1a2 Reference POC
+### Текущая позиция: v0.3.2a1 Reference POC
 Core contract:
 
 - Готово: OACS v0.1 draft terminology, schemas, encrypted `MemoryRecord`,
@@ -162,6 +179,9 @@ Reference adapters:
   compatibility и LM Studio usage metadata, когда сервер её возвращает.
 - Готово: repo dogfood перенесён в отключаемый `repo_development_memory` skill
   в `examples/skills/`; это source-checkout validation, а не standard surface.
+- Готово: Agent Workflow UX добавлен как reference CLI convenience:
+  project-local discovery/status, resume aggregation, task checkpoints,
+  governed command evidence и deny-pattern policy helpers.
 - Наблюдение на `google/gemma-4-e2b`: medium/large/long memory tasks могут
   улучшать token use и relevance через compact evidence projection; tiny tasks
   могут показывать overhead.
@@ -219,6 +239,20 @@ Reference adapters:
   audit и позже включать в Context Capsules.
 - Готово: HTTP tools с network доступом отключены, пока binding явно не
   разрешит это.
+
+### v0.3.2 - Agent Workflow UX
+
+- Готово: добавить project-local discovery для `.agent/oacs/oacs.db` и
+  `.oacs/oacs.db`, плюс `acs init --project` и `acs status`.
+- Готово: добавить `acs resume --scope ...` как aggregate view по recent
+  checkpoints, evidence, memory metadata, Context Capsules и audit events.
+- Готово: добавить lightweight `acs checkpoint add/latest/list` на базе task traces.
+- Готово: добавить `acs run --label ... -- <cmd>` как governed execution wrapper,
+  который записывает output команды как `tool_result` evidence, не становясь
+  orchestrator.
+- Готово: добавить project-local deny-pattern policy helpers и checks для
+  memory, evidence, command evidence и checkpoint capture.
+- Готово: оставить workflow UX вне OACS v0.1 draft core conformance.
 
 ### v1.0
 - Заморозить stable schemas для ContextCapsule, MemoryRecord, CapabilityGrant,

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import sys
 
 from typer.testing import CliRunner
 
@@ -235,3 +236,146 @@ def test_cli_grant_shared_memory_enforces_scope(tmp_path):
         ["memory", "read", other_id, "--db", str(db), "--actor", actor_id, "--json"],
     )
     assert denied_read.exit_code != 0
+
+
+def test_cli_project_status_and_discovery(tmp_path, monkeypatch):
+    runner = CliRunner()
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("OACS_DB", raising=False)
+
+    initialized = runner.invoke(app, ["init", "--project", "--json"])
+    assert initialized.exit_code == 0, initialized.output
+    assert json.loads(initialized.output)["db"].endswith(".agent/oacs/oacs.db")
+
+    status = runner.invoke(app, ["status", "--json"])
+    assert status.exit_code == 0, status.output
+    payload = json.loads(status.output)
+    assert payload["db"].endswith(".agent/oacs/oacs.db")
+    assert payload["counts"]["evidence_refs"] == 0
+
+
+def test_cli_checkpoint_resume_and_run(tmp_path):
+    db = tmp_path / "oacs.db"
+    runner = CliRunner()
+    assert runner.invoke(app, ["init", "--db", str(db), "--json"]).exit_code == 0
+
+    checkpoint = runner.invoke(
+        app,
+        [
+            "checkpoint",
+            "add",
+            "--db",
+            str(db),
+            "--task",
+            "agent workflow ux",
+            "--summary",
+            "status implemented",
+            "--next",
+            "run verification",
+            "--json",
+        ],
+    )
+    assert checkpoint.exit_code == 0, checkpoint.output
+    trace_id = json.loads(checkpoint.output)["id"]
+
+    latest = runner.invoke(
+        app,
+        [
+            "checkpoint",
+            "latest",
+            "--db",
+            str(db),
+            "--task",
+            "agent workflow ux",
+            "--json",
+        ],
+    )
+    assert latest.exit_code == 0, latest.output
+    assert json.loads(latest.output)["id"] == trace_id
+
+    run = runner.invoke(
+        app,
+        [
+            "run",
+            "--db",
+            str(db),
+            "--label",
+            "python smoke",
+            "--json",
+            "--",
+            sys.executable,
+            "-c",
+            "print('workflow-ok')",
+        ],
+    )
+    assert run.exit_code == 0, run.output
+    run_payload = json.loads(run.output)
+    assert run_payload["output"]["exit_code"] == 0
+    assert "workflow-ok" in run_payload["output"]["stdout"]
+    assert run_payload["evidence_ref"].startswith("ev_")
+
+    resume = runner.invoke(app, ["resume", "--db", str(db), "--json"])
+    assert resume.exit_code == 0, resume.output
+    resume_payload = json.loads(resume.output)
+    assert resume_payload["latest_checkpoint"]["summary"] == "status implemented"
+    assert resume_payload["recent_tool_results"][0]["payload"]["output"]["label"] == "python smoke"
+
+
+def test_cli_policy_deny_pattern_blocks_memory_and_ingest(tmp_path):
+    db = tmp_path / "oacs.db"
+    runner = CliRunner()
+    assert runner.invoke(app, ["init", "--db", str(db), "--json"]).exit_code == 0
+    assert (
+        runner.invoke(
+            app, ["key", "init", "--db", str(db), "--passphrase", "pw", "--json"]
+        ).exit_code
+        == 0
+    )
+
+    rule = runner.invoke(
+        app,
+        [
+            "policy",
+            "add-deny-pattern",
+            "--db",
+            str(db),
+            "secret-token",
+            "--json",
+        ],
+    )
+    assert rule.exit_code == 0, rule.output
+
+    blocked_memory = runner.invoke(
+        app,
+        [
+            "memory",
+            "propose",
+            "--db",
+            str(db),
+            "--type",
+            "fact",
+            "--depth",
+            "1",
+            "--text",
+            "contains secret-token",
+            "--json",
+        ],
+    )
+    assert blocked_memory.exit_code == 2
+    assert json.loads(blocked_memory.output)["status"] == "blocked"
+
+    blocked_ingest = runner.invoke(
+        app,
+        [
+            "tool",
+            "ingest-result",
+            "--db",
+            str(db),
+            "--tool-id",
+            "external",
+            "--output",
+            '{"value":"secret-token"}',
+            "--json",
+        ],
+    )
+    assert blocked_ingest.exit_code == 2
