@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import json
+import re
 from hashlib import sha256
 from pathlib import Path
 from typing import Any, cast
@@ -28,6 +29,24 @@ FIXTURE_SCHEMAS = {
     "retrieval_query.json": "retrieval_query.schema.json",
     "retrieval_result.json": "retrieval_result.schema.json",
 }
+
+PROTECTED_VALUE_LEAK_FIXTURES = {
+    "context_capsule_plaintext_protected_value.json",
+    "tool_call_result_plaintext_secret.json",
+    "audit_event_plaintext_secret.json",
+    "evidence_ref_plaintext_secret.json",
+    "context_capsule_masked_protected_value.json",
+    "tool_call_result_masked_secret.json",
+    "audit_event_masked_secret.json",
+    "evidence_ref_masked_secret.json",
+}
+
+PROTECTED_VALUE_SENTINELS = ("OACS_TEST_SECRET_VALUE",)
+MASKED_PROTECTED_VALUE_PATTERNS = (
+    re.compile(r"\*{3,}[A-Za-z0-9_-]{3,}"),
+    re.compile(r"\[REDACTED:[A-Za-z0-9_-]{3,}\]"),
+    re.compile(r"\b(?:suffix|tail|last4|last_4)[=: ][A-Za-z0-9_-]{3,}\b", re.IGNORECASE),
+)
 
 
 def default_conformance_root() -> Path:
@@ -158,13 +177,8 @@ def _rejects_negative(
         return bool(checksum != _hash_json(capsule))
     if fixture_name == "audit_event_bad_hash.json":
         return bool(payload_dict.get("content_hash") != _hash_without(payload_dict, "content_hash"))
-    if fixture_name in {
-        "context_capsule_plaintext_protected_value.json",
-        "tool_call_result_plaintext_secret.json",
-        "audit_event_plaintext_secret.json",
-        "evidence_ref_plaintext_secret.json",
-    }:
-        return _contains_plaintext_protected_value(payload_dict)
+    if fixture_name in PROTECTED_VALUE_LEAK_FIXTURES:
+        return _contains_protected_value_leak(payload_dict)
     if fixture_name == "capability_grant_glob_scope_without_star.json":
         return _has_implicit_wildcard(payload_dict, "scope") or _has_implicit_wildcard(
             payload_dict, "namespaces_allowed"
@@ -210,13 +224,15 @@ def _has_implicit_wildcard(payload: dict[str, object], field: str) -> bool:
     return any(isinstance(item, str) and "*" in item and item != "*" for item in value)
 
 
-def _contains_plaintext_protected_value(payload: object) -> bool:
+def _contains_protected_value_leak(payload: object) -> bool:
     if isinstance(payload, str):
-        return "OACS_TEST_SECRET_VALUE" in payload
+        return any(sentinel in payload for sentinel in PROTECTED_VALUE_SENTINELS) or any(
+            pattern.search(payload) for pattern in MASKED_PROTECTED_VALUE_PATTERNS
+        )
     if isinstance(payload, dict):
-        return any(_contains_plaintext_protected_value(value) for value in payload.values())
+        return any(_contains_protected_value_leak(value) for value in payload.values())
     if isinstance(payload, list):
-        return any(_contains_plaintext_protected_value(item) for item in payload)
+        return any(_contains_protected_value_leak(item) for item in payload)
     return False
 
 

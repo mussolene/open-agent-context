@@ -84,6 +84,11 @@ def test_cli_repo_is_not_core_surface():
     assert result.exit_code != 0
 
 
+def test_cli_vault_is_not_core_surface():
+    result = CliRunner().invoke(app, ["vault", "--help"])
+    assert result.exit_code != 0
+
+
 def test_cli_conformance_validate_json():
     result = CliRunner().invoke(app, ["conformance", "validate", "--json"])
 

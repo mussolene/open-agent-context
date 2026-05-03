@@ -181,9 +181,13 @@ def test_negative_semantic_fixture_rejects_bad_audit_hash() -> None:
         "tool_call_result_plaintext_secret.json",
         "audit_event_plaintext_secret.json",
         "evidence_ref_plaintext_secret.json",
+        "context_capsule_masked_protected_value.json",
+        "tool_call_result_masked_secret.json",
+        "audit_event_masked_secret.json",
+        "evidence_ref_masked_secret.json",
     ],
 )
-def test_negative_semantic_fixtures_reject_plaintext_protected_values(
+def test_negative_semantic_fixtures_reject_protected_value_leaks(
     fixture_name: str,
 ) -> None:
     negative = load_json(NEGATIVE / fixture_name)
@@ -191,7 +195,24 @@ def test_negative_semantic_fixtures_reject_plaintext_protected_values(
     assert isinstance(payload, dict)
     validate(payload, schema(str(negative["schema"])))
 
-    assert "OACS_TEST_SECRET_VALUE" in json.dumps(payload)
+    serialized = json.dumps(payload)
+    assert any(
+        marker in serialized
+        for marker in (
+            "OACS_TEST_SECRET_VALUE",
+            "****CRET",
+            "***abcd",
+            "[REDACTED:abcd]",
+            "suffix=CRET",
+        )
+    )
+
+
+def test_negative_schema_fixture_rejects_secret_ref_without_external_locator() -> None:
+    negative = load_json(NEGATIVE / "protected_ref_secret_without_external_locator.json")
+
+    with pytest.raises(ValidationError):
+        validate(negative["payload"], schema(str(negative["schema"])))
 
 
 def test_negative_semantic_fixture_rejects_d4_as_factual_retrieval_evidence() -> None:
