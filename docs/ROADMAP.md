@@ -202,8 +202,9 @@ Reference adapters:
   Python `acs conformance validate` remains a reference checker.
 - Done: decide which draft support schemas, if any, are promoted into the v1.0
   stable set; no draft support schemas are promoted for v1.0 freeze prep.
-- Planned: publish a final v1.0 release checklist that verifies schemas,
-  fixtures, package artifacts, and published-package smoke tests.
+- Done: publish `docs/V1_RELEASE_CHECKLIST.md`, the final v1.0 release checklist
+  that verifies schemas, fixtures, package artifacts, published-package smoke
+  tests, secret scans, and OACS proof.
 
 ### v1.0
 - Freeze stable schemas for `ContextCapsule`, `MemoryRecord`,
@@ -425,8 +426,9 @@ Reference adapters:
   Python `acs conformance validate` остаётся reference checker.
 - Готово: решить, какие draft support schemas, если такие есть, продвигаются в
   stable set v1.0; для v1.0 freeze prep draft support schemas не продвигаются.
-- План: опубликовать финальный v1.0 release checklist, который проверяет
-  schemas, fixtures, package artifacts и published-package smoke tests.
+- Готово: опубликовать `docs/V1_RELEASE_CHECKLIST.md`, финальный v1.0 release
+  checklist, который проверяет schemas, fixtures, package artifacts,
+  published-package smoke tests, secret scans и OACS proof.
 
 ### v1.0
 - Заморозить stable schemas для `ContextCapsule`, `MemoryRecord`,

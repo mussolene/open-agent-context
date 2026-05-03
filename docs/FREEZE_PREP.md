@@ -49,12 +49,14 @@ Completed freeze-prep work:
    are not fully expressible as JSON Schema constraints.
 3. Decide that `actor` and `context_capsule_export` remain `draft_support`
    rather than promoted to the v1.0 stable set.
+4. Publish `docs/V1_RELEASE_CHECKLIST.md`, a final v1.0 checklist that blocks
+   release on manifest drift, fixture drift, local gate failure, published
+   package smoke failure, secret scan failure, or missing OACS proof.
 
 Open freeze-prep work:
 
-1. Publish a final v1.0 checklist that blocks release on manifest drift,
-   fixture drift, local gate failure, published package smoke failure, or secret
-   scan failure.
+- None. The next step is running the v1.0 release checklist, not expanding the
+  freeze-prep scope.
 
 ## RU
 Этот manifest является рабочей control surface для стабилизации OACS v1.0. Это
@@ -104,9 +106,12 @@ Completed freeze-prep work:
    rules не полностью выражаются JSON Schema constraints.
 3. Решить, что `actor` и `context_capsule_export` остаются `draft_support`, а не
    promoted в v1.0 stable set.
+4. Опубликовать `docs/V1_RELEASE_CHECKLIST.md`, финальный v1.0 checklist,
+   который блокирует release при manifest drift, fixture drift, local gate
+   failure, published package smoke failure, secret scan failure или missing
+   OACS proof.
 
 Open freeze-prep work:
 
-1. Опубликовать финальный v1.0 checklist, который блокирует release при
-   manifest drift, fixture drift, local gate failure, published package smoke
-   failure или secret scan failure.
+- None. Следующий шаг - запуск v1.0 release checklist, а не расширение
+  freeze-prep scope.

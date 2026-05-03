@@ -21,6 +21,7 @@ def test_publication_docs_have_bilingual_sections() -> None:
         ROOT / "docs" / "GLOSSARY.md",
         ROOT / "docs" / "ROADMAP.md",
         ROOT / "docs" / "COMPATIBILITY.md",
+        ROOT / "docs" / "V1_RELEASE_CHECKLIST.md",
     ]
     for path in docs:
         text = path.read_text(encoding="utf-8")
@@ -117,6 +118,8 @@ def test_freeze_prep_status_is_current_in_roadmap_and_manifest() -> None:
     assert "Добавить descriptions к schema fields" in manifest
     assert "Decide that `actor` and `context_capsule_export` remain `draft_support`" in manifest
     assert "Решить, что `actor` и `context_capsule_export` остаются `draft_support`" in manifest
+    assert "Publish `docs/V1_RELEASE_CHECKLIST.md`" in manifest
+    assert "Open freeze-prep work:\n\n- None." in manifest
 
 
 def test_draft_support_schema_decisions_stay_outside_v1_stable_surface() -> None:
@@ -133,6 +136,29 @@ def test_draft_support_schema_decisions_stay_outside_v1_stable_surface() -> None
     assert "identity registry shape is not" in compatibility
     assert "raw\n`ContextCapsule` JSON is the portable record" in compatibility
     assert "not part of the v1.0 stable portable schema set" in capsules
+
+
+def test_v1_release_checklist_blocks_freeze_release_risks() -> None:
+    checklist = (ROOT / "docs" / "V1_RELEASE_CHECKLIST.md").read_text(encoding="utf-8")
+    roadmap = (ROOT / "docs" / "ROADMAP.md").read_text(encoding="utf-8")
+    manifest = (ROOT / "docs" / "FREEZE_PREP.md").read_text(encoding="utf-8")
+
+    for required in (
+        "Freeze manifest drift",
+        "Stable schema drift",
+        "Fixture drift",
+        "Compatibility drift",
+        "Standard boundary drift",
+        "Local gate failure",
+        "Published package smoke failure",
+        "Secret scan failure",
+        "OACS proof gap",
+    ):
+        assert required in checklist
+    assert "python3 -m oacs.cli.main conformance validate --json" in checklist
+    assert "acs conformance validate --json" in checklist
+    assert "docs/V1_RELEASE_CHECKLIST.md" in roadmap
+    assert "Open freeze-prep work:\n\n- None." in manifest
 
 
 def test_public_docs_do_not_use_stale_reference_version() -> None:
