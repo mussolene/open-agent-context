@@ -36,6 +36,32 @@ def test_wrong_passphrase_fails(tmp_path: Path):
         services(str(db), passphrase="wrong")
 
 
+def test_context_build_reports_uninitialized_key_for_existing_db(tmp_path: Path):
+    db = tmp_path / "oacs.db"
+    services(str(db), require_key=False)
+    runner = CliRunner()
+
+    result = runner.invoke(
+        app,
+        [
+            "context",
+            "build",
+            "--intent",
+            "empty",
+            "--scope",
+            "project",
+            "--db",
+            str(db),
+            "--json",
+        ],
+    )
+
+    assert result.exit_code == 2
+    assert "key provider is not initialized" in result.output
+    assert "acs key init" in result.output
+    assert "acs key unlock" not in result.output
+
+
 def test_key_rotation_keeps_records_readable(db: Path):
     svc = services(str(db))
     mem = svc.memory.propose("fact", 2, "rotation readable", None, ["project"])

@@ -19,7 +19,7 @@ from oacs.benchmark.reports import compare_runs, select_comparison_runs
 from oacs.benchmark.runner import MemoryCriticalBenchmark
 from oacs.conformance import validate_conformance
 from oacs.core.config import OacsConfig
-from oacs.core.errors import AccessDenied, MemoryDecryptError, NotFound
+from oacs.core.errors import AccessDenied, LockedKeyError, MemoryDecryptError, NotFound
 from oacs.core.ids import new_id
 from oacs.core.json import hash_json
 from oacs.core.time import now_iso
@@ -771,9 +771,12 @@ def context_build(
     db: DbOpt = None,
     json_out: JsonOpt = False,
 ) -> None:
-    svc = services(db)
     try:
+        svc = services(db)
         capsule = svc.context.build(intent, actor, agent, scope or [], budget, strict=strict)
+    except LockedKeyError as exc:
+        emit({"error": "LockedKeyError", "message": str(exc)}, json_out)
+        raise typer.Exit(2) from exc
     except MemoryDecryptError as exc:
         emit({"error": "MemoryDecryptError", **exc.record}, json_out)
         raise typer.Exit(2) from exc

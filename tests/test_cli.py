@@ -12,7 +12,7 @@ from oacs.context.capsule import ContextCapsule
 def test_cli_version():
     result = CliRunner().invoke(app, ["--version"])
     assert result.exit_code == 0
-    assert result.output.strip() == "acs 1.0.6"
+    assert result.output.strip() == "acs 1.0.7"
 
 
 def test_cli_init_key_actor_memory(tmp_path):

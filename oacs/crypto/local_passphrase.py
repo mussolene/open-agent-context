@@ -61,6 +61,8 @@ class LocalPassphraseKeyProvider(KeyProvider):
         return master
 
     def load_unlocked(self) -> bytes:
+        if not self.key_file.exists():
+            raise LockedKeyError("key provider is not initialized; run acs key init")
         if not self.unlocked_file.exists():
             raise LockedKeyError("master key is locked; run acs key unlock")
         return _unb64(self.unlocked_file.read_text(encoding="utf-8").strip())

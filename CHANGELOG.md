@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+## 1.0.7 - 2026-05-03
+
+### Fixed
+
+- Report an uninitialized local passphrase key provider as `run acs key init`
+  during `acs context build` instead of misclassifying it as a locked key that
+  only needs `acs key unlock`.
+- Return structured JSON and exit code 2 for this key-provider setup failure
+  before context service construction escapes CLI error handling.
+
 ## 1.0.6 - 2026-05-03
 
 ### Changed
