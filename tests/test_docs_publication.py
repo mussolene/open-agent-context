@@ -101,6 +101,20 @@ def test_stable_candidate_schema_properties_have_descriptions() -> None:
             )
 
 
+def test_freeze_prep_status_is_current_in_roadmap_and_manifest() -> None:
+    roadmap = (ROOT / "docs" / "ROADMAP.md").read_text(encoding="utf-8")
+    manifest = (ROOT / "docs" / "FREEZE_PREP.md").read_text(encoding="utf-8")
+
+    assert "stable-candidate schemas reject unknown top-level fields" in roadmap
+    assert "portable field descriptions" in roadmap
+    assert "stable-candidate schemas have strict top-level shape" in roadmap
+    assert "stable-candidate schemas имеют strict top-level shape" in roadmap
+    assert "Completed freeze-prep work:" in manifest
+    assert "Open freeze-prep work:" in manifest
+    assert "Add descriptions to schema fields" in manifest
+    assert "Добавить descriptions к schema fields" in manifest
+
+
 def test_public_docs_do_not_use_stale_reference_version() -> None:
     match = re.match(r"^(\d+)\.(\d+)\.(\d+)", __version__)
     assert match is not None

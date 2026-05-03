@@ -41,15 +41,18 @@ or semantic rejection rule.
 | `tool_binding` | `stable_candidate` | yes | yes | Freeze tool metadata, input/output schema references, capability gates, and explicit network opt-in. |
 | `tool_call_result` | `stable_candidate` | yes | yes | Freeze tool result envelope, evidence linkage, status metadata, and protected value leak rejection. |
 
-Open freeze-prep work:
+Completed freeze-prep work:
 
 1. Add descriptions to schema fields where a v1.0 implementer could confuse
    reference behavior with standard behavior.
-2. Add missing negative fixtures for stable candidates where the rejection rule
+
+Open freeze-prep work:
+
+1. Add missing negative fixtures for stable candidates where the rejection rule
    is semantic rather than structural.
-3. Decide whether `actor` and `context_capsule_export` are promoted to
+2. Decide whether `actor` and `context_capsule_export` are promoted to
    `stable_candidate` or remain draft/reference support.
-4. Publish a final v1.0 checklist that blocks release on manifest drift,
+3. Publish a final v1.0 checklist that blocks release on manifest drift,
    fixture drift, local gate failure, published package smoke failure, or secret
    scan failure.
 
@@ -93,14 +96,17 @@ adapter-boundary или semantic rejection rule.
 | `tool_binding` | `stable_candidate` | yes | yes | Заморозить tool metadata, input/output schema references, capability gates и explicit network opt-in. |
 | `tool_call_result` | `stable_candidate` | yes | yes | Заморозить tool result envelope, evidence linkage, status metadata и protected value leak rejection. |
 
-Open freeze-prep work:
+Completed freeze-prep work:
 
 1. Добавить descriptions к schema fields, где v1.0 implementer может спутать
    reference behavior со standard behavior.
-2. Добавить missing negative fixtures для stable candidates, где rejection rule
+
+Open freeze-prep work:
+
+1. Добавить missing negative fixtures для stable candidates, где rejection rule
    semantic, а не structural.
-3. Решить, будут ли `actor` и `context_capsule_export` promoted to
+2. Решить, будут ли `actor` и `context_capsule_export` promoted to
    `stable_candidate` или останутся draft/reference support.
-4. Опубликовать финальный v1.0 checklist, который блокирует release при
+3. Опубликовать финальный v1.0 checklist, который блокирует release при
    manifest drift, fixture drift, local gate failure, published package smoke
    failure или secret scan failure.

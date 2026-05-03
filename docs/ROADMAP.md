@@ -31,9 +31,12 @@ Core contract:
 - Done: protected values boundary added for external secrets and non-public
   infrastructure facts through `ProtectedRef`. OACS is not a vault; secret
   storage, rotation, and plaintext resolution stay in external vault adapters.
-- In progress: v1.0 freeze prep now tracks schema stability, migration policy,
-  and conformance boundary coverage in `docs/COMPATIBILITY.md` and
-  `conformance/README.md`.
+- Done: v1.0 freeze prep tracks schema stability, migration policy, and
+  conformance boundary coverage in `docs/COMPATIBILITY.md`,
+  `docs/FREEZE_PREP.md`, and `conformance/README.md`.
+- Done: stable-candidate schemas reject unknown top-level fields and carry
+  portable field descriptions so implementers can distinguish standard
+  semantics from reference adapter behavior.
 
 Reference adapters:
 
@@ -185,6 +188,8 @@ Reference adapters:
 
 - Done: add `docs/FREEZE_PREP.md` as the per-schema freeze manifest for stable
   candidates, draft support schemas, and reference-only schemas.
+- Done: stable-candidate schemas have strict top-level shape, portable field
+  descriptions, and docs tests that block description or strictness drift.
 - In progress: define compatibility and migration rules for schema changes,
   semantic checks, and adapter-boundary behavior.
 - In progress: make the conformance boundary explicit: positive fixtures are
@@ -242,9 +247,12 @@ Core contract:
   непубличных infrastructure facts через `ProtectedRef`. OACS не является
   vault; secret storage, rotation и plaintext resolution остаются во внешних
   vault adapters.
-- В работе: v1.0 freeze prep теперь отслеживает schema stability, migration
-  policy и conformance boundary coverage в `docs/COMPATIBILITY.md` и
-  `conformance/README.md`.
+- Готово: v1.0 freeze prep отслеживает schema stability, migration policy и
+  conformance boundary coverage в `docs/COMPATIBILITY.md`,
+  `docs/FREEZE_PREP.md` и `conformance/README.md`.
+- Готово: stable-candidate schemas отвергают unknown top-level fields и имеют
+  portable field descriptions, чтобы implementers отличали standard semantics
+  от reference adapter behavior.
 
 Reference adapters:
 
@@ -397,6 +405,8 @@ Reference adapters:
 
 - Готово: добавить `docs/FREEZE_PREP.md` как per-schema freeze manifest для
   stable candidates, draft support schemas и reference-only schemas.
+- Готово: stable-candidate schemas имеют strict top-level shape, portable field
+  descriptions и docs tests, которые блокируют description или strictness drift.
 - В работе: определить compatibility и migration rules для schema changes,
   semantic checks и adapter-boundary behavior.
 - В работе: сделать conformance boundary явной: positive fixtures являются
