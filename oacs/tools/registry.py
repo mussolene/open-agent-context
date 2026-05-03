@@ -12,7 +12,7 @@ def builtin_tools() -> list[ToolBinding]:
             id="tool_local_echo",
             name="local_echo",
             type="python_function",
-            description="Deterministic local echo tool for POC exercises.",
+            description="Deterministic local echo tool for reference exercises.",
         )
     ]
 

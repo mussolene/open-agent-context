@@ -1,8 +1,8 @@
-# OACS v0.1 draft Architecture / Архитектура OACS v0.1 draft
+# OACS v1.0 Architecture / Архитектура OACS v1.0
 
 ## EN
-The POC separates the draft standard from reference adapters. The standard is
-the memory/context contract; adapters prove that the contract can be embedded in
+OACS separates the v1.0 standard from reference adapters. The standard is the
+memory/context contract; adapters prove that the contract can be embedded in
 existing agent stacks.
 The portability boundary is JSON records plus JSON Schema validation. The
 Python package is one reference implementation of that boundary.
@@ -33,7 +33,7 @@ For non-Python runtimes, use `docs/INTEROPERABILITY.md` and
 `conformance/fixtures/` as the implementation target.
 
 ## RU
-POC разделяет draft standard и reference adapters. Standard - это
+OACS разделяет v1.0 standard и reference adapters. Standard - это
 memory/context contract; adapters доказывают, что contract можно встроить в
 существующие agent stacks.
 Portability boundary - это JSON records плюс JSON Schema validation. Python

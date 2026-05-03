@@ -2,7 +2,7 @@
 
 ## EN
 This document is an internal validation note for the reference implementation.
-It is not part of the OACS v0.1 draft standard surface. It shows that ordinary
+It is not part of the OACS v1.0 standard surface. It shows that ordinary
 OACS memory/context operations can record development iterations as encrypted
 repo-scoped memory.
 
@@ -95,7 +95,7 @@ result is captured as OACS evidence for every iteration.
 
 ## RU
 Этот документ - internal validation note для reference implementation. Он не
-является частью OACS v0.1 draft standard surface. Он показывает, что ordinary
+является частью OACS v1.0 standard surface. Он показывает, что ordinary
 OACS memory/context operations могут записывать development iterations как
 encrypted repo-scoped memory.
 

@@ -1,13 +1,13 @@
 # PyPI Quickstart / Быстрый старт через PyPI
 
 ## EN
-This is the shortest public install path for the OACS v0.1 draft reference
+This is the shortest public install path for the OACS v1.0 reference
 implementation.
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install oacs==0.3.5a1
+pip install oacs==1.0.0
 
 export OACS_DB=./.oacs/oacs.db
 export OACS_PASSPHRASE="<choose-a-local-dev-passphrase>"
@@ -36,13 +36,13 @@ python3 examples/killer_demo/run_demo.py --out .oacs/killer-demo --force
 ```
 
 ## RU
-Это самый короткий публичный путь установки для OACS v0.1 draft reference
+Это самый короткий публичный путь установки для OACS v1.0 reference
 implementation.
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install oacs==0.3.5a1
+pip install oacs==1.0.0
 
 export OACS_DB=./.oacs/oacs.db
 export OACS_PASSPHRASE="<choose-a-local-dev-passphrase>"

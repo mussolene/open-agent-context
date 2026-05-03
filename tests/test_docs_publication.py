@@ -31,9 +31,9 @@ def test_publication_docs_have_bilingual_sections() -> None:
 
 def test_readme_separates_draft_and_reference_implementation() -> None:
     text = (ROOT / "README.md").read_text(encoding="utf-8")
-    assert "OACS v0.1 draft" in text
-    assert "Standard Draft vs Reference Implementation" in text
-    assert "Draft стандарта и reference implementation" in text
+    assert "OACS v1.0" in text
+    assert "Standard vs Reference Implementation" in text
+    assert "Стандарт и reference implementation" in text
     assert "docs/COMPATIBILITY.md" in text
 
 
@@ -218,7 +218,7 @@ def test_agent_instructions_use_oacs_native_proof_loop() -> None:
     assert ".agent/tasks" not in text
 
 
-def test_public_docs_call_standard_a_draft() -> None:
-    pattern = re.compile(r"OACS v0\.1(?! draft)")
+def test_public_docs_do_not_use_stale_draft_name_for_v1() -> None:
+    pattern = re.compile(r"OACS v0\.1 draft|draft can change before v1\.0")
     for path in PUBLIC_MARKDOWN:
         assert not pattern.search(path.read_text(encoding="utf-8")), path

@@ -1,3 +1,3 @@
-"""Open Agent Context Standard proof-of-concept."""
+"""Open Agent Context Standard reference implementation."""
 
-__version__ = "0.3.5a1"
+__version__ = "1.0.0"

@@ -1,7 +1,7 @@
 # Interoperability Checklist / Interoperability Checklist
 
 ## EN
-This checklist is for runtimes and adapters that produce or consume OACS v0.1 draft
+This checklist is for runtimes and adapters that produce or consume OACS v1.0
 records without depending on the Python reference implementation.
 
 Portable contract requirements:
@@ -48,7 +48,7 @@ Reference-only behavior:
 
 ## RU
 Этот checklist предназначен для runtimes и adapters, которые produce или consume
-OACS v0.1 draft records без зависимости от Python reference implementation.
+OACS v1.0 records без зависимости от Python reference implementation.
 
 Portable contract requirements:
 

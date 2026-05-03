@@ -1,11 +1,12 @@
 # Compatibility Policy / Политика совместимости
 
 ## EN
-OACS v0.1 draft is not stable. Until v1.0, compatibility is best-effort and the
-project may make breaking changes when they improve correctness, security, or
-clarity.
+OACS v1.0 freezes the portable standard surface listed below. Compatibility is
+defined for stable schemas, conformance fixtures, and spec semantics; Python
+CLI/API/storage behavior remains a reference implementation detail unless a
+stable schema, fixture, or spec section requires it.
 
-Breaking changes before v1.0 include:
+Breaking changes after v1.0 include:
 - Removing or renaming a public CLI command or API endpoint.
 - Changing required fields or semantics in JSON schemas.
 - Changing lifecycle transition rules.
@@ -17,7 +18,7 @@ Breaking changes before v1.0 include:
   or checksum canonicalization.
 - Changing conformance fixture scoring semantics.
 
-Non-breaking changes before v1.0 include:
+Non-breaking changes after v1.0 include:
 - Adding optional fields.
 - Adding commands, endpoints, schemas, rules, skills, or tools.
 - Tightening validation for invalid data.
@@ -26,22 +27,24 @@ Non-breaking changes before v1.0 include:
 - Accepting both raw ContextCapsule JSON and `context_capsule_export` envelopes
   on import/validation while preserving existing checksum behavior.
 
-The `StorageBackend` protocol is still draft-level before v1.0 and may evolve;
-SQLite remains the reference backend for compatibility checks.
+The `StorageBackend` protocol remains reference implementation support and may
+evolve when the portable storage selector contract is preserved; SQLite remains
+the reference backend for compatibility checks.
 
 Reference benchmark scoring is adapter-level unless a fixture is explicitly
 promoted to conformance. Changing optional benchmark adapters is not a standard
 breaking change by itself.
 
-Scoped memory grants are part of the v0.2 reference implementation. Before
-v1.0, exact grant matching rules may tighten, but broadening access without an
-explicit grant is considered a compatibility and security regression.
+Scoped memory grants are part of the v1.0 stable permission surface. Exact
+matching rules may tighten only as documented security rejection examples;
+broadening access without an explicit grant is a compatibility and security
+regression.
 
-### v1.0 Freeze Prep
+### v1.0 Stable Surface
 
-Freeze prep separates the portable standard surface from reference-only support
-files before the first stable standard release. `docs/FREEZE_PREP.md` is the
-per-schema manifest; this section is the compatibility policy summary.
+The v1.0 release separates the portable standard surface from reference-only
+support files. `docs/FREEZE_PREP.md` is the per-schema manifest; this section is
+the compatibility policy summary.
 
 Freeze candidate schemas:
 
@@ -81,11 +84,12 @@ Conformance boundary for v1.0:
   are adapter behavior unless promoted into the stable schema/spec set.
 
 ## RU
-OACS v0.1 draft не является стабильным стандартом. До v1.0 совместимость
-best-effort, и проект может делать breaking changes, если это улучшает
-корректность, безопасность или ясность.
+OACS v1.0 замораживает portable standard surface, перечисленный ниже.
+Compatibility определяется для stable schemas, conformance fixtures и spec
+semantics; Python CLI/API/storage behavior остаётся detail reference
+implementation, если stable schema, fixture или spec section не требует его.
 
-Breaking changes до v1.0:
+Breaking changes после v1.0:
 - Удаление или переименование public CLI command или API endpoint.
 - Изменение required fields или semantics в JSON schemas.
 - Изменение lifecycle transition rules.
@@ -97,7 +101,7 @@ Breaking changes до v1.0:
   или checksum canonicalization.
 - Изменение conformance fixture scoring semantics.
 
-Non-breaking changes до v1.0:
+Non-breaking changes после v1.0:
 - Добавление optional fields.
 - Добавление commands, endpoints, schemas, rules, skills или tools.
 - Усиление validation для invalid data.
@@ -106,22 +110,24 @@ Non-breaking changes до v1.0:
 - Приём raw ContextCapsule JSON и `context_capsule_export` envelopes на
   import/validation при сохранении текущего checksum behavior.
 
-`StorageBackend` protocol до v1.0 остаётся draft-level и может меняться; SQLite
-остаётся reference backend для compatibility checks.
+`StorageBackend` protocol остаётся support reference implementation и может
+меняться при сохранении portable storage selector contract; SQLite остаётся
+reference backend для compatibility checks.
 
 Reference benchmark scoring находится на уровне adapter, если fixture явно не
 promoted to conformance. Изменение optional benchmark adapters само по себе не
 является breaking change стандарта.
 
-Scoped memory grants являются частью v0.2 reference implementation. До v1.0
-точные правила matching могут ужесточаться, но расширение доступа без явного
-grant считается compatibility и security regression.
+Scoped memory grants являются частью v1.0 stable permission surface. Точные
+правила matching могут ужесточаться только как documented security rejection
+examples; расширение доступа без явного grant является compatibility и security
+regression.
 
-### v1.0 Freeze Prep
+### v1.0 Stable Surface
 
-Freeze prep отделяет portable standard surface от reference-only support files
-перед первым stable release стандарта. `docs/FREEZE_PREP.md` является
-per-schema manifest; этот раздел является summary compatibility policy.
+v1.0 release отделяет portable standard surface от reference-only support files.
+`docs/FREEZE_PREP.md` является per-schema manifest; этот раздел является summary
+compatibility policy.
 
 Freeze candidate schemas:
 

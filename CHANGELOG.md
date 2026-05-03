@@ -1,5 +1,32 @@
 # Changelog
 
+## 1.0.0 - 2026-05-03
+
+### Added
+
+- v1.0 stable standard release checklist in `docs/V1_RELEASE_CHECKLIST.md`.
+- Freeze-prep manifest closure with no remaining open freeze-prep work.
+- Semantic negative conformance fixtures for adapter-boundary checks that are
+  not fully expressible as JSON Schema constraints.
+
+### Changed
+
+- Promoted the public package metadata to stable `1.0.0`.
+- Froze the v1.0 stable-candidate schema surface with strict top-level shape,
+  portable field descriptions, positive fixtures, and required negative
+  coverage.
+- Kept `actor` and `context_capsule_export` as draft support for v1.0: stable
+  records reference actor IDs, raw `ContextCapsule` JSON remains the portable
+  context record, and export envelopes remain reference packaging.
+
+### Notes
+
+- The Python package remains one reference implementation of the OACS standard,
+  not the only conforming runtime or transport.
+- SQLite, FastAPI, CLI UX, MCP stdio execution, hosted APIs, LM Studio,
+  benchmarks, and repo dogfood remain reference or adapter behavior unless a
+  stable schema or spec section explicitly requires them.
+
 ## 0.3.5a1 - 2026-05-03
 
 ### Added

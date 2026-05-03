@@ -1,14 +1,14 @@
 # Roadmap / Дорожная карта
 
 ## EN
-This roadmap keeps the OACS v0.1 draft standard small. Core work must define
+This roadmap keeps the OACS v1.0 standard small. Core work must define
 memory, context, permissions, audit, and deterministic operation contracts.
 Reference adapters prove integration, but they do not expand the standard.
 
 ### Current Position: v1.0 Freeze Prep
 Core contract:
 
-- Done: OACS v0.1 draft terminology, schemas, encrypted `MemoryRecord`,
+- Done: OACS v1.0 terminology, schemas, encrypted `MemoryRecord`,
   `ContextCapsule`, `CapabilityGrant`, `EvidenceRef`, `MemoryOperation`,
   `ContextOperation`, `MemoryLoopRun`, `memory_call`, and audit chain metadata.
 - Done: `memory_calls` are backend-independent operation traces for intent
@@ -132,7 +132,7 @@ Reference adapters:
   orchestrator.
 - Done: add project-local deny-pattern policy helpers and checks for memory,
   evidence, command evidence, and checkpoint capture.
-- Done: keep all workflow UX outside OACS v0.1 draft core conformance.
+- Done: keep all workflow UX outside OACS v1.0 core conformance.
 
 ### v0.3.3 - Multi-Implementation Conformance
 
@@ -225,14 +225,14 @@ Reference adapters:
 - Keep public benchmark packs as optional validation artifacts.
 
 ## RU
-Этот roadmap удерживает OACS v0.1 draft standard небольшим. Core work должен
+Этот roadmap удерживает OACS v1.0 standard небольшим. Core work должен
 определять memory, context, permissions, audit и deterministic operation
 contracts. Reference adapters доказывают интеграцию, но не расширяют стандарт.
 
 ### Текущая позиция: v1.0 Freeze Prep
 Core contract:
 
-- Готово: OACS v0.1 draft terminology, schemas, encrypted `MemoryRecord`,
+- Готово: OACS v1.0 terminology, schemas, encrypted `MemoryRecord`,
   `ContextCapsule`, `CapabilityGrant`, `EvidenceRef`, `MemoryOperation`,
   `ContextOperation`, `MemoryLoopRun`, `memory_call` и audit chain metadata.
 - Готово: `memory_calls` являются backend-independent operation traces для
@@ -354,7 +354,7 @@ Reference adapters:
   orchestrator.
 - Готово: добавить project-local deny-pattern policy helpers и checks для
   memory, evidence, command evidence и checkpoint capture.
-- Готово: оставить workflow UX вне OACS v0.1 draft core conformance.
+- Готово: оставить workflow UX вне OACS v1.0 core conformance.
 
 ### v0.3.3 - Multi-Implementation Conformance
 

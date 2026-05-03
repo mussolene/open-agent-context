@@ -1,7 +1,7 @@
 # Benchmark Validation / Benchmark Validation
 
 ## EN
-Benchmarks are validation fixtures for the OACS v0.1 draft memory/context
+Benchmarks are validation fixtures for the OACS v1.0 memory/context
 contract. They are not the standard itself and they are not intended to replace
 native public benchmark harnesses.
 
@@ -55,7 +55,7 @@ compatibility and portability. Structured `memory_calls` plus compact
 long-memory tasks.
 
 ## RU
-Benchmarks - это validation fixtures для OACS v0.1 draft memory/context
+Benchmarks - это validation fixtures для OACS v1.0 memory/context
 contract. Они не являются самим стандартом и не заменяют native public benchmark
 harnesses.
 

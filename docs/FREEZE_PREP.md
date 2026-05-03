@@ -12,7 +12,7 @@ Status values:
   set.
 - `reference_only`: reference validation artifact, not a standard requirement.
 
-Each `stable_candidate` schema must have a positive fixture before v1.0. A
+Each `stable_candidate` schema must have a positive fixture for v1.0. A
 negative fixture is required when the schema has a meaningful adapter-boundary
 or semantic rejection rule.
 

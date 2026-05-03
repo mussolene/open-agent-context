@@ -1,7 +1,7 @@
 # Security / Безопасность
 
 ## EN
-Threats addressed in the POC: plaintext memory exposure, accidental capability
+Threats addressed by OACS: plaintext memory exposure, accidental capability
 leaks, hidden memory writes, fuzzy memory used as fact, and unaudited access.
 
 Memory and capsule payloads use envelope-style AEAD encryption at rest. The
@@ -42,7 +42,7 @@ Prefer `protected.use` for adapter execution; grant `protected.read` or
 `secret.read` only when plaintext disclosure is explicitly required.
 
 ## RU
-POC закрывает риски: хранение памяти в открытом виде, случайные утечки
+OACS закрывает риски: хранение памяти в открытом виде, случайные утечки
 capability, скрытые записи памяти, использование fuzzy memory как факта и
 доступ без аудита.
 
