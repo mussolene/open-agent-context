@@ -39,6 +39,8 @@ def build(req: ContextBuild) -> dict[str, object]:
         svc.audit.record("context.build", req.actor_id, None, {"status": "denied"})
         raise exc
     svc.audit.record("context.build", req.actor_id, capsule.id)
+    if svc.context.last_warnings:
+        return {"capsule": capsule.model_dump(), "warnings": svc.context.last_warnings}
     return capsule.model_dump()
 
 

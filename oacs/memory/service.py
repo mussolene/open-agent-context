@@ -182,8 +182,11 @@ class MemoryService:
         return {"id": memory_id, "status": "quarantined"}
 
     def unreadable_records(self, actor_id: str | None = None) -> list[dict[str, object]]:
-        warnings = self.decrypt_health(actor_id)["warnings"]
-        return warnings if isinstance(warnings, list) else []
+        return [
+            item
+            for item in cast(list[object], self.decrypt_health(actor_id)["warnings"])
+            if isinstance(item, dict)
+        ]
 
     def purge_unreadable(
         self, actor_id: str | None = None, dry_run: bool = True

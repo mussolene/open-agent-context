@@ -178,17 +178,7 @@ def status(db: DbOpt = None, json_out: JsonOpt = False) -> None:
         ],
     }
     if key_status.available and key_status.unlocked:
-        try:
-            memory_health = services(db).memory.decrypt_health()
-        except Exception as exc:  # pragma: no cover - defensive status path
-            memory_health = {
-                "status": "WARN",
-                "checked_records": 0,
-                "unreadable_records": 0,
-                "warnings": [
-                    {"type": "MemoryDecryptHealthUnavailable", "reason": exc.__class__.__name__}
-                ],
-            }
+        memory_health = services(db).memory.decrypt_health()
     tables = (
         "memory_records",
         "context_capsules",
@@ -763,7 +753,10 @@ def context_build(
         emit({"error": "MemoryDecryptError", **exc.record}, json_out)
         raise typer.Exit(2) from exc
     svc.audit.record("context.build", actor, capsule.id)
-    emit(capsule.model_dump(), json_out)
+    payload: object = capsule.model_dump()
+    if svc.context.last_warnings:
+        payload = {"capsule": payload, "warnings": svc.context.last_warnings}
+    emit(payload, json_out)
 
 
 @context_app.command("explain")

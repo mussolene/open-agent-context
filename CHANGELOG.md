@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+## 1.0.2 - 2026-05-03
+
+### Changed
+
+- Kept unreadable-memory context-build diagnostics outside the portable
+  `ContextCapsule` standard schema; Python CLI/API now return those warnings as
+  reference-side metadata beside the capsule.
+- Removed defensive status fallback that could mask an unlocked-key memory
+  decrypt health failure.
+
 ## 1.0.1 - 2026-05-03
 
 ### Added

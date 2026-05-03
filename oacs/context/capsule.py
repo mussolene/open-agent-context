@@ -27,7 +27,6 @@ class ContextCapsule(BaseModel):
     included_tools: list[str] = Field(default_factory=list)
     evidence_refs: list[str] = Field(default_factory=list)
     forbidden_assumptions: list[str] = Field(default_factory=list)
-    warnings: list[dict[str, object]] = Field(default_factory=list)
     permissions: dict[str, bool] = Field(default_factory=dict)
     expires_at: str | None = None
     audit_refs: list[str] = Field(default_factory=list)

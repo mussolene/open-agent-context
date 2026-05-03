@@ -57,13 +57,15 @@ ordered field/direction pairs, and limits rather than backend-specific SQL.
 
 ### Encrypted Record Health
 
-Memory query and context build degrade gracefully by default. If an authorized
-memory row cannot be decrypted or decoded, OACS skips that row, returns usable
-results, and emits a structured `UnreadableMemoryRecord` warning with safe
-metadata only: `record_id`, `scope`, `namespace`, `memory_type`, and
-`created_at`. Encrypted content is never included in the warning. Use
-`--strict` on `acs memory query` or `acs context build` to preserve fail-fast
-behavior for verification runs.
+Memory query and context build degrade gracefully by default in the reference
+implementation. If an authorized memory row cannot be decrypted or decoded,
+OACS skips that row, returns usable results, and emits a structured
+`UnreadableMemoryRecord` warning with safe metadata only: `record_id`, `scope`,
+`namespace`, `memory_type`, and `created_at`. Encrypted content is never
+included in the warning. Context build diagnostics are returned beside the
+capsule by the reference CLI/API; they are not fields in the portable
+`ContextCapsule` standard record. Use `--strict` on `acs memory query` or
+`acs context build` to preserve fail-fast behavior for verification runs.
 
 Health and recovery commands:
 
@@ -146,13 +148,15 @@ ordered field/direction pairs и limits вместо backend-specific SQL.
 
 ### Encrypted Record Health
 
-По умолчанию `memory query` и `context build` деградируют мягко. Если
-authorized memory row не расшифровывается или не декодируется, OACS пропускает
-эту строку, возвращает пригодный результат и добавляет structured warning
-`UnreadableMemoryRecord` только с безопасными metadata: `record_id`, `scope`,
-`namespace`, `memory_type`, `created_at`. Encrypted content в warning не
-попадает. Для fail-fast проверок используйте `--strict` в `acs memory query` или
-`acs context build`.
+По умолчанию `memory query` и `context build` в reference implementation
+деградируют мягко. Если authorized memory row не расшифровывается или не
+декодируется, OACS пропускает эту строку, возвращает пригодный результат и
+добавляет structured warning `UnreadableMemoryRecord` только с безопасными
+metadata: `record_id`, `scope`, `namespace`, `memory_type`, `created_at`.
+Encrypted content в warning не попадает. Diagnostics context build возвращаются
+рядом с capsule в reference CLI/API; они не являются полями portable
+`ContextCapsule` standard record. Для fail-fast проверок используйте `--strict`
+в `acs memory query` или `acs context build`.
 
 Health и recovery commands:
 

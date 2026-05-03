@@ -31,6 +31,7 @@ class ContextBuilder:
         self.tools = tools
         self.policy = policy
         self.master_key = master_key
+        self.last_warnings: list[dict[str, object]] = []
 
     def build(
         self,
@@ -43,8 +44,10 @@ class ContextBuilder:
         strict: bool = False,
     ) -> ContextCapsule:
         requested_scope = scope or []
+        self.last_warnings = []
         self.policy.require(actor_id, "context.build", scope=requested_scope, namespace="default")
         memories = self.memory.query(intent, actor_id, requested_scope, strict=strict)
+        self.last_warnings = list(self.memory.last_warnings)
         rules = self.rules.check("context.build", {"memories": [m.model_dump() for m in memories]})
         skills = [
             skill
@@ -95,7 +98,6 @@ class ContextBuilder:
             included_tools=[t.id for t in tools],
             evidence_refs=sorted({ref for m in memories for ref in m.evidence_refs}),
             forbidden_assumptions=["D3-D5 memory is not factual evidence"],
-            warnings=self.memory.last_warnings,
             permissions={
                 "memory.query": True,
                 "memory.commit": False,

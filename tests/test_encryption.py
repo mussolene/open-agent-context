@@ -55,8 +55,10 @@ def test_memory_query_skips_unreadable_records_by_default(db: Path):
     result = services(str(db)).memory.query("searchable", None, ["project"])
 
     assert [mem.id for mem in result] == [good.id]
-    warnings = services(str(db)).memory.query("searchable", None, ["project"])
+    svc = services(str(db))
+    warnings = svc.memory.query("searchable", None, ["project"])
     assert [mem.id for mem in warnings] == [good.id]
+    assert svc.memory.last_warnings[0]["record_id"] == bad.id
 
 
 def test_memory_query_strict_raises_domain_error(db: Path):
@@ -72,7 +74,7 @@ def test_memory_query_strict_raises_domain_error(db: Path):
     assert "content_ciphertext" not in exc.value.record
 
 
-def test_context_build_includes_unreadable_memory_warning(db: Path):
+def test_context_build_tracks_warning_outside_portable_capsule(db: Path):
     svc = services(str(db))
     good = svc.memory.propose("fact", 2, "context healthy memory", None, ["project"])
     svc.memory.commit(good.id, None)
@@ -80,11 +82,13 @@ def test_context_build_includes_unreadable_memory_warning(db: Path):
     svc.memory.commit(bad.id, None)
     corrupt_memory_ciphertext(db, bad.id)
 
-    capsule = services(str(db)).context.build("context memory", None, scope=["project"])
+    svc = services(str(db))
+    capsule = svc.context.build("context memory", None, scope=["project"])
 
     assert capsule.included_memories == [good.id]
-    assert capsule.warnings[0]["record_id"] == bad.id
-    assert capsule.warnings[0]["type"] == "UnreadableMemoryRecord"
+    assert "warnings" not in capsule.model_dump()
+    assert svc.context.last_warnings[0]["record_id"] == bad.id
+    assert svc.context.last_warnings[0]["type"] == "UnreadableMemoryRecord"
 
 
 def test_memory_doctor_and_quarantine_cli(db: Path):
