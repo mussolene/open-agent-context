@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -58,9 +59,31 @@ def hash_json(payload: object) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
+def stable_candidate_schemas() -> set[str]:
+    manifest = (ROOT / "docs" / "FREEZE_PREP.md").read_text(encoding="utf-8")
+    return {
+        f"{schema_name}.schema.json"
+        for schema_name in re.findall(r"\| `([^`]+)` \| `stable_candidate` \|", manifest)
+    }
+
+
 def test_language_neutral_conformance_fixtures_validate_against_schemas() -> None:
     for fixture_name, schema_name in FIXTURE_SCHEMAS.items():
         validate(load_json(FIXTURES / fixture_name), schema(schema_name))
+
+
+def test_stable_candidate_fixtures_reject_unknown_top_level_fields() -> None:
+    stable_candidates = stable_candidate_schemas()
+
+    assert stable_candidates
+    for fixture_name, schema_name in FIXTURE_SCHEMAS.items():
+        if schema_name not in stable_candidates:
+            continue
+        payload = load_json(FIXTURES / fixture_name)
+        payload["x_oacs_unknown"] = True
+
+        with pytest.raises(ValidationError):
+            validate(payload, schema(schema_name))
 
 
 def test_context_capsule_fixture_checksum_uses_canonical_json() -> None:
