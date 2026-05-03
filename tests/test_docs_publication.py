@@ -74,6 +74,16 @@ def test_freeze_prep_manifest_tracks_schema_and_fixture_coverage() -> None:
     assert "`benchmark_task_pack` | `reference_only`" in manifest
 
 
+def test_stable_candidate_schemas_reject_additional_properties() -> None:
+    manifest = (ROOT / "docs" / "FREEZE_PREP.md").read_text(encoding="utf-8")
+    stable_candidates = re.findall(r"\| `([^`]+)` \| `stable_candidate` \|", manifest)
+
+    assert stable_candidates
+    for schema_name in sorted(set(stable_candidates)):
+        payload = json.loads((ROOT / "schemas" / f"{schema_name}.schema.json").read_text())
+        assert payload.get("additionalProperties") is False, schema_name
+
+
 def test_public_docs_do_not_use_stale_reference_version() -> None:
     match = re.match(r"^(\d+)\.(\d+)\.(\d+)", __version__)
     assert match is not None

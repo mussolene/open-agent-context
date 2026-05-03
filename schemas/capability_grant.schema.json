@@ -21,5 +21,6 @@
     "expires_at": {"type": ["string", "null"]},
     "signature": {"type": ["string", "null"]},
     "status": {"type": "string"}
-  }
+  },
+  "additionalProperties": false
 }

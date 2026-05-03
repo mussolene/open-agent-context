@@ -15,5 +15,6 @@
     "evidence_ref": {"type": ["string", "null"]},
     "executed": {"type": "boolean"},
     "status": {"type": "string"}
-  }
+  },
+  "additionalProperties": false
 }
