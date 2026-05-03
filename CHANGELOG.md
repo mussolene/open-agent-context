@@ -8,14 +8,28 @@
 - Negative conformance fixtures that reject plaintext protected values in
   Context Capsules, ToolCallResult output, EvidenceRef public payloads, and
   AuditEvent metadata.
+- Negative conformance fixtures that reject masked protected value fragments and
+  suffix hints in context, tool, audit, and evidence surfaces.
 - `docs/VAULT.md` for the external-vault pipeline.
 
 ### Changed
 
 - Extended conformance validation to include protected value fixtures and
-  plaintext leak rejection examples.
+  plaintext and masked leak rejection examples.
+- Tightened `ProtectedRef` so secret references require an external provider
+  and URI, and portable projections persist only `ref_only` or `redacted`.
 - Kept vault storage, rotation, revocation, and provider-specific secret
   handling outside the `acs` reference implementation.
+- Kept `acs vault` outside the reference CLI surface; vault access belongs to
+  external adapters.
+
+### Notes
+
+- This is still an alpha draft/reference-implementation release, not a v1.0
+  schema freeze.
+- OACS intentionally has no built-in vault. The standard records external
+  `ProtectedRef` values; vault storage and plaintext release stay in external
+  adapters.
 
 ## 0.3.4a1 - 2026-05-03
 

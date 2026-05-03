@@ -35,6 +35,8 @@ The core draft is intentionally small:
 - `ContextCapsule`: portable governed context for one task.
 - `CapabilityGrant`: actor-scoped permission record.
 - `EvidenceRef` and structured evidence items: support for memory and context decisions.
+- `ProtectedRef`: portable reference to external secrets and non-public
+  infrastructure facts without storing vault state or plaintext in OACS.
 - `MemoryOperation`, `ContextOperation`, `MemoryLoopRun`, and `memory_call`:
   auditable operation envelopes.
 
@@ -160,6 +162,10 @@ SQLite. The default provider is passphrase-based envelope encryption. PQC is a
 key-wrapping integration point only; no fake post-quantum claims are made when
 optional PQ libraries are absent.
 
+OACS is not a vault. Protected values are represented as external `ProtectedRef`
+records; secret storage, rotation, revocation, and plaintext release belong to
+external vaults or runtime adapters. See `docs/VAULT.md`.
+
 ### Limitations
 
 This is a local POC, not a hosted multi-tenant system. MCP execution is modeled
@@ -203,6 +209,8 @@ Core draft намеренно небольшой:
 - `ContextCapsule`: переносимый управляемый контекст для одной задачи.
 - `CapabilityGrant`: actor-scoped permission record.
 - `EvidenceRef` и structured evidence items: поддержка memory/context decisions.
+- `ProtectedRef`: portable reference на external secrets и непубличные
+  infrastructure facts без хранения vault state или plaintext в OACS.
 - `MemoryOperation`, `ContextOperation`, `MemoryLoopRun` и `memory_call`:
   auditable operation envelopes.
 
@@ -327,6 +335,10 @@ Memory и sensitive capsule payloads шифруются до записи в SQL
 provider использует passphrase-based envelope encryption. PQC - только
 integration point для key wrapping; если optional PQ libraries отсутствуют,
 проект не делает fake post-quantum claims.
+
+OACS не является vault. Protected values представлены как внешние
+`ProtectedRef` records; secret storage, rotation, revocation и plaintext release
+относятся к external vaults или runtime adapters. См. `docs/VAULT.md`.
 
 ### Ограничения
 

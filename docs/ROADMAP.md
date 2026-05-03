@@ -5,7 +5,7 @@ This roadmap keeps the OACS v0.1 draft standard small. Core work must define
 memory, context, permissions, audit, and deterministic operation contracts.
 Reference adapters prove integration, but they do not expand the standard.
 
-### Current Position: v0.3.5a1 Protected Values and Vault Boundary
+### Current Position: v1.0 Freeze Prep
 Core contract:
 
 - Done: OACS v0.1 draft terminology, schemas, encrypted `MemoryRecord`,
@@ -31,6 +31,9 @@ Core contract:
 - Done: protected values boundary added for external secrets and non-public
   infrastructure facts through `ProtectedRef`. OACS is not a vault; secret
   storage, rotation, and plaintext resolution stay in external vault adapters.
+- In progress: v1.0 freeze prep now tracks schema stability, migration policy,
+  and conformance boundary coverage in `docs/COMPATIBILITY.md` and
+  `conformance/README.md`.
 
 Reference adapters:
 
@@ -178,14 +181,36 @@ Reference adapters:
 - Done: describe `protected.use`, `protected.read`, and `secret.read` as
   capability semantics for external vault adapters.
 
+### v1.0 Freeze Prep
+
+- In progress: classify schemas into freeze candidates and draft/reference
+  support schemas.
+- In progress: define compatibility and migration rules for schema changes,
+  semantic checks, and adapter-boundary behavior.
+- In progress: make the conformance boundary explicit: positive fixtures are
+  portable examples, negative fixtures are required rejection examples, and
+  Python `acs conformance validate` remains a reference checker.
+- Planned: decide which draft support schemas, if any, are promoted into the
+  v1.0 stable set.
+- Planned: publish a final v1.0 release checklist that verifies schemas,
+  fixtures, package artifacts, and published-package smoke tests.
+
 ### v1.0
-- Freeze stable schemas for ContextCapsule, MemoryRecord, CapabilityGrant,
-  RuleManifest, SkillManifest, ToolBinding, McpBinding, EvidenceRef, and
-  AuditEvent.
-- Define compatibility guarantees and migration policy.
-- Provide backend, retrieval, and adapter-boundary conformance tests.
-- Publish conformance fixtures for MemoryRecord, ContextCapsule,
-  CapabilityGrant, EvidenceRef, memory_calls, and adapter boundaries.
+- Freeze stable schemas for `ContextCapsule`, `MemoryRecord`,
+  `CapabilityGrant`, `RuleManifest`, `SkillManifest`, `ToolBinding`,
+  `McpBinding`, `EvidenceRef`, `AuditEvent`, `ProtectedRef`,
+  `MemoryOperation`, `ContextOperation`, `memory_call`, `MemoryLoopRun`,
+  `ToolCallResult`, `StorageSelector`, `RetrievalQuery`, and
+  `RetrievalResult`.
+- Define compatibility guarantees and migration policy for stable schemas,
+  semantic checks, checksum/hash behavior, and adapter-boundary rejection
+  examples.
+- Provide backend, retrieval, protected-ref, and adapter-boundary conformance
+  tests without requiring SQLite, Python, LM Studio, hosted APIs, or MCP stdio
+  execution.
+- Publish conformance fixtures for memory/context records, permissions,
+  manifests, bindings, evidence, audit, protected refs, operation envelopes,
+  retrieval/storage selectors, and negative boundary cases.
 - Keep public benchmark packs as optional validation artifacts.
 
 ## RU
@@ -193,7 +218,7 @@ Reference adapters:
 определять memory, context, permissions, audit и deterministic operation
 contracts. Reference adapters доказывают интеграцию, но не расширяют стандарт.
 
-### Текущая позиция: v0.3.5a1 Protected Values and Vault Boundary
+### Текущая позиция: v1.0 Freeze Prep
 Core contract:
 
 - Готово: OACS v0.1 draft terminology, schemas, encrypted `MemoryRecord`,
@@ -217,6 +242,9 @@ Core contract:
   непубличных infrastructure facts через `ProtectedRef`. OACS не является
   vault; secret storage, rotation и plaintext resolution остаются во внешних
   vault adapters.
+- В работе: v1.0 freeze prep теперь отслеживает schema stability, migration
+  policy и conformance boundary coverage в `docs/COMPATIBILITY.md` и
+  `conformance/README.md`.
 
 Reference adapters:
 
@@ -365,12 +393,31 @@ Reference adapters:
 - Готово: описать `protected.use`, `protected.read` и `secret.read` как
   capability semantics для external vault adapters.
 
+### v1.0 Freeze Prep
+
+- В работе: классифицировать schemas на freeze candidates и draft/reference
+  support schemas.
+- В работе: определить compatibility и migration rules для schema changes,
+  semantic checks и adapter-boundary behavior.
+- В работе: сделать conformance boundary явной: positive fixtures являются
+  portable examples, negative fixtures являются required rejection examples, а
+  Python `acs conformance validate` остаётся reference checker.
+- План: решить, какие draft support schemas, если такие есть, продвигаются в
+  stable set v1.0.
+- План: опубликовать финальный v1.0 release checklist, который проверяет
+  schemas, fixtures, package artifacts и published-package smoke tests.
+
 ### v1.0
-- Заморозить stable schemas для ContextCapsule, MemoryRecord, CapabilityGrant,
-  RuleManifest, SkillManifest, ToolBinding, McpBinding, EvidenceRef и
-  AuditEvent.
-- Зафиксировать compatibility guarantees и migration policy.
-- Добавить backend, retrieval и adapter-boundary conformance tests.
-- Опубликовать conformance fixtures для MemoryRecord, ContextCapsule,
-  CapabilityGrant, EvidenceRef, memory_calls и adapter boundaries.
+- Заморозить stable schemas для `ContextCapsule`, `MemoryRecord`,
+  `CapabilityGrant`, `RuleManifest`, `SkillManifest`, `ToolBinding`,
+  `McpBinding`, `EvidenceRef`, `AuditEvent`, `ProtectedRef`,
+  `MemoryOperation`, `ContextOperation`, `memory_call`, `MemoryLoopRun`,
+  `ToolCallResult`, `StorageSelector`, `RetrievalQuery` и `RetrievalResult`.
+- Зафиксировать compatibility guarantees и migration policy для stable schemas,
+  semantic checks, checksum/hash behavior и adapter-boundary rejection examples.
+- Добавить backend, retrieval, protected-ref и adapter-boundary conformance tests
+  без требования SQLite, Python, LM Studio, hosted APIs или MCP stdio execution.
+- Опубликовать conformance fixtures для memory/context records, permissions,
+  manifests, bindings, evidence, audit, protected refs, operation envelopes,
+  retrieval/storage selectors и negative boundary cases.
 - Оставить public benchmark packs как optional validation artifacts.

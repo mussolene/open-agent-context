@@ -48,6 +48,23 @@ Fixtures:
 Negative fixtures in `negative/` cover schema and semantic boundary failures
 that adapters should reject before projection into task context.
 
+### v1.0 Freeze Prep Boundary
+
+For v1.0 freeze prep, implementations should treat this directory as an adapter
+boundary pack:
+
+- Positive fixtures are portable examples that should validate against schemas
+  and pass documented semantic checks.
+- Negative fixtures are required rejection examples. They cover checksum and
+  hash mismatch, scope wildcard safety, depth limits, backend selector safety,
+  tool/evidence linkage, HTTP network opt-in, D3-D5 factual projection, and
+  plaintext or masked protected value leaks.
+- Python `acs conformance validate` is the reference checker for this pack, not
+  a required transport, service, or runtime API.
+- Fixtures remain language-neutral JSON records. SQLite rows, Python models,
+  CLI command names, package internals, and benchmark harness behavior are not
+  conformance inputs unless a schema or fixture explicitly requires them.
+
 ## RU
 Этот каталог содержит language-neutral JSON fixtures для OACS v0.1 draft. Это
 examples standard contract, а не snapshots Python objects. Runtime может
@@ -94,3 +111,20 @@ Fixtures:
 
 Negative fixtures в `negative/` покрывают schema и semantic boundary failures,
 которые adapters должны reject до projection в task context.
+
+### v1.0 Freeze Prep Boundary
+
+Для v1.0 freeze prep implementations должны считать этот directory
+adapter-boundary pack:
+
+- Positive fixtures являются portable examples, которые должны validate against
+  schemas и проходить documented semantic checks.
+- Negative fixtures являются required rejection examples. Они покрывают checksum
+  и hash mismatch, scope wildcard safety, depth limits, backend selector safety,
+  tool/evidence linkage, HTTP network opt-in, D3-D5 factual projection, а также
+  plaintext или masked protected value leaks.
+- Python `acs conformance validate` является reference checker для этого pack,
+  а не required transport, service или runtime API.
+- Fixtures остаются language-neutral JSON records. SQLite rows, Python models,
+  CLI command names, package internals и benchmark harness behavior не являются
+  conformance inputs, если schema или fixture явно не требуют их.
