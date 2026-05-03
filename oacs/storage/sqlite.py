@@ -21,6 +21,7 @@ _ALLOWED_TABLES = {
     "tools",
     "mcp_bindings",
     "evidence_refs",
+    "protected_values",
     "audit_events",
     "task_traces",
     "experience_traces",
@@ -204,6 +205,15 @@ CREATE TABLE IF NOT EXISTS evidence_refs (
   sensitive_ciphertext BLOB, sensitive_nonce BLOB, content_hash TEXT NOT NULL,
   status TEXT NOT NULL, namespace TEXT NOT NULL, scope TEXT NOT NULL, owner_actor_id TEXT,
   created_at TEXT NOT NULL, updated_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS protected_values (
+  id TEXT PRIMARY KEY, protected_type TEXT NOT NULL, value_kind TEXT NOT NULL,
+  label TEXT NOT NULL, sensitivity TEXT NOT NULL, namespace TEXT NOT NULL,
+  scope TEXT NOT NULL, owner_actor_id TEXT, key_ref TEXT NOT NULL,
+  metadata TEXT NOT NULL, value_ciphertext BLOB NOT NULL, value_nonce BLOB NOT NULL,
+  value_aad TEXT NOT NULL, content_hash TEXT NOT NULL,
+  created_at TEXT NOT NULL, updated_at TEXT NOT NULL, rotated_at TEXT, expires_at TEXT,
+  status TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS audit_events (
   id TEXT PRIMARY KEY, operation TEXT NOT NULL, actor_id TEXT, target_id TEXT,

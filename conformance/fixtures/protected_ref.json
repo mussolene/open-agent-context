@@ -1,0 +1,13 @@
+{
+  "id": "sec_conformance_001",
+  "protected_type": "secret",
+  "label": "production API token",
+  "sensitivity": "restricted",
+  "namespace": "default",
+  "scope": [
+    "project",
+    "repo:oacs"
+  ],
+  "projection": "ref_only",
+  "status": "active"
+}

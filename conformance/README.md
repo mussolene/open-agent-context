@@ -35,6 +35,9 @@ Fixtures:
 - `fixtures/tool_binding.json`
 - `fixtures/mcp_binding.json`
 - `fixtures/audit_event.json`
+- `fixtures/protected_ref.json`
+- `fixtures/secret_record.json`
+- `fixtures/sensitive_fact.json`
 - `fixtures/memory_call.json`
 - `fixtures/memory_operation.json`
 - `fixtures/context_operation.json`
@@ -81,6 +84,9 @@ Fixtures:
 - `fixtures/tool_binding.json`
 - `fixtures/mcp_binding.json`
 - `fixtures/audit_event.json`
+- `fixtures/protected_ref.json`
+- `fixtures/secret_record.json`
+- `fixtures/sensitive_fact.json`
 - `fixtures/memory_call.json`
 - `fixtures/memory_operation.json`
 - `fixtures/context_operation.json`

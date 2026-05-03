@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SensitiveFact",
+  "type": "object",
+  "required": [
+    "id",
+    "protected_type",
+    "value_kind",
+    "label",
+    "ciphertext",
+    "nonce",
+    "key_ref",
+    "content_hash",
+    "status"
+  ],
+  "properties": {
+    "id": {"type": "string"},
+    "protected_type": {"type": "string", "const": "sensitive_fact"},
+    "value_kind": {
+      "type": "string",
+      "enum": ["internal_ip", "private_hostname", "private_url", "topology", "repo_path"]
+    },
+    "label": {"type": "string"},
+    "sensitivity": {"type": "string", "enum": ["internal", "confidential", "restricted"]},
+    "namespace": {"type": "string"},
+    "scope": {"type": "array", "items": {"type": "string"}},
+    "owner_actor_id": {"type": ["string", "null"]},
+    "ciphertext": {"type": "string"},
+    "nonce": {"type": "string"},
+    "aad": {"type": "string"},
+    "key_ref": {"type": "string"},
+    "metadata": {"type": "object"},
+    "content_hash": {"type": "string"},
+    "created_at": {"type": "string"},
+    "updated_at": {"type": "string"},
+    "rotated_at": {"type": ["string", "null"]},
+    "expires_at": {"type": ["string", "null"]},
+    "status": {"type": "string", "enum": ["active", "revoked", "expired"]}
+  },
+  "additionalProperties": false
+}

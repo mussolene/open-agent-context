@@ -30,6 +30,9 @@ Portable contract requirements:
    requiring plaintext sensitive content in operation metadata.
 11. Document which behaviors are runtime-specific extensions rather than core
     OACS conformance behavior.
+12. Store secrets and non-public infrastructure values as protected values.
+    Project `ProtectedRef`, not plaintext, into context, evidence, tool results,
+    and audit metadata.
 
 Reference-only behavior:
 
@@ -73,6 +76,9 @@ Portable contract requirements:
    требования plaintext sensitive content в operation metadata.
 11. Документировать, какие behaviors являются runtime-specific extensions, а не
     core OACS conformance behavior.
+12. Хранить secrets и непубличные infrastructure values как protected values.
+    Проецировать `ProtectedRef`, а не plaintext, в context, evidence, tool
+    results и audit metadata.
 
 Reference-only behavior:
 

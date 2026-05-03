@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ProtectedRef",
+  "type": "object",
+  "required": ["id", "protected_type", "label", "sensitivity", "projection", "status"],
+  "properties": {
+    "id": {"type": "string"},
+    "protected_type": {"type": "string", "enum": ["secret", "sensitive_fact"]},
+    "label": {"type": "string"},
+    "sensitivity": {"type": "string", "enum": ["internal", "confidential", "restricted"]},
+    "namespace": {"type": "string"},
+    "scope": {"type": "array", "items": {"type": "string"}},
+    "projection": {"type": "string", "enum": ["ref_only", "redacted", "plaintext_if_granted"]},
+    "status": {"type": "string", "enum": ["active", "revoked", "expired"]}
+  },
+  "additionalProperties": false
+}

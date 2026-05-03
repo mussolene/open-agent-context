@@ -5,7 +5,7 @@ This roadmap keeps the OACS v0.1 draft standard small. Core work must define
 memory, context, permissions, audit, and deterministic operation contracts.
 Reference adapters prove integration, but they do not expand the standard.
 
-### Current Position: v0.3.4a1 Conformance Freeze Prep
+### Current Position: v0.3.5a1 Protected Values and Vault Boundary
 Core contract:
 
 - Done: OACS v0.1 draft terminology, schemas, encrypted `MemoryRecord`,
@@ -28,6 +28,10 @@ Core contract:
   the reference backend.
 - Done: capability-scoped shared memory added for subagents through
   `CapabilityGrant.scope`, `namespaces_allowed`, and `memory_depth_allowed`.
+- Done: protected values boundary added for secrets and non-public
+  infrastructure facts through `SecretRecord`, `SensitiveFact`, and
+  `ProtectedRef`. `protected.use` is separate from `protected.read` /
+  `secret.read`.
 
 Reference adapters:
 
@@ -159,6 +163,22 @@ Reference adapters:
   stdio execution, LM Studio, benchmarks, and repo dogfood remain reference
   implementation choices unless promoted by schemas/spec.
 
+### v0.3.5 - Protected Values and Vault Boundary
+
+- Done: define language-neutral `SecretRecord`, `SensitiveFact`, and
+  `ProtectedRef` schemas for passwords, tokens, private keys, internal IPs,
+  private hostnames, private URLs, topology, and other non-public values.
+- Done: add conformance fixtures for encrypted protected records and redacted
+  references, without requiring the Python vault backend.
+- Done: add negative conformance fixtures rejecting plaintext protected values
+  in Context Capsules, ToolCallResult output, EvidenceRef public payloads, and
+  AuditEvent metadata.
+- Done: add a Python reference `acs vault put/list/use/revoke` implementation
+  backed by encrypted SQLite storage. This is a reference path, not the only
+  standard implementation strategy.
+- Done: split `protected.use` from `protected.read` / `secret.read` so agents
+  can use protected values through adapters without receiving plaintext.
+
 ### v1.0
 - Freeze stable schemas for ContextCapsule, MemoryRecord, CapabilityGrant,
   RuleManifest, SkillManifest, ToolBinding, McpBinding, EvidenceRef, and
@@ -174,7 +194,7 @@ Reference adapters:
 определять memory, context, permissions, audit и deterministic operation
 contracts. Reference adapters доказывают интеграцию, но не расширяют стандарт.
 
-### Текущая позиция: v0.3.4a1 Conformance Freeze Prep
+### Текущая позиция: v0.3.5a1 Protected Values and Vault Boundary
 Core contract:
 
 - Готово: OACS v0.1 draft terminology, schemas, encrypted `MemoryRecord`,
@@ -194,6 +214,9 @@ Core contract:
   остаётся reference backend.
 - Готово: capability-scoped shared memory добавлена для subagents через
   `CapabilityGrant.scope`, `namespaces_allowed` и `memory_depth_allowed`.
+- Готово: добавлена protected values boundary для secrets и непубличных
+  infrastructure facts через `SecretRecord`, `SensitiveFact` и `ProtectedRef`.
+  `protected.use` отделён от `protected.read` / `secret.read`.
 
 Reference adapters:
 
@@ -325,6 +348,23 @@ Reference adapters:
 - Готово: сохранить fixtures language-neutral; Python, SQLite, CLI/API, MCP
   stdio execution, LM Studio, benchmarks и repo dogfood остаются choices
   reference implementation, если schemas/spec не продвигают их в core.
+
+### v0.3.5 - Protected Values and Vault Boundary
+
+- Готово: определить language-neutral schemas `SecretRecord`, `SensitiveFact` и
+  `ProtectedRef` для passwords, tokens, private keys, internal IPs, private
+  hostnames, private URLs, topology и других непубличных values.
+- Готово: добавить conformance fixtures для encrypted protected records и
+  redacted references без зависимости от Python vault backend.
+- Готово: добавить negative conformance fixtures, которые reject plaintext
+  protected values в Context Capsules, ToolCallResult output, EvidenceRef public
+  payloads и AuditEvent metadata.
+- Готово: добавить Python reference `acs vault put/list/use/revoke` на базе
+  encrypted SQLite storage. Это reference path, а не единственная strategy
+  реализации стандарта.
+- Готово: разделить `protected.use` и `protected.read` / `secret.read`, чтобы
+  agents могли использовать protected values через adapters без получения
+  plaintext.
 
 ### v1.0
 - Заморозить stable schemas для ContextCapsule, MemoryRecord, CapabilityGrant,

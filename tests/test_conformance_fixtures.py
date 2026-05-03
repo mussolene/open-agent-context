@@ -24,6 +24,9 @@ FIXTURE_SCHEMAS = {
     "tool_binding.json": "tool_binding.schema.json",
     "mcp_binding.json": "mcp_binding.schema.json",
     "audit_event.json": "audit_event.schema.json",
+    "protected_ref.json": "protected_ref.schema.json",
+    "secret_record.json": "secret_record.schema.json",
+    "sensitive_fact.json": "sensitive_fact.schema.json",
     "memory_call.json": "memory_call.schema.json",
     "memory_operation.json": "memory_operation.schema.json",
     "context_operation.json": "context_operation.schema.json",
@@ -91,6 +94,18 @@ def test_audit_event_fixture_hash_uses_canonical_json() -> None:
     provided = event.pop("content_hash")
 
     assert provided == hash_json(event)
+
+
+def test_protected_value_fixtures_project_refs_not_plaintext() -> None:
+    protected_ref = load_json(FIXTURES / "protected_ref.json")
+    secret = load_json(FIXTURES / "secret_record.json")
+    sensitive_fact = load_json(FIXTURES / "sensitive_fact.json")
+
+    assert protected_ref["id"] == secret["id"]
+    assert "ciphertext" in secret
+    assert "ciphertext" in sensitive_fact
+    assert "OACS_TEST_SECRET_VALUE" not in json.dumps(secret)
+    assert "OACS_TEST_SECRET_VALUE" not in json.dumps(sensitive_fact)
 
 
 def test_negative_schema_fixture_rejects_unknown_memory_call_operation() -> None:
@@ -164,6 +179,26 @@ def test_negative_semantic_fixture_rejects_bad_audit_hash() -> None:
     provided = payload.pop("content_hash")
 
     assert provided != hash_json(payload)
+
+
+@pytest.mark.parametrize(
+    "fixture_name",
+    [
+        "context_capsule_plaintext_protected_value.json",
+        "tool_call_result_plaintext_secret.json",
+        "audit_event_plaintext_secret.json",
+        "evidence_ref_plaintext_secret.json",
+    ],
+)
+def test_negative_semantic_fixtures_reject_plaintext_protected_values(
+    fixture_name: str,
+) -> None:
+    negative = load_json(NEGATIVE / fixture_name)
+    payload = negative["payload"]
+    assert isinstance(payload, dict)
+    validate(payload, schema(str(negative["schema"])))
+
+    assert "OACS_TEST_SECRET_VALUE" in json.dumps(payload)
 
 
 def test_negative_semantic_fixture_rejects_d4_as_factual_retrieval_evidence() -> None:

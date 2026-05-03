@@ -18,6 +18,9 @@ FIXTURE_SCHEMAS = {
     "tool_binding.json": "tool_binding.schema.json",
     "mcp_binding.json": "mcp_binding.schema.json",
     "audit_event.json": "audit_event.schema.json",
+    "protected_ref.json": "protected_ref.schema.json",
+    "secret_record.json": "secret_record.schema.json",
+    "sensitive_fact.json": "sensitive_fact.schema.json",
     "memory_call.json": "memory_call.schema.json",
     "memory_operation.json": "memory_operation.schema.json",
     "context_operation.json": "context_operation.schema.json",
@@ -157,6 +160,13 @@ def _rejects_negative(
         return bool(checksum != _hash_json(capsule))
     if fixture_name == "audit_event_bad_hash.json":
         return bool(payload_dict.get("content_hash") != _hash_without(payload_dict, "content_hash"))
+    if fixture_name in {
+        "context_capsule_plaintext_protected_value.json",
+        "tool_call_result_plaintext_secret.json",
+        "audit_event_plaintext_secret.json",
+        "evidence_ref_plaintext_secret.json",
+    }:
+        return _contains_plaintext_protected_value(payload_dict)
     if fixture_name == "capability_grant_glob_scope_without_star.json":
         return _has_implicit_wildcard(payload_dict, "scope") or _has_implicit_wildcard(
             payload_dict, "namespaces_allowed"
@@ -200,6 +210,16 @@ def _has_implicit_wildcard(payload: dict[str, object], field: str) -> bool:
     if not isinstance(value, list):
         return False
     return any(isinstance(item, str) and "*" in item and item != "*" for item in value)
+
+
+def _contains_plaintext_protected_value(payload: object) -> bool:
+    if isinstance(payload, str):
+        return "OACS_TEST_SECRET_VALUE" in payload
+    if isinstance(payload, dict):
+        return any(_contains_plaintext_protected_value(value) for value in payload.values())
+    if isinstance(payload, list):
+        return any(_contains_plaintext_protected_value(item) for item in payload)
+    return False
 
 
 def _list(value: object) -> list[dict[str, object]]:

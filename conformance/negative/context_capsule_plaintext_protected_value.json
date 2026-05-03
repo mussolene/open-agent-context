@@ -1,0 +1,32 @@
+{
+  "schema": "context_capsule.schema.json",
+  "reason": "Context capsules must project ProtectedRef records, not plaintext protected values.",
+  "payload": {
+    "id": "ctx_negative_plaintext_secret",
+    "version": "0.1",
+    "capsule_type": "context_capsule",
+    "purpose": "use_protected_value",
+    "task_id": null,
+    "actor_id": "act_agent_001",
+    "agent_id": null,
+    "scope": [
+      "project"
+    ],
+    "token_budget": 4000,
+    "included_memories": [],
+    "included_rules": [],
+    "included_skills": [],
+    "included_tools": [],
+    "evidence_refs": [],
+    "forbidden_assumptions": [
+      "Do not expose protected plaintext"
+    ],
+    "permissions": {
+      "protected.use": true,
+      "protected.value": "OACS_TEST_SECRET_VALUE"
+    },
+    "expires_at": null,
+    "audit_refs": [],
+    "checksum": "semantic-negative"
+  }
+}
