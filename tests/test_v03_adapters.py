@@ -8,7 +8,7 @@ from typer.testing import CliRunner
 
 from oacs.api.server import create_app
 from oacs.app import services
-from oacs.cli.main import app
+from oacs.cli.main import _evidence_ingest_grant_hint, app
 from oacs.core.errors import AccessDenied
 from oacs.tools.models import ToolBinding
 
@@ -500,7 +500,9 @@ def test_cli_ingest_result_denial_explains_tool_scoped_grant(tmp_path) -> None:
 
     assert ingest.exit_code != 0
     assert "Traceback" not in ingest.output
-    assert "grant-evidence --subject agent_cli --tool external_cli" in ingest.output
+    assert _evidence_ingest_grant_hint("agent_cli", "external_cli") == (
+        "acs capability grant-evidence --subject agent_cli --tool external_cli"
+    )
 
 
 def test_api_ingests_external_tool_result(db, monkeypatch) -> None:

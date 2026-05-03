@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 1.0.5 - 2026-05-03
+
+### Fixed
+
+- Removed the remaining terminal-rendering dependency from the
+  `acs tool ingest-result` denial-message test by asserting the grant hint
+  through a deterministic helper instead of Rich output.
+
 ## 1.0.4 - 2026-05-03
 
 ### Fixed

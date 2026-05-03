@@ -89,6 +89,11 @@ def fail(message: str) -> None:
     raise typer.BadParameter(message)
 
 
+def _evidence_ingest_grant_hint(actor: str | None, tool_id: str) -> str:
+    subject = actor or "<actor>"
+    return f"acs capability grant-evidence --subject {subject} --tool {tool_id}"
+
+
 def _version_callback(value: bool) -> None:
     if value:
         typer.echo(f"acs {__version__}")
@@ -1301,10 +1306,9 @@ def tool_ingest_result(
             executed=executed,
         )
     except AccessDenied as exc:
-        subject = actor or "<actor>"
         raise typer.BadParameter(
             f"{exc}. Grant evidence ingest for this tool with: "
-            f"acs capability grant-evidence --subject {subject} --tool {tool_id}"
+            f"{_evidence_ingest_grant_hint(actor, tool_id)}"
         ) from None
     emit(result.model_dump() | {"policy_warnings": policy_warnings}, json_out)
 
