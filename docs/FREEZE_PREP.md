@@ -18,13 +18,13 @@ or semantic rejection rule.
 
 | Schema | Status | Positive fixture | Negative fixture coverage | Freeze criterion |
 | --- | --- | --- | --- | --- |
-| `actor` | `draft_support` | no | no | Decide whether identity records are stable standard records or reference API inputs. |
+| `actor` | `draft_support` | no | no | Keep actor identity records outside v1.0 stable schemas; stable records reference actor IDs, while identity registry shape remains reference/API support. |
 | `audit_event` | `stable_candidate` | yes | yes | Freeze content hash semantics, chain metadata, metadata redaction, scope, namespace, and lifecycle fields. |
 | `benchmark_task` | `reference_only` | no | no | Keep benchmark pack internals outside core conformance unless explicitly promoted. |
 | `benchmark_task_pack` | `reference_only` | no | no | Keep benchmark pack internals outside core conformance unless explicitly promoted. |
 | `capability_grant` | `stable_candidate` | yes | yes | Freeze deny-by-default, explicit wildcard semantics, scope subset rules, namespace allowlists, and depth limits. |
 | `context_capsule` | `stable_candidate` | yes | yes | Freeze canonical checksum, projection rules, permission envelope, evidence references, expiry, and forbidden assumptions. |
-| `context_capsule_export` | `draft_support` | no | no | Decide whether export integrity envelope is core v1.0 or reference import/export behavior. |
+| `context_capsule_export` | `draft_support` | no | no | Keep export integrity envelopes outside v1.0 stable schemas; raw ContextCapsule remains the portable record, while signed import/export packaging remains reference support. |
 | `context_operation` | `stable_candidate` | yes | yes | Freeze operation envelope fields, actor/scope/status metadata, and audit reference semantics. |
 | `evidence_ref` | `stable_candidate` | yes | yes | Freeze public payload rules, sensitive payload boundary, content hash, URI, status, namespace, and scope semantics. |
 | `mcp_binding` | `stable_candidate` | yes | yes | Freeze metadata-first binding shape and keep stdio execution adapter behavior outside core unless explicitly required. |
@@ -47,12 +47,12 @@ Completed freeze-prep work:
    reference behavior with standard behavior.
 2. Add semantic negative fixtures for stable candidates where rejection rules
    are not fully expressible as JSON Schema constraints.
+3. Decide that `actor` and `context_capsule_export` remain `draft_support`
+   rather than promoted to the v1.0 stable set.
 
 Open freeze-prep work:
 
-1. Decide whether `actor` and `context_capsule_export` are promoted to
-   `stable_candidate` or remain draft/reference support.
-2. Publish a final v1.0 checklist that blocks release on manifest drift,
+1. Publish a final v1.0 checklist that blocks release on manifest drift,
    fixture drift, local gate failure, published package smoke failure, or secret
    scan failure.
 
@@ -73,13 +73,13 @@ adapter-boundary или semantic rejection rule.
 
 | Schema | Status | Positive fixture | Negative fixture coverage | Freeze criterion |
 | --- | --- | --- | --- | --- |
-| `actor` | `draft_support` | no | no | Решить, являются ли identity records stable standard records или reference API inputs. |
+| `actor` | `draft_support` | no | no | Оставить actor identity records вне v1.0 stable schemas; stable records ссылаются на actor IDs, а identity registry shape остаётся reference/API support. |
 | `audit_event` | `stable_candidate` | yes | yes | Заморозить content hash semantics, chain metadata, metadata redaction, scope, namespace и lifecycle fields. |
 | `benchmark_task` | `reference_only` | no | no | Оставить benchmark pack internals вне core conformance, если они явно не promoted. |
 | `benchmark_task_pack` | `reference_only` | no | no | Оставить benchmark pack internals вне core conformance, если они явно не promoted. |
 | `capability_grant` | `stable_candidate` | yes | yes | Заморозить deny-by-default, explicit wildcard semantics, scope subset rules, namespace allowlists и depth limits. |
 | `context_capsule` | `stable_candidate` | yes | yes | Заморозить canonical checksum, projection rules, permission envelope, evidence references, expiry и forbidden assumptions. |
-| `context_capsule_export` | `draft_support` | no | no | Решить, является ли export integrity envelope core v1.0 или reference import/export behavior. |
+| `context_capsule_export` | `draft_support` | no | no | Оставить export integrity envelopes вне v1.0 stable schemas; raw ContextCapsule остаётся portable record, а signed import/export packaging остаётся reference support. |
 | `context_operation` | `stable_candidate` | yes | yes | Заморозить operation envelope fields, actor/scope/status metadata и audit reference semantics. |
 | `evidence_ref` | `stable_candidate` | yes | yes | Заморозить public payload rules, sensitive payload boundary, content hash, URI, status, namespace и scope semantics. |
 | `mcp_binding` | `stable_candidate` | yes | yes | Заморозить metadata-first binding shape и оставить stdio execution adapter behavior вне core, если он явно не требуется. |
@@ -102,11 +102,11 @@ Completed freeze-prep work:
    reference behavior со standard behavior.
 2. Добавить semantic negative fixtures для stable candidates, где rejection
    rules не полностью выражаются JSON Schema constraints.
+3. Решить, что `actor` и `context_capsule_export` остаются `draft_support`, а не
+   promoted в v1.0 stable set.
 
 Open freeze-prep work:
 
-1. Решить, будут ли `actor` и `context_capsule_export` promoted to
-   `stable_candidate` или останутся draft/reference support.
-2. Опубликовать финальный v1.0 checklist, который блокирует release при
+1. Опубликовать финальный v1.0 checklist, который блокирует release при
    manifest drift, fixture drift, local gate failure, published package smoke
    failure или secret scan failure.

@@ -54,9 +54,12 @@ Freeze candidate schemas:
 | Operation envelopes | `memory_operation`, `context_operation`, `memory_call`, `memory_loop_run`, `tool_call_result` | Stable auditable envelopes for operation traces and tool-result evidence. |
 | Retrieval and storage selectors | `retrieval_query`, `retrieval_result`, `storage_selector` | Stable policy-first query/result/selector shape without backend-specific query fragments. |
 
-Draft support schemas remain outside the v1.0 freeze candidate set until they
-are explicitly promoted by the roadmap: `actor`, `context_capsule_export`,
-`benchmark_task`, and `benchmark_task_pack`.
+Draft support schemas remain outside the v1.0 freeze candidate set. For the
+v1.0 freeze, `actor` stays reference identity/API support: stable records carry
+actor identifiers, but the identity registry shape is not a stable portable
+record. `context_capsule_export` stays reference import/export packaging: raw
+`ContextCapsule` JSON is the portable record, while export integrity envelopes
+are optional adapter behavior. Benchmark task schemas remain reference-only.
 
 Migration policy for v1.0:
 
@@ -131,9 +134,13 @@ Freeze candidate schemas:
 | Operation envelopes | `memory_operation`, `context_operation`, `memory_call`, `memory_loop_run`, `tool_call_result` | Stable auditable envelopes для operation traces и tool-result evidence. |
 | Retrieval and storage selectors | `retrieval_query`, `retrieval_result`, `storage_selector` | Stable policy-first query/result/selector shape без backend-specific query fragments. |
 
-Draft support schemas остаются вне freeze candidate set v1.0, пока roadmap явно
-не продвинет их: `actor`, `context_capsule_export`, `benchmark_task` и
-`benchmark_task_pack`.
+Draft support schemas остаются вне freeze candidate set v1.0. Для v1.0 freeze
+`actor` остаётся reference identity/API support: stable records несут actor
+identifiers, но identity registry shape не является stable portable record.
+`context_capsule_export` остаётся reference import/export packaging: raw
+`ContextCapsule` JSON является portable record, а export integrity envelopes
+являются optional adapter behavior. Benchmark task schemas остаются
+reference-only.
 
 Migration policy для v1.0:
 

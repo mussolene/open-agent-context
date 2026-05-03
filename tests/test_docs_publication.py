@@ -109,10 +109,30 @@ def test_freeze_prep_status_is_current_in_roadmap_and_manifest() -> None:
     assert "portable field descriptions" in roadmap
     assert "stable-candidate schemas have strict top-level shape" in roadmap
     assert "stable-candidate schemas имеют strict top-level shape" in roadmap
+    assert "`actor` and `context_capsule_export` remain draft support" in roadmap
+    assert "`actor` и `context_capsule_export` остаются draft support" in roadmap
     assert "Completed freeze-prep work:" in manifest
     assert "Open freeze-prep work:" in manifest
     assert "Add descriptions to schema fields" in manifest
     assert "Добавить descriptions к schema fields" in manifest
+    assert "Decide that `actor` and `context_capsule_export` remain `draft_support`" in manifest
+    assert "Решить, что `actor` и `context_capsule_export` остаются `draft_support`" in manifest
+
+
+def test_draft_support_schema_decisions_stay_outside_v1_stable_surface() -> None:
+    manifest = (ROOT / "docs" / "FREEZE_PREP.md").read_text(encoding="utf-8")
+    compatibility = (ROOT / "docs" / "COMPATIBILITY.md").read_text(encoding="utf-8")
+    capsules = (ROOT / "docs" / "CONTEXT_CAPSULES.md").read_text(encoding="utf-8")
+
+    assert "`actor` | `draft_support` | no | no | Keep actor identity records outside" in manifest
+    assert (
+        "`context_capsule_export` | `draft_support` | no | no | "
+        "Keep export integrity envelopes outside"
+        in manifest
+    )
+    assert "identity registry shape is not" in compatibility
+    assert "raw\n`ContextCapsule` JSON is the portable record" in compatibility
+    assert "not part of the v1.0 stable portable schema set" in capsules
 
 
 def test_public_docs_do_not_use_stale_reference_version() -> None:

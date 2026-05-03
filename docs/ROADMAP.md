@@ -192,13 +192,16 @@ Reference adapters:
   descriptions, and docs tests that block description or strictness drift.
 - Done: semantic negative fixtures cover stable-candidate adapter-boundary
   rules that cannot be expressed fully as JSON Schema constraints.
+- Done: `actor` and `context_capsule_export` remain draft support for v1.0;
+  stable records reference actor IDs, and raw ContextCapsule JSON remains the
+  portable context record.
 - In progress: define compatibility and migration rules for schema changes,
   semantic checks, and adapter-boundary behavior.
 - In progress: make the conformance boundary explicit: positive fixtures are
   portable examples, negative fixtures are required rejection examples, and
   Python `acs conformance validate` remains a reference checker.
-- Planned: decide which draft support schemas, if any, are promoted into the
-  v1.0 stable set.
+- Done: decide which draft support schemas, if any, are promoted into the v1.0
+  stable set; no draft support schemas are promoted for v1.0 freeze prep.
 - Planned: publish a final v1.0 release checklist that verifies schemas,
   fixtures, package artifacts, and published-package smoke tests.
 
@@ -412,13 +415,16 @@ Reference adapters:
 - Готово: semantic negative fixtures покрывают stable-candidate
   adapter-boundary rules, которые нельзя полностью выразить JSON Schema
   constraints.
+- Готово: `actor` и `context_capsule_export` остаются draft support для v1.0;
+  stable records ссылаются на actor IDs, а raw ContextCapsule JSON остаётся
+  portable context record.
 - В работе: определить compatibility и migration rules для schema changes,
   semantic checks и adapter-boundary behavior.
 - В работе: сделать conformance boundary явной: positive fixtures являются
   portable examples, negative fixtures являются required rejection examples, а
   Python `acs conformance validate` остаётся reference checker.
-- План: решить, какие draft support schemas, если такие есть, продвигаются в
-  stable set v1.0.
+- Готово: решить, какие draft support schemas, если такие есть, продвигаются в
+  stable set v1.0; для v1.0 freeze prep draft support schemas не продвигаются.
 - План: опубликовать финальный v1.0 release checklist, который проверяет
   schemas, fixtures, package artifacts и published-package smoke tests.
 
