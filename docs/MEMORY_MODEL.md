@@ -55,6 +55,39 @@ and fixtures in `conformance/fixtures/`. Storage access uses
 `schemas/storage_selector.schema.json`: selector records carry filters,
 ordered field/direction pairs, and limits rather than backend-specific SQL.
 
+### Encrypted Record Health
+
+Memory query and context build degrade gracefully by default. If an authorized
+memory row cannot be decrypted or decoded, OACS skips that row, returns usable
+results, and emits a structured `UnreadableMemoryRecord` warning with safe
+metadata only: `record_id`, `scope`, `namespace`, `memory_type`, and
+`created_at`. Encrypted content is never included in the warning. Use
+`--strict` on `acs memory query` or `acs context build` to preserve fail-fast
+behavior for verification runs.
+
+Health and recovery commands:
+
+- `acs status` reports `memory_decrypt_health` when the key is unlocked.
+- `acs doctor` and `acs memory doctor` fail when active memory rows are
+  unreadable.
+- `acs memory quarantine <id>` marks a bad row as `quarantined` so normal reads
+  skip it without deleting data.
+- `acs memory export-readable` exports only decryptable memories plus warnings.
+- `acs memory purge-unreadable --dry-run` lists unreadable rows; use `--apply`
+  only after reviewing the ids.
+
+Read/write boundaries while memory health is degraded:
+
+- Requires memory decrypt: `memory read`, `memory query`, `memory export`,
+  `context build`, loop runs that build context, and memory update commands that
+  first read an existing memory (`commit`, `correct`, `deprecate`, `supersede`,
+  `forget`, `blur`, `sharpen`).
+- Does not need decrypting old memories: `memory observe`, `memory propose`,
+  `memory import`, `tool ingest-result`, evidence list/inspect, audit list/tail,
+  rule/skill/tool registration, and checkpoint append commands. These commands
+  may warn about degraded memory health but should not be blocked by unreadable
+  old rows.
+
 ## RU
 Глубины:
 
@@ -110,3 +143,37 @@ Portable retrieval conformance выражен через
 fixtures в `conformance/fixtures/`. Storage access использует
 `schemas/storage_selector.schema.json`: selector records содержат filters,
 ordered field/direction pairs и limits вместо backend-specific SQL.
+
+### Encrypted Record Health
+
+По умолчанию `memory query` и `context build` деградируют мягко. Если
+authorized memory row не расшифровывается или не декодируется, OACS пропускает
+эту строку, возвращает пригодный результат и добавляет structured warning
+`UnreadableMemoryRecord` только с безопасными metadata: `record_id`, `scope`,
+`namespace`, `memory_type`, `created_at`. Encrypted content в warning не
+попадает. Для fail-fast проверок используйте `--strict` в `acs memory query` или
+`acs context build`.
+
+Health и recovery commands:
+
+- `acs status` показывает `memory_decrypt_health`, когда key unlocked.
+- `acs doctor` и `acs memory doctor` завершаются ошибкой, если active memory
+  rows unreadable.
+- `acs memory quarantine <id>` помечает плохую row как `quarantined`, чтобы
+  обычные reads её пропускали без удаления данных.
+- `acs memory export-readable` экспортирует только decryptable memories и
+  warnings.
+- `acs memory purge-unreadable --dry-run` показывает unreadable rows; `--apply`
+  используйте только после проверки ids.
+
+Read/write boundaries при degraded memory health:
+
+- Требуют memory decrypt: `memory read`, `memory query`, `memory export`,
+  `context build`, loop runs, которые строят context, и memory update commands,
+  сначала читающие существующую memory (`commit`, `correct`, `deprecate`,
+  `supersede`, `forget`, `blur`, `sharpen`).
+- Не требуют decrypt old memories: `memory observe`, `memory propose`,
+  `memory import`, `tool ingest-result`, evidence list/inspect, audit list/tail,
+  rule/skill/tool registration и checkpoint append commands. Они могут
+  предупреждать о degraded memory health, но не должны блокироваться
+  unreadable old rows.

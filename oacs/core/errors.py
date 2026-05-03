@@ -19,3 +19,11 @@ class LockedKeyError(OacsError):
 
 class ValidationFailure(OacsError):
     """Raised when a typed contract is invalid."""
+
+
+class MemoryDecryptError(OacsError):
+    """Raised when an encrypted memory row cannot be decrypted or decoded."""
+
+    def __init__(self, message: str, record: dict[str, object]):
+        super().__init__(message)
+        self.record = record

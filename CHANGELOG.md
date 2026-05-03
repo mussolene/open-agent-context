@@ -2,8 +2,24 @@
 
 ## Unreleased
 
+## 1.0.1 - 2026-05-03
+
+### Added
+
+- Added DB decrypt health diagnostics in `acs status`, `acs doctor`, and
+  `acs memory doctor`.
+- Added memory repair workflows: `acs memory quarantine`,
+  `acs memory export-readable`, and `acs memory purge-unreadable`.
+
 ### Changed
 
+- Made `acs memory query` and `acs context build` skip unreadable encrypted
+  memory records by default, emit structured warnings, and support `--strict`
+  fail-fast behavior.
+- Replaced raw AES-GCM decrypt tracebacks with `MemoryDecryptError` domain
+  errors that expose safe record metadata without encrypted content.
+- Documented which commands require decrypting existing memories and which
+  append-only commands can operate while memory health is degraded.
 - Removed CI/release workflow dependency on `actions/upload-artifact` and
   `actions/download-artifact` while those actions still declare a deprecated
   Node.js runtime; trusted-publishing jobs now build and check distributions

@@ -20,7 +20,7 @@ from oacs.benchmark.runner import MemoryCriticalBenchmark
 from oacs.conformance import validate_conformance
 from oacs.context.reducer import reduce_capsule
 from oacs.core.config import OacsConfig
-from oacs.core.errors import NotFound
+from oacs.core.errors import MemoryDecryptError, NotFound
 from oacs.core.ids import new_id
 from oacs.core.json import hash_json
 from oacs.core.time import now_iso
@@ -169,6 +169,26 @@ def init(
 def status(db: DbOpt = None, json_out: JsonOpt = False) -> None:
     svc = services(db, require_key=False)
     key_status = svc.key_provider.status()
+    memory_health: dict[str, object] = {
+        "status": "WARN",
+        "checked_records": 0,
+        "unreadable_records": 0,
+        "warnings": [
+            {"type": "MemoryDecryptHealthSkipped", "reason": "key is locked or unavailable"}
+        ],
+    }
+    if key_status.available and key_status.unlocked:
+        try:
+            memory_health = services(db).memory.decrypt_health()
+        except Exception as exc:  # pragma: no cover - defensive status path
+            memory_health = {
+                "status": "WARN",
+                "checked_records": 0,
+                "unreadable_records": 0,
+                "warnings": [
+                    {"type": "MemoryDecryptHealthUnavailable", "reason": exc.__class__.__name__}
+                ],
+            }
     tables = (
         "memory_records",
         "context_capsules",
@@ -183,10 +203,21 @@ def status(db: DbOpt = None, json_out: JsonOpt = False) -> None:
             "db_exists": svc.config.db_path.exists(),
             "base_dir": str(svc.config.base_dir),
             "key": key_status.__dict__,
+            "memory_decrypt_health": memory_health,
             "counts": {table: len(svc.store.list(table, limit=None)) for table in tables},
         },
         json_out,
     )
+
+
+@app.command()
+def doctor(db: DbOpt = None, json_out: JsonOpt = False) -> None:
+    svc = services(db)
+    memory_health = svc.memory.decrypt_health()
+    status_value = "PASS" if memory_health["status"] == "PASS" else "FAIL"
+    emit({"status": status_value, "memory_decrypt_health": memory_health}, json_out)
+    if status_value != "PASS":
+        raise typer.Exit(1)
 
 
 @app.command()
@@ -527,15 +558,23 @@ def memory_commit(
 @memory_app.command("query")
 def memory_query(
     query: Annotated[str, typer.Option("--query", "-q")] = "",
+    strict: Annotated[bool, typer.Option("--strict")] = False,
     actor: ActorOpt = None,
     scope: ScopeOpt = None,
     db: DbOpt = None,
     json_out: JsonOpt = False,
 ) -> None:
     svc = services(db)
-    result = svc.memory.query(query, actor, scope or [])
+    try:
+        result = svc.memory.query(query, actor, scope or [], strict=strict)
+    except MemoryDecryptError as exc:
+        emit({"error": "MemoryDecryptError", **exc.record}, json_out)
+        raise typer.Exit(2) from exc
     svc.audit.record("memory.query", actor, None, {"query_hash": hash_json(query)})
-    emit([m.model_dump() for m in result], json_out)
+    payload: object = [m.model_dump() for m in result]
+    if svc.memory.last_warnings:
+        payload = {"memories": payload, "warnings": svc.memory.last_warnings}
+    emit(payload, json_out)
 
 
 @memory_app.command("read")
@@ -543,9 +582,59 @@ def memory_read(
     memory_id: str, actor: ActorOpt = None, db: DbOpt = None, json_out: JsonOpt = False
 ) -> None:
     svc = services(db)
-    mem = svc.memory.read(memory_id, actor)
+    try:
+        mem = svc.memory.read(memory_id, actor)
+    except MemoryDecryptError as exc:
+        emit({"error": "MemoryDecryptError", **exc.record}, json_out)
+        raise typer.Exit(2) from exc
     svc.audit.record("memory.read", actor, mem.id)
     emit(mem.model_dump(), json_out)
+
+
+@memory_app.command("doctor")
+def memory_doctor(actor: ActorOpt = None, db: DbOpt = None, json_out: JsonOpt = False) -> None:
+    svc = services(db)
+    result = svc.memory.decrypt_health(actor)
+    emit(result, json_out)
+    if result["status"] != "PASS":
+        raise typer.Exit(1)
+
+
+@memory_app.command("quarantine")
+def memory_quarantine(
+    memory_id: str, actor: ActorOpt = None, db: DbOpt = None, json_out: JsonOpt = False
+) -> None:
+    svc = services(db)
+    result = svc.memory.quarantine(memory_id, actor)
+    svc.audit.record("memory.quarantine", actor, memory_id)
+    emit(result, json_out)
+
+
+@memory_app.command("export-readable")
+def memory_export_readable(
+    actor: ActorOpt = None, db: DbOpt = None, json_out: JsonOpt = False
+) -> None:
+    svc = services(db)
+    memories = svc.memory.query("", actor, strict=False)
+    result = {
+        "memories": [memory.model_dump() for memory in memories],
+        "warnings": svc.memory.last_warnings,
+    }
+    svc.audit.record("memory.export-readable", actor, None, {"count": len(memories)})
+    emit(result, json_out)
+
+
+@memory_app.command("purge-unreadable")
+def memory_purge_unreadable(
+    dry_run: Annotated[bool, typer.Option("--dry-run/--apply")] = True,
+    actor: ActorOpt = None,
+    db: DbOpt = None,
+    json_out: JsonOpt = False,
+) -> None:
+    svc = services(db)
+    result = svc.memory.purge_unreadable(actor, dry_run=dry_run)
+    svc.audit.record("memory.purge-unreadable", actor, None, result)
+    emit(result, json_out)
 
 
 @memory_app.command("correct")
@@ -663,11 +752,16 @@ def context_build(
     agent: AgentOpt = None,
     scope: ScopeOpt = None,
     budget: Annotated[int, typer.Option("--budget")] = 4000,
+    strict: Annotated[bool, typer.Option("--strict")] = False,
     db: DbOpt = None,
     json_out: JsonOpt = False,
 ) -> None:
     svc = services(db)
-    capsule = svc.context.build(intent, actor, agent, scope or [], budget)
+    try:
+        capsule = svc.context.build(intent, actor, agent, scope or [], budget, strict=strict)
+    except MemoryDecryptError as exc:
+        emit({"error": "MemoryDecryptError", **exc.record}, json_out)
+        raise typer.Exit(2) from exc
     svc.audit.record("context.build", actor, capsule.id)
     emit(capsule.model_dump(), json_out)
 
@@ -758,7 +852,7 @@ def capsule_create(
     db: DbOpt = None,
     json_out: JsonOpt = False,
 ) -> None:
-    context_build(intent, actor, None, [], 4000, db, json_out)
+    context_build(intent, actor, None, [], 4000, False, db, json_out)
 
 
 @capsule_app.command("inspect")

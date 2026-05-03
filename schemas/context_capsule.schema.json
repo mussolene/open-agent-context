@@ -103,6 +103,13 @@
       },
       "description": "Assumptions the consuming agent must not treat as facts."
     },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Structured non-fatal warnings produced while building the capsule."
+    },
     "permissions": {
       "type": "object",
       "description": "Portable permission envelope; implementations enforce it through local policy adapters."

@@ -40,10 +40,11 @@ class ContextBuilder:
         scope: list[str] | None = None,
         token_budget: int = 4000,
         task_id: str | None = None,
+        strict: bool = False,
     ) -> ContextCapsule:
         requested_scope = scope or []
         self.policy.require(actor_id, "context.build", scope=requested_scope, namespace="default")
-        memories = self.memory.query(intent, actor_id, requested_scope)
+        memories = self.memory.query(intent, actor_id, requested_scope, strict=strict)
         rules = self.rules.check("context.build", {"memories": [m.model_dump() for m in memories]})
         skills = [
             skill
@@ -94,6 +95,7 @@ class ContextBuilder:
             included_tools=[t.id for t in tools],
             evidence_refs=sorted({ref for m in memories for ref in m.evidence_refs}),
             forbidden_assumptions=["D3-D5 memory is not factual evidence"],
+            warnings=self.memory.last_warnings,
             permissions={
                 "memory.query": True,
                 "memory.commit": False,

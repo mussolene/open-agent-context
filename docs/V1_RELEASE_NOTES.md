@@ -1,6 +1,6 @@
-# OACS v1.0.0 Release Notes
+# OACS v1.0 Release Notes
 
-OACS v1.0.0 freezes the portable Open Agent Context Standard contract for
+OACS v1.0 freezes the portable Open Agent Context Standard contract for
 agent memory, context, permissions, audit, evidence, protected references, and
 operation traces.
 
@@ -27,13 +27,13 @@ operation traces.
 - Python, SQLite, CLI/API UX, MCP stdio execution, LM Studio, benchmarks, repo
   dogfood, and hosted API choices do not expand the OACS standard unless a
   stable schema or spec section explicitly requires them.
-- The package is published to PyPI as `oacs==1.0.0`.
+- The package is published to PyPI as the current stable `oacs` release.
 
 ## Verification
 
 - Local release gate passed: ruff, mypy, pytest, conformance validation, package
   build, and twine metadata checks.
-- Fresh PyPI smoke passed: `acs --version` reported `acs 1.0.0`, and
+- Fresh PyPI smoke passed: `acs --version` reported the stable release, and
   `acs conformance validate --json` accepted all positive fixtures and rejected
   all negative fixtures.
 - Release proof was recorded in OACS evidence and checkpoint memory.

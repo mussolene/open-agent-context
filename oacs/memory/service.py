@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from typing import Any, cast
 
-from oacs.core.errors import NotFound, ValidationFailure
+from cryptography.exceptions import InvalidTag
+
+from oacs.core.errors import MemoryDecryptError, NotFound, ValidationFailure
 from oacs.core.json import dumps, hash_json, loads
 from oacs.core.time import now_iso
 from oacs.crypto.aead import decrypt_json_bytes, encrypt_json_bytes
@@ -25,6 +27,7 @@ class MemoryService:
         self.policy = policy
         self.master_key = master_key
         self.retrieval_provider = retrieval_provider or HybridRetrievalProvider()
+        self.last_warnings: list[dict[str, object]] = []
 
     def observe(
         self, text: str, actor_id: str | None, scope: list[str] | None = None
@@ -56,8 +59,13 @@ class MemoryService:
         return self._transition(mem, "active")
 
     def query(
-        self, query: str, actor_id: str | None, scope: list[str] | None = None
+        self,
+        query: str,
+        actor_id: str | None,
+        scope: list[str] | None = None,
+        strict: bool = False,
     ) -> list[MemoryRecord]:
+        self.last_warnings = []
         requested_scope = scope or []
         self.policy.require(actor_id, "memory.query", scope=requested_scope, namespace="default")
         rows = self.repo.list(filters={"status": "active", "lifecycle_status": "active"})
@@ -72,7 +80,14 @@ class MemoryService:
                 actor_id, "memory.read", row_depth, row_scope, row_namespace
             ):
                 continue
-            memories.append(self._decrypt(row))
+            try:
+                memories.append(self._decrypt(row))
+            except MemoryDecryptError as exc:
+                if strict:
+                    raise
+                self.last_warnings.append(
+                    {"type": "UnreadableMemoryRecord", **exc.record}
+                )
         return rank_memories(query, memories, provider=self.retrieval_provider)
 
     def read(self, memory_id: str, actor_id: str | None) -> MemoryRecord:
@@ -130,6 +145,59 @@ class MemoryService:
     def export_all(self, actor_id: str | None) -> list[dict[str, object]]:
         self.policy.require(actor_id, "memory.export")
         return [m.model_dump() for m in self.query("", actor_id)]
+
+    def decrypt_health(self, actor_id: str | None = None) -> dict[str, object]:
+        self.policy.require(actor_id, "memory.query", scope=[], namespace="default")
+        rows = self.repo.list(filters={"status": "active"})
+        unreadable: list[dict[str, object]] = []
+        checked = 0
+        for row in rows:
+            if row.get("lifecycle_status") == "forgotten":
+                continue
+            checked += 1
+            try:
+                self._decrypt(row)
+            except MemoryDecryptError as exc:
+                unreadable.append({"type": "UnreadableMemoryRecord", **exc.record})
+        status = "PASS" if not unreadable else "FAIL"
+        return {
+            "status": status,
+            "checked_records": checked,
+            "unreadable_records": len(unreadable),
+            "warnings": unreadable,
+        }
+
+    def quarantine(self, memory_id: str, actor_id: str | None = None) -> dict[str, object]:
+        row = self.repo.get(memory_id)
+        self.policy.require(
+            actor_id,
+            "memory.forget",
+            int(str(row["depth"])),
+            row["scope"],
+            str(row["namespace"]),
+        )
+        row["status"] = "quarantined"
+        row["updated_at"] = now_iso()
+        self.repo.save(row)
+        return {"id": memory_id, "status": "quarantined"}
+
+    def unreadable_records(self, actor_id: str | None = None) -> list[dict[str, object]]:
+        warnings = self.decrypt_health(actor_id)["warnings"]
+        return warnings if isinstance(warnings, list) else []
+
+    def purge_unreadable(
+        self, actor_id: str | None = None, dry_run: bool = True
+    ) -> dict[str, object]:
+        records = self.unreadable_records(actor_id)
+        ids = [str(item["record_id"]) for item in records]
+        if not dry_run:
+            for memory_id in ids:
+                self.repo.delete(memory_id)
+        return {
+            "status": "dry_run" if dry_run else "purged",
+            "count": len(ids),
+            "record_ids": ids,
+        }
 
     def _create(
         self,
@@ -194,14 +262,17 @@ class MemoryService:
         return mem
 
     def _decrypt(self, row: dict[str, object]) -> MemoryRecord:
-        content = loads(
-            decrypt_json_bytes(
-                self.master_key,
-                row["content_nonce"],  # type: ignore[arg-type]
-                row["content_ciphertext"],  # type: ignore[arg-type]
-                str(row["content_aad"]).encode("utf-8"),
+        try:
+            content = loads(
+                decrypt_json_bytes(
+                    self.master_key,
+                    row["content_nonce"],  # type: ignore[arg-type]
+                    row["content_ciphertext"],  # type: ignore[arg-type]
+                    str(row["content_aad"]).encode("utf-8"),
+                )
             )
-        )
+        except (InvalidTag, ValueError, TypeError, KeyError) as exc:
+            raise MemoryDecryptError("memory record is unreadable", _safe_row_error(row)) from exc
         return MemoryRecord(
             id=str(row["id"]),
             memory_type=str(row["memory_type"]),
@@ -218,3 +289,13 @@ class MemoryService:
             updated_at=str(row["updated_at"]),
             content_hash=str(row["content_hash"]),
         )
+
+
+def _safe_row_error(row: dict[str, object]) -> dict[str, object]:
+    return {
+        "record_id": str(row.get("id", "")),
+        "scope": row.get("scope", []),
+        "namespace": str(row.get("namespace", "")),
+        "memory_type": str(row.get("memory_type", "")),
+        "created_at": row.get("created_at"),
+    }
