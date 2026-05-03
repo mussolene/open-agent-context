@@ -183,8 +183,8 @@ Reference adapters:
 
 ### v1.0 Freeze Prep
 
-- In progress: classify schemas into freeze candidates and draft/reference
-  support schemas.
+- Done: add `docs/FREEZE_PREP.md` as the per-schema freeze manifest for stable
+  candidates, draft support schemas, and reference-only schemas.
 - In progress: define compatibility and migration rules for schema changes,
   semantic checks, and adapter-boundary behavior.
 - In progress: make the conformance boundary explicit: positive fixtures are
@@ -395,8 +395,8 @@ Reference adapters:
 
 ### v1.0 Freeze Prep
 
-- В работе: классифицировать schemas на freeze candidates и draft/reference
-  support schemas.
+- Готово: добавить `docs/FREEZE_PREP.md` как per-schema freeze manifest для
+  stable candidates, draft support schemas и reference-only schemas.
 - В работе: определить compatibility и migration rules для schema changes,
   semantic checks и adapter-boundary behavior.
 - В работе: сделать conformance boundary явной: positive fixtures являются

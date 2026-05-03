@@ -40,7 +40,8 @@ explicit grant is considered a compatibility and security regression.
 ### v1.0 Freeze Prep
 
 Freeze prep separates the portable standard surface from reference-only support
-files before the first stable standard release.
+files before the first stable standard release. `docs/FREEZE_PREP.md` is the
+per-schema manifest; this section is the compatibility policy summary.
 
 Freeze candidate schemas:
 
@@ -116,7 +117,8 @@ grant считается compatibility и security regression.
 ### v1.0 Freeze Prep
 
 Freeze prep отделяет portable standard surface от reference-only support files
-перед первым stable release стандарта.
+перед первым stable release стандарта. `docs/FREEZE_PREP.md` является
+per-schema manifest; этот раздел является summary compatibility policy.
 
 Freeze candidate schemas:
 

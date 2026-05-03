@@ -43,6 +43,37 @@ def test_json_schemas_are_valid_json_objects() -> None:
         assert payload["type"] == "object"
 
 
+def test_freeze_prep_manifest_tracks_schema_and_fixture_coverage() -> None:
+    manifest = (ROOT / "docs" / "FREEZE_PREP.md").read_text(encoding="utf-8")
+    schema_names = sorted(
+        path.name.removesuffix(".schema.json") for path in (ROOT / "schemas").glob("*.json")
+    )
+    fixture_paths = (ROOT / "conformance" / "fixtures").glob("*.json")
+    positive_fixtures = {
+        path.name.removesuffix(".json") for path in fixture_paths
+    }
+    negative_schema_refs = {
+        str(json.loads(path.read_text(encoding="utf-8")).get("schema", "")).removesuffix(
+            ".schema.json"
+        )
+        for path in (ROOT / "conformance" / "negative").glob("*.json")
+    }
+
+    for schema_name in schema_names:
+        assert f"| `{schema_name}` |" in manifest
+
+    for fixture_name in positive_fixtures:
+        assert f"| `{fixture_name}` | `stable_candidate` | yes |" in manifest
+
+    for schema_name in negative_schema_refs:
+        assert f"| `{schema_name}` | `stable_candidate` | yes | yes |" in manifest
+
+    assert "`actor` | `draft_support`" in manifest
+    assert "`context_capsule_export` | `draft_support`" in manifest
+    assert "`benchmark_task` | `reference_only`" in manifest
+    assert "`benchmark_task_pack` | `reference_only`" in manifest
+
+
 def test_public_docs_do_not_use_stale_reference_version() -> None:
     match = re.match(r"^(\d+)\.(\d+)\.(\d+)", __version__)
     assert match is not None
