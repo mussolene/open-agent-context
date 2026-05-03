@@ -1,0 +1,49 @@
+{
+  "schema": "memory_loop_run.schema.json",
+  "reason": "MemoryLoopRun committed_memories should be traceable to proposed_memories in the same portable loop trace.",
+  "payload": {
+    "final_answer": "Use make report-safe to generate the Alpha report.",
+    "context_capsule_id": "ctx_conformance_001",
+    "intent": {
+      "name": "answer_project_question",
+      "confidence": 0.9
+    },
+    "memories_used": [
+      "mem_conformance_001"
+    ],
+    "tools_used": [],
+    "rules_applied": [
+      "rule_fuzzy_memory_not_fact"
+    ],
+    "proposed_memories": [],
+    "committed_memories": [
+      "mem_unproposed_001"
+    ],
+    "audit_trail": [
+      "aud_conformance_001"
+    ],
+    "memory_calls": [
+      {
+        "id": "mcall_conformance_001",
+        "op": "memory.query",
+        "status": "completed",
+        "arguments": {
+          "query": "Alpha report command"
+        },
+        "result": {
+          "memory_ids": [
+            "mem_conformance_001"
+          ]
+        }
+      }
+    ],
+    "evidence": [],
+    "model_prompt": "Answer using selected OACS evidence only.",
+    "context_policy": {
+      "mode": "memory_calls"
+    },
+    "operation_metrics": {
+      "memory_calls": 1
+    }
+  }
+}

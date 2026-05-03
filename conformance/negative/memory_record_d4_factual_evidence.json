@@ -1,0 +1,45 @@
+{
+  "schema": "memory_record.schema.json",
+  "reason": "D3-D5 MemoryRecord content may rank hypotheses but must not embed factual evidence claims.",
+  "payload": {
+    "id": "mem_negative_d4_fact",
+    "memory_type": "hypothesis",
+    "depth": 4,
+    "lifecycle_status": "active",
+    "status": "active",
+    "namespace": "default",
+    "scope": [
+      "project",
+      "repo:oacs"
+    ],
+    "owner_actor_id": "act_agent_001",
+    "content": {
+      "text": "Project Alpha reports might use make report-safe.",
+      "kind": "hypothesis",
+      "tags": [
+        "reports"
+      ],
+      "confidence": 0.5,
+      "evidence": [
+        {
+          "evidence_kind": "factual",
+          "claim": "Alpha report command",
+          "value": "make report-safe",
+          "source_ref": null,
+          "confidence": 0.5,
+          "depth": 4,
+          "scope": [
+            "project"
+          ],
+          "participant": null,
+          "day": null,
+          "slot": "command",
+          "order": 1,
+          "trajectory_step": null
+        }
+      ]
+    },
+    "evidence_refs": [],
+    "supersedes": null
+  }
+}

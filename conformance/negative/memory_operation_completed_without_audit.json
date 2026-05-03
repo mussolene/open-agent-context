@@ -1,0 +1,28 @@
+{
+  "schema": "memory_operation.schema.json",
+  "reason": "Completed MemoryOperation records should carry an audit_event_id before an adapter projects the operation as governed evidence.",
+  "payload": {
+    "id": "mop_negative_completed_without_audit",
+    "operation": "memory.query",
+    "status": "completed",
+    "actor_id": "act_agent_001",
+    "target_id": null,
+    "scope": [
+      "project",
+      "repo:oacs"
+    ],
+    "namespace": "default",
+    "depth": null,
+    "arguments": {
+      "query": "Alpha report command",
+      "limit": 10
+    },
+    "result": {
+      "memory_ids": [
+        "mem_conformance_001"
+      ]
+    },
+    "audit_event_id": null,
+    "created_at": "2026-05-03T00:00:00Z"
+  }
+}

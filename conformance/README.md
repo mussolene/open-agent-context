@@ -57,8 +57,10 @@ boundary pack:
   and pass documented semantic checks.
 - Negative fixtures are required rejection examples. They cover checksum and
   hash mismatch, scope wildcard safety, depth limits, backend selector safety,
-  tool/evidence linkage, HTTP network opt-in, D3-D5 factual projection, and
-  plaintext or masked protected value leaks.
+  tool/evidence linkage, HTTP network opt-in, operation audit linkage,
+  memory-loop trace consistency, rule blocking semantics, skill dependency
+  linkage, D3-D5 factual projection, and plaintext or masked protected value
+  leaks.
 - Python `acs conformance validate` is the reference checker for this pack, not
   a required transport, service, or runtime API.
 - Fixtures remain language-neutral JSON records. SQLite rows, Python models,
@@ -121,8 +123,10 @@ adapter-boundary pack:
   schemas и проходить documented semantic checks.
 - Negative fixtures являются required rejection examples. Они покрывают checksum
   и hash mismatch, scope wildcard safety, depth limits, backend selector safety,
-  tool/evidence linkage, HTTP network opt-in, D3-D5 factual projection, а также
-  plaintext или masked protected value leaks.
+  tool/evidence linkage, HTTP network opt-in, operation audit linkage,
+  memory-loop trace consistency, rule blocking semantics, skill dependency
+  linkage, D3-D5 factual projection, а также plaintext или masked protected
+  value leaks.
 - Python `acs conformance validate` является reference checker для этого pack,
   а не required transport, service или runtime API.
 - Fixtures остаются language-neutral JSON records. SQLite rows, Python models,

@@ -35,6 +35,7 @@ PROTECTED_VALUE_LEAK_FIXTURES = {
     "tool_call_result_plaintext_secret.json",
     "audit_event_plaintext_secret.json",
     "evidence_ref_plaintext_secret.json",
+    "mcp_binding_env_plaintext_secret.json",
     "context_capsule_masked_protected_value.json",
     "tool_call_result_masked_secret.json",
     "audit_event_masked_secret.json",
@@ -80,6 +81,7 @@ def validate_conformance(
             )
 
     evidence = _load_json(conformance / "fixtures" / "evidence_ref.json")
+    tool_binding = _load_json(conformance / "fixtures" / "tool_binding.json")
     for path in sorted((conformance / "negative").glob("*.json")):
         negative_checked += 1
         fixture = _load_json(path)
@@ -88,7 +90,13 @@ def validate_conformance(
         reason = str(fixture.get("reason", ""))
         try:
             schema = _schema(schemas, schema_name)
-            rejected = _rejects_negative(path.name, negative_payload, schema, evidence)
+            rejected = _rejects_negative(
+                path.name,
+                negative_payload,
+                schema,
+                evidence,
+                tool_binding,
+            )
         except Exception as exc:  # noqa: BLE001 - returned as validation data.
             errors.append({"fixture": path.name, "schema": schema_name, "error": str(exc)})
             continue
@@ -148,6 +156,11 @@ def _validate_positive_semantics(fixture_name: str, payload: dict[str, object]) 
         and payload.get("content_hash") != _hash_without(payload, "content_hash")
     ):
         raise ValueError("audit event content_hash mismatch")
+    if (
+        fixture_name == "rule_manifest.json"
+        and payload.get("content_hash") != _hash_without(payload, "content_hash")
+    ):
+        raise ValueError("rule manifest content_hash mismatch")
     if fixture_name == "tool_binding.json":
         _validate_tool_binding_semantics(payload)
     if fixture_name == "capability_grant.json":
@@ -163,6 +176,7 @@ def _rejects_negative(
     payload: object,
     schema: dict[str, object],
     evidence: dict[str, object],
+    tool_binding: dict[str, object],
 ) -> bool:
     try:
         validate(payload, schema)
@@ -176,6 +190,8 @@ def _rejects_negative(
         checksum = capsule.pop("checksum", None)
         return bool(checksum != _hash_json(capsule))
     if fixture_name == "audit_event_bad_hash.json":
+        return bool(payload_dict.get("content_hash") != _hash_without(payload_dict, "content_hash"))
+    if fixture_name == "rule_manifest_bad_hash.json":
         return bool(payload_dict.get("content_hash") != _hash_without(payload_dict, "content_hash"))
     if fixture_name in PROTECTED_VALUE_LEAK_FIXTURES:
         return _contains_protected_value_leak(payload_dict)
@@ -191,6 +207,19 @@ def _rejects_negative(
         except ValueError:
             return True
         return False
+    if fixture_name in {
+        "context_operation_completed_without_audit.json",
+        "memory_operation_completed_without_audit.json",
+    }:
+        return _is_completed_without_audit(payload_dict)
+    if fixture_name == "memory_loop_run_committed_without_proposed.json":
+        return not set(_strings(payload_dict.get("committed_memories"))).issubset(
+            set(_strings(payload_dict.get("proposed_memories")))
+        )
+    if fixture_name == "memory_record_d4_factual_evidence.json":
+        return _memory_record_embeds_deep_factual_evidence(payload_dict)
+    if fixture_name == "skill_manifest_unlinked_required_tool.json":
+        return tool_binding.get("id") not in _strings(payload_dict.get("required_tools"))
     if fixture_name == "retrieval_result_d4_used_as_fact.json":
         return any(
             _depth(hit) >= 3 and hit.get("used_as_factual_evidence") is True
@@ -236,10 +265,32 @@ def _contains_protected_value_leak(payload: object) -> bool:
     return False
 
 
+def _is_completed_without_audit(payload: dict[str, object]) -> bool:
+    return payload.get("status") == "completed" and payload.get("audit_event_id") is None
+
+
+def _memory_record_embeds_deep_factual_evidence(payload: dict[str, object]) -> bool:
+    if _depth(payload) < 3:
+        return False
+    content = payload.get("content")
+    if not isinstance(content, dict):
+        return False
+    return any(
+        _depth(item) >= 3 and item.get("evidence_kind") == "factual"
+        for item in _list(content.get("evidence"))
+    )
+
+
 def _list(value: object) -> list[dict[str, object]]:
     if not isinstance(value, list):
         return []
     return [item for item in value if isinstance(item, dict)]
+
+
+def _strings(value: object) -> list[str]:
+    if not isinstance(value, list):
+        return []
+    return [item for item in value if isinstance(item, str)]
 
 
 def _depth(hit: dict[str, object]) -> int:

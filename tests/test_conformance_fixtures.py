@@ -110,6 +110,13 @@ def test_conformance_fixtures_link_memory_capsule_tool_and_evidence() -> None:
     assert skill["required_rules"] == [rule["id"]]
 
 
+def test_rule_manifest_fixture_hash_uses_canonical_json() -> None:
+    rule = load_json(FIXTURES / "rule_manifest.json")
+    provided = rule.pop("content_hash")
+
+    assert provided == hash_json(rule)
+
+
 def test_audit_event_fixture_hash_uses_canonical_json() -> None:
     event = load_json(FIXTURES / "audit_event.json")
     provided = event.pop("content_hash")
@@ -197,6 +204,16 @@ def test_negative_semantic_fixture_rejects_bad_audit_hash() -> None:
     assert provided != hash_json(payload)
 
 
+def test_negative_semantic_fixture_rejects_bad_rule_hash() -> None:
+    negative = load_json(NEGATIVE / "rule_manifest_bad_hash.json")
+    payload = negative["payload"]
+    assert isinstance(payload, dict)
+    validate(payload, schema(str(negative["schema"])))
+    provided = payload.pop("content_hash")
+
+    assert provided != hash_json(payload)
+
+
 @pytest.mark.parametrize(
     "fixture_name",
     [
@@ -204,6 +221,7 @@ def test_negative_semantic_fixture_rejects_bad_audit_hash() -> None:
         "tool_call_result_plaintext_secret.json",
         "audit_event_plaintext_secret.json",
         "evidence_ref_plaintext_secret.json",
+        "mcp_binding_env_plaintext_secret.json",
         "context_capsule_masked_protected_value.json",
         "tool_call_result_masked_secret.json",
         "audit_event_masked_secret.json",
@@ -254,6 +272,54 @@ def test_negative_semantic_fixture_rejects_d4_as_factual_retrieval_evidence() ->
         and hit.get("used_as_factual_evidence") is True
     ]
     assert invalid_hits
+
+
+@pytest.mark.parametrize(
+    "fixture_name",
+    [
+        "context_operation_completed_without_audit.json",
+        "memory_operation_completed_without_audit.json",
+    ],
+)
+def test_negative_semantic_fixtures_reject_completed_operations_without_audit(
+    fixture_name: str,
+) -> None:
+    negative = load_json(NEGATIVE / fixture_name)
+    payload = negative["payload"]
+    assert isinstance(payload, dict)
+    validate(payload, schema(str(negative["schema"])))
+
+    assert payload["status"] == "completed"
+    assert payload["audit_event_id"] is None
+
+
+def test_negative_semantic_fixture_rejects_committed_memory_without_proposal() -> None:
+    negative = load_json(NEGATIVE / "memory_loop_run_committed_without_proposed.json")
+    payload = negative["payload"]
+    assert isinstance(payload, dict)
+    validate(payload, schema(str(negative["schema"])))
+
+    assert not set(payload["committed_memories"]).issubset(set(payload["proposed_memories"]))
+
+
+def test_negative_semantic_fixture_rejects_deep_memory_record_as_fact() -> None:
+    negative = load_json(NEGATIVE / "memory_record_d4_factual_evidence.json")
+    payload = negative["payload"]
+    assert isinstance(payload, dict)
+    validate(payload, schema(str(negative["schema"])))
+
+    evidence = payload["content"]["evidence"]
+    assert any(item["depth"] >= 3 and item["evidence_kind"] == "factual" for item in evidence)
+
+
+def test_negative_semantic_fixture_rejects_unlinked_skill_tool() -> None:
+    negative = load_json(NEGATIVE / "skill_manifest_unlinked_required_tool.json")
+    payload = negative["payload"]
+    assert isinstance(payload, dict)
+    validate(payload, schema(str(negative["schema"])))
+    tool_binding = load_json(FIXTURES / "tool_binding.json")
+
+    assert tool_binding["id"] not in payload["required_tools"]
 
 
 def test_reference_conformance_checker_validates_bundled_fixtures() -> None:

@@ -190,6 +190,8 @@ Reference adapters:
   candidates, draft support schemas, and reference-only schemas.
 - Done: stable-candidate schemas have strict top-level shape, portable field
   descriptions, and docs tests that block description or strictness drift.
+- Done: semantic negative fixtures cover stable-candidate adapter-boundary
+  rules that cannot be expressed fully as JSON Schema constraints.
 - In progress: define compatibility and migration rules for schema changes,
   semantic checks, and adapter-boundary behavior.
 - In progress: make the conformance boundary explicit: positive fixtures are
@@ -407,6 +409,9 @@ Reference adapters:
   stable candidates, draft support schemas и reference-only schemas.
 - Готово: stable-candidate schemas имеют strict top-level shape, portable field
   descriptions и docs tests, которые блокируют description или strictness drift.
+- Готово: semantic negative fixtures покрывают stable-candidate
+  adapter-boundary rules, которые нельзя полностью выразить JSON Schema
+  constraints.
 - В работе: определить compatibility и migration rules для schema changes,
   semantic checks и adapter-boundary behavior.
 - В работе: сделать conformance boundary явной: positive fixtures являются

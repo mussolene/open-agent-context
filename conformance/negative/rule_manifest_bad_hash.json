@@ -1,0 +1,30 @@
+{
+  "schema": "rule_manifest.schema.json",
+  "reason": "RuleManifest.content_hash must match canonical JSON excluding content_hash.",
+  "payload": {
+    "id": "rule_negative_bad_hash",
+    "name": "fuzzy_memory_not_fact",
+    "scope": [
+      "project",
+      "repo:oacs"
+    ],
+    "namespace": "default",
+    "priority": 10,
+    "rule_kind": "memory_safety",
+    "content": "D3-D5 memory may rank hypotheses but must not be projected as factual evidence.",
+    "applies_to": [
+      "retrieval",
+      "context.build"
+    ],
+    "enforcement_mode": "block",
+    "blocking": true,
+    "evidence_refs": [
+      "ev_conformance_001"
+    ],
+    "status": "active",
+    "owner_actor_id": null,
+    "created_at": "2026-05-03T00:00:00Z",
+    "updated_at": "2026-05-03T00:00:00Z",
+    "content_hash": "bad-hash"
+  }
+}
