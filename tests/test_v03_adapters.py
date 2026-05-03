@@ -494,12 +494,13 @@ def test_cli_ingest_result_denial_explains_tool_scoped_grant(tmp_path) -> None:
             '{"result":"alpha evidence"}',
             "--json",
         ],
+        env={"COLUMNS": "200", "NO_COLOR": "1"},
+        color=False,
     )
 
     assert ingest.exit_code != 0
     assert "Traceback" not in ingest.output
-    assert "grant-evidence --subject" in ingest.output
-    assert "agent_cli --tool external_cli" in ingest.output
+    assert "grant-evidence --subject agent_cli --tool external_cli" in ingest.output
 
 
 def test_api_ingests_external_tool_result(db, monkeypatch) -> None:

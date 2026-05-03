@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 1.0.4 - 2026-05-03
+
+### Fixed
+
+- Stabilized the `acs tool ingest-result` denial-message test across GitHub
+  Actions terminal width and ANSI rendering differences.
+
 ## 1.0.3 - 2026-05-03
 
 ### Added
