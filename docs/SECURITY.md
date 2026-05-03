@@ -33,12 +33,13 @@ must be granted together with explicit `tools_allowed` or `skills_allowed`
 entries, plus namespace and scope constraints. Audit chain verification detects
 local tampering with recorded operations.
 
-Secrets and non-public infrastructure values use the protected value boundary
-documented in `docs/VAULT.md`. Store passwords, tokens, private keys, internal
-IPs, private hostnames, and private URLs as encrypted `SecretRecord` or
-`SensitiveFact` records. Project only `ProtectedRef` into context. Prefer
-`protected.use` for adapter execution; grant `protected.read` or `secret.read`
-only when plaintext disclosure is explicitly required.
+Secrets and non-public infrastructure values use the external protected value
+boundary documented in `docs/VAULT.md`. OACS records only `ProtectedRef` and
+leak-prevention metadata. Passwords, tokens, private keys, internal IPs,
+private hostnames, and private URLs should live in external vaults such as
+1Password, HashiCorp Vault, cloud secret managers, SOPS, or an OS keychain.
+Prefer `protected.use` for adapter execution; grant `protected.read` or
+`secret.read` only when plaintext disclosure is explicitly required.
 
 ## RU
 POC закрывает риски: хранение памяти в открытом виде, случайные утечки
@@ -74,9 +75,10 @@ Tool и skill adapters тоже deny-by-default. `tool.call` и `skill.run` до
 namespace и scope constraints. Audit chain verification помогает обнаружить
 локальное изменение записанных операций.
 
-Secrets и непубличные infrastructure values используют protected value boundary
-из `docs/VAULT.md`. Пароли, tokens, private keys, internal IPs, private
-hostnames и private URLs нужно хранить как encrypted `SecretRecord` или
-`SensitiveFact`. В context проецируется только `ProtectedRef`. Предпочитайте
+Secrets и непубличные infrastructure values используют external protected value
+boundary из `docs/VAULT.md`. OACS записывает только `ProtectedRef` и metadata
+для предотвращения утечек. Пароли, tokens, private keys, internal IPs, private
+hostnames и private URLs должны жить во внешних vaults: 1Password, HashiCorp
+Vault, cloud secret managers, SOPS или OS keychain. Предпочитайте
 `protected.use` для adapter execution; `protected.read` или `secret.read`
 выдавайте только при явной необходимости раскрыть plaintext.

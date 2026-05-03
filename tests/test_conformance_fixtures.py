@@ -25,8 +25,6 @@ FIXTURE_SCHEMAS = {
     "mcp_binding.json": "mcp_binding.schema.json",
     "audit_event.json": "audit_event.schema.json",
     "protected_ref.json": "protected_ref.schema.json",
-    "secret_record.json": "secret_record.schema.json",
-    "sensitive_fact.json": "sensitive_fact.schema.json",
     "memory_call.json": "memory_call.schema.json",
     "memory_operation.json": "memory_operation.schema.json",
     "context_operation.json": "context_operation.schema.json",
@@ -96,16 +94,11 @@ def test_audit_event_fixture_hash_uses_canonical_json() -> None:
     assert provided == hash_json(event)
 
 
-def test_protected_value_fixtures_project_refs_not_plaintext() -> None:
+def test_protected_value_fixture_projects_ref_not_plaintext() -> None:
     protected_ref = load_json(FIXTURES / "protected_ref.json")
-    secret = load_json(FIXTURES / "secret_record.json")
-    sensitive_fact = load_json(FIXTURES / "sensitive_fact.json")
 
-    assert protected_ref["id"] == secret["id"]
-    assert "ciphertext" in secret
-    assert "ciphertext" in sensitive_fact
-    assert "OACS_TEST_SECRET_VALUE" not in json.dumps(secret)
-    assert "OACS_TEST_SECRET_VALUE" not in json.dumps(sensitive_fact)
+    assert protected_ref["projection"] == "ref_only"
+    assert "OACS_TEST_SECRET_VALUE" not in json.dumps(protected_ref)
 
 
 def test_negative_schema_fixture_rejects_unknown_memory_call_operation() -> None:

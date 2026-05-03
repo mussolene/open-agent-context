@@ -4,19 +4,18 @@
 
 ### Added
 
-- Protected value and vault boundary schemas for `SecretRecord`,
-  `SensitiveFact`, and `ProtectedRef`.
+- External vault boundary schema for `ProtectedRef`.
 - Negative conformance fixtures that reject plaintext protected values in
   Context Capsules, ToolCallResult output, EvidenceRef public payloads, and
   AuditEvent metadata.
-- Reference `acs vault put/list/use/revoke` commands backed by encrypted SQLite
-  storage and capability-gated `protected.use` / `protected.read` semantics.
-- `docs/VAULT.md` for the standard boundary and Python reference pipeline.
+- `docs/VAULT.md` for the external-vault pipeline.
 
 ### Changed
 
 - Extended conformance validation to include protected value fixtures and
   plaintext leak rejection examples.
+- Kept vault storage, rotation, revocation, and provider-specific secret
+  handling outside the `acs` reference implementation.
 
 ## 0.3.4a1 - 2026-05-03
 

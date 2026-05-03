@@ -3,10 +3,15 @@
   "protected_type": "secret",
   "label": "production API token",
   "sensitivity": "restricted",
+  "provider": "1password",
+  "uri": "op://project/prod_api/token",
   "namespace": "default",
   "scope": [
     "project",
     "repo:oacs"
+  ],
+  "allowed_tools": [
+    "tool_conformance_http_lookup"
   ],
   "projection": "ref_only",
   "status": "active"

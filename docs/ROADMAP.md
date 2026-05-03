@@ -28,10 +28,9 @@ Core contract:
   the reference backend.
 - Done: capability-scoped shared memory added for subagents through
   `CapabilityGrant.scope`, `namespaces_allowed`, and `memory_depth_allowed`.
-- Done: protected values boundary added for secrets and non-public
-  infrastructure facts through `SecretRecord`, `SensitiveFact`, and
-  `ProtectedRef`. `protected.use` is separate from `protected.read` /
-  `secret.read`.
+- Done: protected values boundary added for external secrets and non-public
+  infrastructure facts through `ProtectedRef`. OACS is not a vault; secret
+  storage, rotation, and plaintext resolution stay in external vault adapters.
 
 Reference adapters:
 
@@ -165,19 +164,19 @@ Reference adapters:
 
 ### v0.3.5 - Protected Values and Vault Boundary
 
-- Done: define language-neutral `SecretRecord`, `SensitiveFact`, and
-  `ProtectedRef` schemas for passwords, tokens, private keys, internal IPs,
-  private hostnames, private URLs, topology, and other non-public values.
-- Done: add conformance fixtures for encrypted protected records and redacted
-  references, without requiring the Python vault backend.
+- Done: define language-neutral `ProtectedRef` schema for references to
+  external passwords, tokens, private keys, internal IPs, private hostnames,
+  private URLs, topology, and other non-public values.
+- Done: add conformance fixture for redacted protected references without
+  storing ciphertext or vault state in OACS.
 - Done: add negative conformance fixtures rejecting plaintext protected values
   in Context Capsules, ToolCallResult output, EvidenceRef public payloads, and
   AuditEvent metadata.
-- Done: add a Python reference `acs vault put/list/use/revoke` implementation
-  backed by encrypted SQLite storage. This is a reference path, not the only
-  standard implementation strategy.
-- Done: split `protected.use` from `protected.read` / `secret.read` so agents
-  can use protected values through adapters without receiving plaintext.
+- Done: keep Python/SQLite vault storage, rotation, revocation, and plaintext
+  release out of the `acs` reference implementation; use external vaults such
+  as 1Password, HashiCorp Vault, cloud secret managers, SOPS, or OS keychains.
+- Done: describe `protected.use`, `protected.read`, and `secret.read` as
+  capability semantics for external vault adapters.
 
 ### v1.0
 - Freeze stable schemas for ContextCapsule, MemoryRecord, CapabilityGrant,
@@ -214,9 +213,10 @@ Core contract:
   остаётся reference backend.
 - Готово: capability-scoped shared memory добавлена для subagents через
   `CapabilityGrant.scope`, `namespaces_allowed` и `memory_depth_allowed`.
-- Готово: добавлена protected values boundary для secrets и непубличных
-  infrastructure facts через `SecretRecord`, `SensitiveFact` и `ProtectedRef`.
-  `protected.use` отделён от `protected.read` / `secret.read`.
+- Готово: добавлена protected values boundary для external secrets и
+  непубличных infrastructure facts через `ProtectedRef`. OACS не является
+  vault; secret storage, rotation и plaintext resolution остаются во внешних
+  vault adapters.
 
 Reference adapters:
 
@@ -351,20 +351,19 @@ Reference adapters:
 
 ### v0.3.5 - Protected Values and Vault Boundary
 
-- Готово: определить language-neutral schemas `SecretRecord`, `SensitiveFact` и
-  `ProtectedRef` для passwords, tokens, private keys, internal IPs, private
-  hostnames, private URLs, topology и других непубличных values.
-- Готово: добавить conformance fixtures для encrypted protected records и
-  redacted references без зависимости от Python vault backend.
+- Готово: определить language-neutral schema `ProtectedRef` для references на
+  external passwords, tokens, private keys, internal IPs, private hostnames,
+  private URLs, topology и другие непубличные values.
+- Готово: добавить conformance fixture для redacted protected references без
+  хранения ciphertext или vault state в OACS.
 - Готово: добавить negative conformance fixtures, которые reject plaintext
   protected values в Context Capsules, ToolCallResult output, EvidenceRef public
   payloads и AuditEvent metadata.
-- Готово: добавить Python reference `acs vault put/list/use/revoke` на базе
-  encrypted SQLite storage. Это reference path, а не единственная strategy
-  реализации стандарта.
-- Готово: разделить `protected.use` и `protected.read` / `secret.read`, чтобы
-  agents могли использовать protected values через adapters без получения
-  plaintext.
+- Готово: оставить Python/SQLite vault storage, rotation, revocation и plaintext
+  release вне `acs` reference implementation; использовать внешние vaults:
+  1Password, HashiCorp Vault, cloud secret managers, SOPS или OS keychains.
+- Готово: описать `protected.use`, `protected.read` и `secret.read` как
+  capability semantics для external vault adapters.
 
 ### v1.0
 - Заморозить stable schemas для ContextCapsule, MemoryRecord, CapabilityGrant,

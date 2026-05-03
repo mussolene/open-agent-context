@@ -40,7 +40,6 @@ rule_app = typer.Typer()
 skill_app = typer.Typer()
 tool_app = typer.Typer()
 evidence_app = typer.Typer()
-vault_app = typer.Typer()
 mcp_app = typer.Typer()
 loop_app = typer.Typer()
 benchmark_app = typer.Typer()
@@ -61,7 +60,6 @@ app.add_typer(rule_app, name="rule")
 app.add_typer(skill_app, name="skill")
 app.add_typer(tool_app, name="tool")
 app.add_typer(evidence_app, name="evidence")
-app.add_typer(vault_app, name="vault")
 app.add_typer(mcp_app, name="mcp")
 app.add_typer(loop_app, name="loop")
 app.add_typer(benchmark_app, name="benchmark")
@@ -1218,108 +1216,6 @@ def evidence_inspect(evidence_ref: str, db: DbOpt = None, json_out: JsonOpt = Fa
         emit(services(db, require_key=False).evidence.get(evidence_ref), json_out)
     except NotFound as exc:
         fail(str(exc))
-
-
-@vault_app.command("put")
-def vault_put(
-    label: Annotated[str, typer.Option("--label")],
-    value: Annotated[str, typer.Option("--value")],
-    kind: Annotated[str, typer.Option("--kind")] = "api_key",
-    protected_type: Annotated[str, typer.Option("--protected-type")] = "secret",
-    sensitivity: Annotated[str, typer.Option("--sensitivity")] = "restricted",
-    namespace: Annotated[str, typer.Option("--namespace")] = "default",
-    scope: ScopeOpt = None,
-    metadata: Annotated[str, typer.Option("--metadata")] = "{}",
-    expires_at: Annotated[str | None, typer.Option("--expires-at")] = None,
-    actor: ActorOpt = None,
-    db: DbOpt = None,
-    json_out: JsonOpt = False,
-) -> None:
-    parsed_metadata = json.loads(metadata)
-    if not isinstance(parsed_metadata, dict):
-        raise typer.BadParameter("--metadata must be a JSON object")
-    if protected_type not in ("secret", "sensitive_fact"):
-        raise typer.BadParameter("--protected-type must be secret or sensitive_fact")
-    svc = services(db)
-    record = svc.vault.put(
-        value=value,
-        value_kind=kind,
-        label=label,
-        actor_id=actor,
-        scope=scope or [],
-        namespace=namespace,
-        protected_type=protected_type,  # type: ignore[arg-type]
-        sensitivity=sensitivity,
-        metadata=parsed_metadata,
-        expires_at=expires_at,
-    )
-    svc.audit.record(
-        "protected.put",
-        actor,
-        record.id,
-        {
-            "protected_type": record.protected_type,
-            "value_kind": record.value_kind,
-            "label": record.label,
-            "scope": record.scope,
-            "namespace": record.namespace,
-        },
-    )
-    emit(record.protected_ref().model_dump(), json_out)
-
-
-@vault_app.command("list")
-def vault_list(
-    actor: ActorOpt = None,
-    scope: ScopeOpt = None,
-    namespace: Annotated[str | None, typer.Option("--namespace")] = None,
-    db: DbOpt = None,
-    json_out: JsonOpt = False,
-) -> None:
-    refs = services(db, require_key=False).vault.list_refs(actor, scope or [], namespace)
-    emit([ref.model_dump() for ref in refs], json_out)
-
-
-@vault_app.command("use")
-def vault_use(
-    protected_id: str,
-    actor: ActorOpt = None,
-    reveal: Annotated[bool, typer.Option("--reveal")] = False,
-    db: DbOpt = None,
-    json_out: JsonOpt = False,
-) -> None:
-    svc = services(db)
-    result = svc.vault.use(protected_id, actor, reveal=reveal)
-    protected_ref = result["protected_ref"]
-    metadata = {
-        "protected_ref": protected_ref,
-        "revealed": result["revealed"],
-    }
-    svc.audit.record("protected.use", actor, protected_id, metadata)
-    emit(result, json_out)
-
-
-@vault_app.command("revoke")
-def vault_revoke(
-    protected_id: str,
-    actor: ActorOpt = None,
-    db: DbOpt = None,
-    json_out: JsonOpt = False,
-) -> None:
-    svc = services(db)
-    record = svc.vault.revoke(protected_id, actor)
-    svc.audit.record(
-        "protected.revoke",
-        actor,
-        protected_id,
-        {
-            "protected_type": record.protected_type,
-            "label": record.label,
-            "scope": record.scope,
-            "namespace": record.namespace,
-        },
-    )
-    emit(record.protected_ref().model_dump(), json_out)
 
 
 def _schema_file(path: Path | None) -> dict[str, object]:

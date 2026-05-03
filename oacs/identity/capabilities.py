@@ -240,51 +240,33 @@ def builtin_capabilities() -> list[CapabilityDefinition]:
             description="Allows scoped subagent memory and context access.",
         ),
         CapabilityDefinition(
-            id="cap_protected_create",
-            name="protected_create",
-            operation="protected.create",
-            description="Allows creating protected values inside granted scopes.",
-        ),
-        CapabilityDefinition(
             id="cap_protected_use",
             name="protected_use",
             operation="protected.use",
-            description="Allows using protected values without revealing plaintext.",
+            description=(
+                "Allows an adapter to resolve a ProtectedRef through an external vault "
+                "without exposing plaintext through OACS records."
+            ),
         ),
         CapabilityDefinition(
             id="cap_protected_read",
             name="protected_read",
             operation="protected.read",
-            description="Allows explicitly revealing protected value plaintext.",
-        ),
-        CapabilityDefinition(
-            id="cap_protected_revoke",
-            name="protected_revoke",
-            operation="protected.revoke",
-            description="Allows revoking protected values inside granted scopes.",
+            description=(
+                "Allows explicitly revealing protected plaintext through an external "
+                "vault adapter. This should be narrowly granted."
+            ),
         ),
         CapabilityDefinition(
             id="cap_protected_list",
             name="protected_list",
             operation="protected.list",
-            description="Allows listing redacted protected references.",
-        ),
-        CapabilityDefinition(
-            id="cap_secret_create",
-            name="secret_create",
-            operation="secret.create",
-            description="Allows creating encrypted secret records inside granted scopes.",
+            description="Allows listing redacted ProtectedRef metadata from an adapter.",
         ),
         CapabilityDefinition(
             id="cap_secret_read",
             name="secret_read",
             operation="secret.read",
-            description="Allows explicitly revealing secret plaintext.",
-        ),
-        CapabilityDefinition(
-            id="cap_secret_revoke",
-            name="secret_revoke",
-            operation="secret.revoke",
-            description="Allows revoking encrypted secret records.",
+            description="Allows explicitly revealing external secret plaintext.",
         ),
     ]

@@ -19,8 +19,6 @@ FIXTURE_SCHEMAS = {
     "mcp_binding.json": "mcp_binding.schema.json",
     "audit_event.json": "audit_event.schema.json",
     "protected_ref.json": "protected_ref.schema.json",
-    "secret_record.json": "secret_record.schema.json",
-    "sensitive_fact.json": "sensitive_fact.schema.json",
     "memory_call.json": "memory_call.schema.json",
     "memory_operation.json": "memory_operation.schema.json",
     "context_operation.json": "context_operation.schema.json",

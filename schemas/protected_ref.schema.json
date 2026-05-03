@@ -8,8 +8,11 @@
     "protected_type": {"type": "string", "enum": ["secret", "sensitive_fact"]},
     "label": {"type": "string"},
     "sensitivity": {"type": "string", "enum": ["internal", "confidential", "restricted"]},
+    "provider": {"type": "string"},
+    "uri": {"type": "string"},
     "namespace": {"type": "string"},
     "scope": {"type": "array", "items": {"type": "string"}},
+    "allowed_tools": {"type": "array", "items": {"type": "string"}},
     "projection": {"type": "string", "enum": ["ref_only", "redacted", "plaintext_if_granted"]},
     "status": {"type": "string", "enum": ["active", "revoked", "expired"]}
   },

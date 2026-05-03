@@ -20,7 +20,6 @@ from oacs.storage.sqlite import SQLiteStore
 from oacs.tools.mcp import McpRegistry
 from oacs.tools.registry import ToolRegistry
 from oacs.tools.runner import ToolRunner
-from oacs.vault import VaultService
 
 
 @dataclass
@@ -37,7 +36,6 @@ class OacsServices:
     tools: ToolRegistry
     mcp: McpRegistry
     evidence: EvidenceService
-    vault: VaultService
     tool_runner: ToolRunner
     context: ContextBuilder
     loop: MemoryLoopEngine
@@ -70,7 +68,6 @@ def services(
     mcp = McpRegistry(Repository(store, "mcp_bindings"), tools)
     audit = AuditService(Repository(store, "audit_events"))
     evidence = EvidenceService(Repository(store, "evidence_refs"), policy, audit)
-    vault = VaultService(Repository(store, "protected_values"), policy, master_key)
     tool_runner = ToolRunner(
         tools,
         mcp,
@@ -100,7 +97,6 @@ def services(
         tools=tools,
         mcp=mcp,
         evidence=evidence,
-        vault=vault,
         tool_runner=tool_runner,
         context=context,
         loop=MemoryLoopEngine(memory, context),
