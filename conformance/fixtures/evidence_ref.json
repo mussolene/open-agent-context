@@ -1,0 +1,17 @@
+{
+  "id": "ev_conformance_001",
+  "kind": "tool_result",
+  "uri": "oacs://tools/tool_external_search/results/ev_conformance_001",
+  "content_hash": "sha256:example-tool-result-payload",
+  "sensitive": false,
+  "public_payload": {
+    "tool_id": "tool_external_search",
+    "tool_name": "External Search",
+    "tool_type": "external",
+    "input_hash": "sha256:example-input",
+    "output": {
+      "answer": "Project Alpha reports are generated with make report-safe."
+    },
+    "source_uri": "repo://conformance/project-alpha-report"
+  }
+}

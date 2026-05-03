@@ -1,0 +1,21 @@
+{
+  "id": "toolcall_conformance_001",
+  "tool_id": "tool_external_search",
+  "tool_name": "External Search",
+  "tool_type": "external",
+  "actor_id": "act_agent_001",
+  "scope": [
+    "project",
+    "repo:oacs"
+  ],
+  "input": {
+    "query": "Alpha report command"
+  },
+  "output": {
+    "answer": "Project Alpha reports are generated with make report-safe.",
+    "source_uri": "repo://conformance/project-alpha-report"
+  },
+  "evidence_ref": "ev_conformance_001",
+  "executed": true,
+  "status": "completed"
+}

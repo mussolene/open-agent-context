@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "oacs"
-version = "0.3.2a2"
+version = "0.3.3a1"
 description = "Open Agent Context Standard draft reference implementation for governed agent memory and context"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -65,9 +65,11 @@ packages = ["oacs"]
 
 [tool.hatch.build.targets.wheel.force-include]
 "schemas" = "schemas"
+"conformance" = "conformance"
 
 [tool.hatch.build.targets.sdist.force-include]
 "schemas" = "schemas"
+"conformance" = "conformance"
 
 [tool.ruff]
 line-length = 100

@@ -1,0 +1,22 @@
+{
+  "id": "mcall_conformance_001",
+  "op": "memory.query",
+  "status": "completed",
+  "arguments": {
+    "query": "Alpha report command",
+    "scope": [
+      "project",
+      "repo:oacs"
+    ],
+    "limit": 10
+  },
+  "result": {
+    "memory_ids": [
+      "mem_conformance_001"
+    ],
+    "count": 1,
+    "content_hashes": [
+      "sha256:example-memory-content"
+    ]
+  }
+}

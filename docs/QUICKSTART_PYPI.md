@@ -7,7 +7,7 @@ implementation.
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install oacs==0.3.2a2
+pip install oacs==0.3.3a1
 
 export OACS_DB=./.oacs/oacs.db
 export OACS_PASSPHRASE="<choose-a-local-dev-passphrase>"
@@ -42,7 +42,7 @@ implementation.
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install oacs==0.3.2a2
+pip install oacs==0.3.3a1
 
 export OACS_DB=./.oacs/oacs.db
 export OACS_PASSPHRASE="<choose-a-local-dev-passphrase>"

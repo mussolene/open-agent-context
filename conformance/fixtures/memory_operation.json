@@ -1,0 +1,25 @@
+{
+  "id": "mop_conformance_001",
+  "operation": "memory.query",
+  "status": "completed",
+  "actor_id": "act_agent_001",
+  "target_id": null,
+  "scope": [
+    "project",
+    "repo:oacs"
+  ],
+  "namespace": "default",
+  "depth": null,
+  "arguments": {
+    "query": "Alpha report command",
+    "limit": 10
+  },
+  "result": {
+    "memory_ids": [
+      "mem_conformance_001"
+    ],
+    "count": 1
+  },
+  "audit_event_id": "aud_conformance_001",
+  "created_at": "2026-05-03T00:00:00Z"
+}

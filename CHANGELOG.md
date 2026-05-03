@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.3.3a1 - 2026-05-03
+
+### Added
+
+- Language-neutral conformance fixtures under `conformance/fixtures/`.
+- Negative adapter-boundary fixtures under `conformance/negative/`.
+- Schema-only conformance tests that validate fixtures without importing OACS
+  Python models.
+- `docs/INTEROPERABILITY.md` checklist for non-Python runtimes and adapters.
+
+### Changed
+
+- Marked Python, SQLite, CLI/API, benchmark, LM Studio, and repo dogfood
+  behavior as reference-only unless promoted by the spec or JSON schemas.
+- Included conformance artifacts in wheel and sdist builds.
+
 ## 0.3.2a2 - 2026-05-03
 
 ### Added

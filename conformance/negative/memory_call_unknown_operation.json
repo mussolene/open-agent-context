@@ -1,0 +1,11 @@
+{
+  "schema": "memory_call.schema.json",
+  "reason": "memory_call.op must be one of the standard memory-call operations.",
+  "payload": {
+    "id": "mcall_negative_unknown_operation",
+    "op": "memory.write_hidden",
+    "status": "completed",
+    "arguments": {},
+    "result": {}
+  }
+}

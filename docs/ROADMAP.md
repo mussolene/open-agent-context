@@ -5,7 +5,7 @@ This roadmap keeps the OACS v0.1 draft standard small. Core work must define
 memory, context, permissions, audit, and deterministic operation contracts.
 Reference adapters prove integration, but they do not expand the standard.
 
-### Current Position: v0.3.2a2 Reference POC
+### Current Position: v0.3.3a1 Reference POC
 Core contract:
 
 - Done: OACS v0.1 draft terminology, schemas, encrypted `MemoryRecord`,
@@ -125,6 +125,23 @@ Reference adapters:
   evidence, command evidence, and checkpoint capture.
 - Done: keep all workflow UX outside OACS v0.1 draft core conformance.
 
+### v0.3.3 - Multi-Implementation Conformance
+
+- Done: separate the standard contract from the Python package more
+  explicitly in docs, fixtures, and conformance language. Python remains the
+  reference implementation, not the only supported implementation strategy.
+- Done: publish language-neutral JSON examples for ContextCapsule,
+  MemoryRecord, CapabilityGrant, EvidenceRef, memory_call, and ToolCallResult.
+- Done: add conformance fixtures that another runtime can validate without
+  importing `oacs` Python modules or depending on SQLite.
+- Done: define a small interoperability checklist for adapters that produce
+  or consume OACS records through CLI/API, files, or native SDKs.
+- Done: mark Python-specific behavior, storage choices, and convenience
+  commands as reference behavior unless the schema/spec explicitly promotes them
+  to core contract.
+- Done: add positive operation-envelope fixtures and negative adapter-boundary
+  fixtures for schema and semantic rejection checks.
+
 ### v1.0
 - Freeze stable schemas for ContextCapsule, MemoryRecord, CapabilityGrant,
   RuleManifest, SkillManifest, ToolBinding, McpBinding, EvidenceRef, and
@@ -140,7 +157,7 @@ Reference adapters:
 определять memory, context, permissions, audit и deterministic operation
 contracts. Reference adapters доказывают интеграцию, но не расширяют стандарт.
 
-### Текущая позиция: v0.3.2a2 Reference POC
+### Текущая позиция: v0.3.3a1 Reference POC
 Core contract:
 
 - Готово: OACS v0.1 draft terminology, schemas, encrypted `MemoryRecord`,
@@ -188,8 +205,9 @@ Reference adapters:
   улучшать token use и relevance через compact evidence projection; tiny tasks
   могут показывать overhead.
 - Текущие technical reports:
-  `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md` и
-  `examples/benchmarks/full_context_gemma_e2b_2026-05-02.md`.
+  `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`,
+  `examples/benchmarks/full_context_gemma_e2b_2026-05-02.md` и
+  `examples/benchmarks/community_memory_gemma_e2b_2026-05-02.md`.
 
 ### v0.2.6 - Memory Standard Hardening
 - Готово: core `memory_calls` теперь создают operation traces, selected evidence
@@ -255,6 +273,24 @@ Reference adapters:
 - Готово: добавить project-local deny-pattern policy helpers и checks для
   memory, evidence, command evidence и checkpoint capture.
 - Готово: оставить workflow UX вне OACS v0.1 draft core conformance.
+
+### v0.3.3 - Multi-Implementation Conformance
+
+- Готово: ещё явнее отделить standard contract от Python package в docs,
+  fixtures и conformance language. Python остаётся reference implementation, а
+  не единственным поддерживаемым способом реализации.
+- Готово: опубликовать language-neutral JSON examples для
+  ContextCapsule, MemoryRecord, CapabilityGrant, EvidenceRef, memory_call и
+  ToolCallResult.
+- Готово: добавить conformance fixtures, которые другой runtime сможет
+  валидировать без import `oacs` Python modules и без зависимости от SQLite.
+- Готово: описать короткий interoperability checklist для adapters,
+  которые produce или consume OACS records через CLI/API, files или native SDKs.
+- Готово: помечать Python-specific behavior, storage choices и
+  convenience commands как reference behavior, если schema/spec явно не
+  повышает их до core contract.
+- Готово: добавить positive operation-envelope fixtures и negative
+  adapter-boundary fixtures для schema и semantic rejection checks.
 
 ### v1.0
 - Заморозить stable schemas для ContextCapsule, MemoryRecord, CapabilityGrant,

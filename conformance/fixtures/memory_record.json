@@ -1,0 +1,45 @@
+{
+  "id": "mem_conformance_001",
+  "memory_type": "procedure",
+  "depth": 2,
+  "lifecycle_status": "active",
+  "status": "active",
+  "namespace": "default",
+  "scope": [
+    "project",
+    "repo:oacs"
+  ],
+  "owner_actor_id": "act_agent_001",
+  "content": {
+    "text": "Project Alpha reports are generated with make report-safe.",
+    "kind": "procedure",
+    "tags": [
+      "reports",
+      "project-alpha"
+    ],
+    "confidence": 0.96,
+    "evidence": [
+      {
+        "evidence_kind": "procedure",
+        "claim": "Alpha report command",
+        "value": "make report-safe",
+        "source_ref": "ev_conformance_001",
+        "confidence": 0.98,
+        "depth": 2,
+        "scope": [
+          "project",
+          "repo:oacs"
+        ],
+        "participant": null,
+        "day": null,
+        "slot": "command",
+        "order": 1,
+        "trajectory_step": null
+      }
+    ]
+  },
+  "evidence_refs": [
+    "ev_conformance_001"
+  ],
+  "supersedes": null
+}

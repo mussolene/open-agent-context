@@ -1,0 +1,23 @@
+{
+  "schema": "tool_call_result.schema.json",
+  "reason": "A tool result evidence_ref should resolve to an EvidenceRef before an adapter projects it into context.",
+  "payload": {
+    "id": "toolcall_negative_unlinked_evidence",
+    "tool_id": "tool_external_search",
+    "tool_name": "External Search",
+    "tool_type": "external",
+    "actor_id": "act_agent_001",
+    "scope": [
+      "project"
+    ],
+    "input": {
+      "query": "Alpha report command"
+    },
+    "output": {
+      "answer": "Use make report-safe."
+    },
+    "evidence_ref": "ev_missing",
+    "executed": true,
+    "status": "completed"
+  }
+}

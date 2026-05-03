@@ -1,0 +1,28 @@
+{
+  "id": "cap_conformance_001",
+  "subject_actor_id": "act_agent_001",
+  "issuer_actor_id": "act_human_001",
+  "scope": [
+    "project",
+    "repo:oacs"
+  ],
+  "allowed_operations": [
+    "memory.query",
+    "memory.read",
+    "context.build",
+    "context.export",
+    "tool.call"
+  ],
+  "denied_operations": [],
+  "memory_depth_allowed": 2,
+  "namespaces_allowed": [
+    "default"
+  ],
+  "tools_allowed": [
+    "tool_external_search"
+  ],
+  "skills_allowed": [],
+  "expires_at": null,
+  "signature": null,
+  "status": "active"
+}

@@ -17,14 +17,19 @@ Required sequence:
    `acs evidence list --kind tool_result --json` for proof/debugging.
 5. If evidence should become durable project knowledge, distill it into memory
    and attach the evidence ref with `acs memory sharpen`.
-6. Run a fresh verification pass against the current codebase and rerun the
-   relevant checks.
-7. If verification is not `PASS`, explain the problem, apply the smallest safe
+6. For each completed iteration, record an OACS checkpoint/commit with the
+   relevant evidence refs, next step, and outcome.
+7. Run a fresh verification pass and a leak/secret check against the current
+   codebase, then ingest both results as evidence.
+8. Rerun failed checks after fixes.
+9. If verification is not `PASS`, explain the problem, apply the smallest safe
    fix, and reverify.
 
 Hard rules:
 
 - Do not claim completion unless every acceptance criterion is `PASS`.
+- Do not claim completion unless the iteration has OACS evidence for checks,
+  checkpoint/commit state, and leak/secret review.
 - Verifiers judge current code and current command results, not prior chat
   claims.
 - Fixes should be the smallest defensible diff.

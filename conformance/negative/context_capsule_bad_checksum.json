@@ -1,0 +1,27 @@
+{
+  "schema": "context_capsule.schema.json",
+  "reason": "ContextCapsule.checksum must match canonical JSON excluding checksum.",
+  "payload": {
+    "id": "ctx_negative_bad_checksum",
+    "version": "0.1",
+    "capsule_type": "context_capsule",
+    "purpose": "answer_project_question",
+    "task_id": null,
+    "actor_id": "act_agent_001",
+    "agent_id": null,
+    "scope": [
+      "project"
+    ],
+    "token_budget": 4000,
+    "included_memories": [],
+    "included_rules": [],
+    "included_skills": [],
+    "included_tools": [],
+    "evidence_refs": [],
+    "forbidden_assumptions": [],
+    "permissions": {},
+    "expires_at": null,
+    "audit_refs": [],
+    "checksum": "bad-checksum"
+  }
+}

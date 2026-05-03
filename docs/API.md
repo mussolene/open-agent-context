@@ -3,8 +3,12 @@
 ## EN
 FastAPI exposes core reference endpoints for actors, `MemoryRecord` operations,
 `ContextCapsule` operations, capability policy, audit, and memory loop runs.
+It is a reference interface for the Python package, not the only OACS transport.
 Optional adapter endpoints cover tools, skills, MCP bindings, and validation
-benchmarks. All mutating endpoints accept `actor_id` and write audit events.
+benchmarks. Memory, context, tool, skill, evidence, and benchmark mutation
+endpoints accept `actor_id` where the underlying operation is actor-scoped and
+write audit events for those governed operations. Registry and administration
+endpoints may use system authority in this reference API.
 
 Context endpoints include `POST /v1/context/build`, `GET /v1/context/{id}`,
 `POST /v1/context/{id}/export`, `POST /v1/context/validate`, and
@@ -46,9 +50,13 @@ network is never used by default.
 ## RU
 FastAPI предоставляет core reference endpoints для actors, операций
 `MemoryRecord`, операций `ContextCapsule`, capability policy, audit и memory
-loop runs. Optional adapter endpoints покрывают tools, skills, MCP bindings и
-validation benchmarks. Все изменяющие endpoints принимают `actor_id` и пишут
-audit events.
+loop runs. Это reference interface для Python package, а не единственный OACS
+transport. Optional adapter endpoints покрывают tools, skills, MCP bindings и
+validation benchmarks. Mutation endpoints для memory, context, tools, skills,
+evidence и benchmarks принимают `actor_id`, когда underlying operation
+actor-scoped, и пишут audit events для таких governed operations. Registry и
+administration endpoints могут использовать system authority в этом reference
+API.
 
 Context endpoints включают `POST /v1/context/build`, `GET /v1/context/{id}`,
 `POST /v1/context/{id}/export`, `POST /v1/context/validate` и

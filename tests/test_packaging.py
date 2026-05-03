@@ -10,6 +10,8 @@ def test_wheel_includes_top_level_schemas():
     sdist = pyproject["tool"]["hatch"]["build"]["targets"]["sdist"]
     assert wheel["force-include"]["schemas"] == "schemas"
     assert sdist["force-include"]["schemas"] == "schemas"
+    assert wheel["force-include"]["conformance"] == "conformance"
+    assert sdist["force-include"]["conformance"] == "conformance"
 
 
 def test_public_package_metadata_is_release_ready():
@@ -19,7 +21,7 @@ def test_public_package_metadata_is_release_ready():
     urls = project["urls"]
 
     assert project["name"] == "oacs"
-    assert project["version"] == "0.3.2a2"
+    assert project["version"] == "0.3.3a1"
     assert "Open Agent Context Standard" in project["description"]
     assert "Development Status :: 3 - Alpha" in project["classifiers"]
     assert "License :: OSI Approved :: Apache Software License" in project["classifiers"]

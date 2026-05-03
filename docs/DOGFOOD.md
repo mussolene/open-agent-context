@@ -14,8 +14,10 @@ Agent workflow in this repository:
    as evidence with `acs tool ingest-result`.
 4. Inspect proof with `acs evidence list` / `acs evidence inspect`.
 5. Attach durable evidence to project memory with `acs memory sharpen`.
-6. Rebuild context and verify against the current codebase before claiming
-   completion.
+6. Close every iteration with an OACS checkpoint/commit that references the
+   relevant evidence refs and records next steps.
+7. Run verification and a leak/secret check against the current codebase before
+   claiming completion, then ingest both command results as evidence.
 
 ```bash
 export OACS_DB=./.oacs/dogfood.db
@@ -73,6 +75,24 @@ acs evidence list --kind tool_result --json
 acs evidence inspect <ev_...> --json
 ```
 
+Per-iteration closeout should leave both task state and leak/secret review in
+OACS:
+
+```bash
+acs run --label "secret scan" -- <project-secret-scanner-command>
+
+acs checkpoint add \
+  --task "implement next OACS slice" \
+  --summary "Iteration verified and secret scan passed." \
+  --next "Continue with the next roadmap slice." \
+  --evidence ev_... \
+  --json
+```
+
+The secret scan can be `gitleaks`, a CI secret scanner, or a project-specific
+deny-pattern check. The important contract for this repository is that the
+result is captured as OACS evidence for every iteration.
+
 ## RU
 Этот документ - internal validation note для reference implementation. Он не
 является частью OACS v0.1 draft standard surface. Он показывает, что ordinary
@@ -87,7 +107,10 @@ Agent workflow в этом репозитории:
    results как evidence через `acs tool ingest-result`.
 4. Проверять proof через `acs evidence list` / `acs evidence inspect`.
 5. Привязывать durable evidence к project memory через `acs memory sharpen`.
-6. Пересобирать context и проверять текущий код перед claim completion.
+6. Закрывать каждую итерацию OACS checkpoint/commit с relevant evidence refs и
+   next steps.
+7. Запускать verification и leak/secret check по текущему codebase перед claim
+   completion, затем ingest оба результата как evidence.
 
 ```bash
 export OACS_DB=./.oacs/dogfood.db
@@ -144,3 +167,21 @@ acs tool ingest-result \
 acs evidence list --kind tool_result --json
 acs evidence inspect <ev_...> --json
 ```
+
+Per-iteration closeout должен оставлять в OACS и task state, и leak/secret
+review:
+
+```bash
+acs run --label "secret scan" -- <project-secret-scanner-command>
+
+acs checkpoint add \
+  --task "implement next OACS slice" \
+  --summary "Iteration verified and secret scan passed." \
+  --next "Continue with the next roadmap slice." \
+  --evidence ev_... \
+  --json
+```
+
+Secret scan может быть `gitleaks`, CI secret scanner или project-specific
+deny-pattern check. Важный contract для этого репозитория: результат должен
+быть записан как OACS evidence на каждой итерации.

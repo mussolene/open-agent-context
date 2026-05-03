@@ -1,0 +1,63 @@
+{
+  "final_answer": "Use make report-safe to generate the Alpha report.",
+  "context_capsule_id": "ctx_conformance_001",
+  "intent": {
+    "name": "answer_project_question",
+    "confidence": 0.9
+  },
+  "memories_used": [
+    "mem_conformance_001"
+  ],
+  "tools_used": [
+    "tool_external_search"
+  ],
+  "rules_applied": [
+    "rule_fuzzy_memory_not_fact"
+  ],
+  "proposed_memories": [],
+  "committed_memories": [],
+  "audit_trail": [
+    "aud_conformance_001",
+    "aud_conformance_002"
+  ],
+  "memory_calls": [
+    {
+      "id": "mcall_conformance_001",
+      "op": "memory.query",
+      "status": "completed",
+      "arguments": {
+        "query": "Alpha report command",
+        "scope": [
+          "project",
+          "repo:oacs"
+        ],
+        "limit": 10
+      },
+      "result": {
+        "memory_ids": [
+          "mem_conformance_001"
+        ],
+        "count": 1,
+        "content_hashes": [
+          "sha256:example-memory-content"
+        ]
+      }
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_ref": "ev_conformance_001",
+      "claim": "Alpha report command",
+      "value": "make report-safe"
+    }
+  ],
+  "model_prompt": "Answer using selected OACS evidence only.",
+  "context_policy": {
+    "mode": "memory_calls",
+    "reason": "structured evidence available"
+  },
+  "operation_metrics": {
+    "memory_calls": 1,
+    "selected_evidence": 1
+  }
+}

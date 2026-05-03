@@ -4,6 +4,8 @@
 The POC separates the draft standard from reference adapters. The standard is
 the memory/context contract; adapters prove that the contract can be embedded in
 existing agent stacks.
+The portability boundary is JSON records plus JSON Schema validation. The
+Python package is one reference implementation of that boundary.
 
 Core OACS should stay small: `MemoryRecord`, `ContextCapsule`,
 `CapabilityGrant`, `EvidenceRef`, auditable operations, and `memory_calls`.
@@ -27,11 +29,15 @@ capabilities, validates JSON schemas, executes the selected adapter, stores the
 result as an `EvidenceRef`, and writes audit events.
 
 Modules are intentionally small and framework-agnostic below CLI/API.
+For non-Python runtimes, use `docs/INTEROPERABILITY.md` and
+`conformance/fixtures/` as the implementation target.
 
 ## RU
 POC разделяет draft standard и reference adapters. Standard - это
 memory/context contract; adapters доказывают, что contract можно встроить в
 существующие agent stacks.
+Portability boundary - это JSON records плюс JSON Schema validation. Python
+package является одной reference implementation этой boundary.
 
 Core OACS должен оставаться небольшим: `MemoryRecord`, `ContextCapsule`,
 `CapabilityGrant`, `EvidenceRef`, auditable operations и `memory_calls`.
@@ -54,3 +60,5 @@ Reference implementation построена слоями:
 сохраняет результат как `EvidenceRef` и пишет audit events.
 
 Модули ниже CLI/API небольшие и не зависят от агентных фреймворков.
+Для non-Python runtimes используйте `docs/INTEROPERABILITY.md` и
+`conformance/fixtures/` как implementation target.

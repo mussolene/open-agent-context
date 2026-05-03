@@ -74,6 +74,20 @@ def test_tool_docs_describe_canonical_evidence_projection() -> None:
     assert "does not enter `ContextCapsule.evidence_refs` by" in text
 
 
+def test_interoperability_docs_link_conformance_fixtures_and_reference_boundary() -> None:
+    interoperability = (ROOT / "docs" / "INTEROPERABILITY.md").read_text(encoding="utf-8")
+    conformance = (ROOT / "conformance" / "README.md").read_text(encoding="utf-8")
+    spec = (ROOT / "docs" / "SPEC.md").read_text(encoding="utf-8")
+
+    assert "conformance/fixtures/" in interoperability
+    assert "not Python object snapshots" in conformance
+    assert "not the only OACS transport" in (ROOT / "docs" / "API.md").read_text(
+        encoding="utf-8"
+    )
+    assert "Python-specific behavior is reference-only" in spec
+    assert "docs/INTEROPERABILITY.md" in spec
+
+
 def test_agent_instructions_use_oacs_native_proof_loop() -> None:
     text = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
 

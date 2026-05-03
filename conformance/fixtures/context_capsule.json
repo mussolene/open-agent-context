@@ -1,0 +1,41 @@
+{
+  "id": "ctx_conformance_001",
+  "version": "0.1",
+  "capsule_type": "context_capsule",
+  "purpose": "answer_project_question",
+  "task_id": "task_conformance_001",
+  "actor_id": "act_agent_001",
+  "agent_id": "agent_runtime_001",
+  "scope": [
+    "project",
+    "repo:oacs"
+  ],
+  "token_budget": 4000,
+  "included_memories": [
+    "mem_conformance_001"
+  ],
+  "included_rules": [
+    "rule_fuzzy_memory_not_fact"
+  ],
+  "included_skills": [],
+  "included_tools": [
+    "tool_external_search"
+  ],
+  "evidence_refs": [
+    "ev_conformance_001"
+  ],
+  "forbidden_assumptions": [
+    "D3-D5 memory is not factual evidence"
+  ],
+  "permissions": {
+    "memory.query": true,
+    "memory.commit": false,
+    "tool.execute.read": true,
+    "tool.execute.write": false
+  },
+  "expires_at": null,
+  "audit_refs": [
+    "aud_conformance_001"
+  ],
+  "checksum": "4da0d4e7e95bbf96fcd25d7b1daad1d0ee496301f31649db81f86032ce6baabe"
+}
