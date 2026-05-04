@@ -31,7 +31,7 @@
     "memory.query": true,
     "context.build": true,
     "context.explain": true,
-    "tool.ingest_result": true,
+    "evidence.ingest": true,
     "evidence.inspect": true,
     "checkpoint.add": true,
     "audit.write": true

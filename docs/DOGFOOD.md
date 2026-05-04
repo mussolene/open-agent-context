@@ -62,9 +62,11 @@ procedures, rules, and D3-D5 patterns still require explicit OACS
 `memory propose` / `memory commit` review.
 
 When running dogfood in `OACS_POLICY_MODE=strict`, grant the active actor
-ordinary memory/query/read, `context.build`, `context.explain`, evidence,
-checkpoint, and audit permissions first. The dogfood skill is a reference
-adapter and must not depend on bootstrap authority in strict mode.
+ordinary `memory.*`, `context.build`, `context.explain`, `evidence.ingest`, and
+`skill.run` capabilities first. Checkpoints and audit events are reference
+workflow records in this implementation, not separate v1 portable capability
+operations. The dogfood skill must not depend on bootstrap authority in strict
+mode.
 
 Canonical proof outputs should be ingested as evidence:
 
@@ -158,6 +160,12 @@ acs skill run codex_oacs_runtime \
 записывает. `auto-finish` и `autorun` коммитят только D1 repo episodes. D2
 facts, procedures, rules и D3-D5 patterns по-прежнему требуют явного review
 через OACS `memory propose` / `memory commit`.
+
+При dogfood в `OACS_POLICY_MODE=strict` активному actor сначала нужны обычные
+capabilities `memory.*`, `context.build`, `context.explain`, `evidence.ingest`
+и `skill.run`. Checkpoints и audit events в этой implementation являются
+reference workflow records, а не отдельными v1 portable capability operations.
+Dogfood skill не должен зависеть от bootstrap authority в strict mode.
 
 Canonical proof outputs нужно ingest как evidence:
 

@@ -192,6 +192,21 @@ def test_tool_docs_describe_canonical_evidence_projection() -> None:
     assert "does not enter `ContextCapsule.evidence_refs` by" in text
 
 
+def test_codex_oacs_runtime_skill_uses_current_evidence_capability() -> None:
+    skill = json.loads(
+        (ROOT / "examples" / "skills" / "codex_oacs_runtime" / "skill.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    dogfood = (ROOT / "docs" / "DOGFOOD.md").read_text(encoding="utf-8")
+
+    permissions = skill["permissions"]
+    assert permissions["evidence.ingest"] is True
+    assert "tool.ingest_result" not in permissions
+    assert "evidence.ingest" in dogfood
+    assert "not separate v1 portable capability\noperations" in dogfood
+
+
 def test_interoperability_docs_link_conformance_fixtures_and_reference_boundary() -> None:
     interoperability = (ROOT / "docs" / "INTEROPERABILITY.md").read_text(encoding="utf-8")
     conformance = (ROOT / "conformance" / "README.md").read_text(encoding="utf-8")

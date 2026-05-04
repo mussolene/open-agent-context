@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+## 1.0.8 - 2026-05-04
+
+### Fixed
+
+- Aligned the removable `codex_oacs_runtime` dogfood skill with the current
+  evidence capability name by replacing stale `tool.ingest_result` metadata
+  with `evidence.ingest`.
+- Clarified that dogfood checkpoints and audit events are reference workflow
+  records in this implementation, not separate v1 portable capability
+  operations.
+- Added a docs publication regression test for the dogfood skill permission
+  declaration.
+
 ## 1.0.7 - 2026-05-03
 
 ### Fixed
