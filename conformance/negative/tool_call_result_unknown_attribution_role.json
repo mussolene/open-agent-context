@@ -1,0 +1,30 @@
+{
+  "schema": "tool_call_result.schema.json",
+  "reason": "ToolCallResult attribution role must be one of the portable OACS attribution roles.",
+  "payload": {
+    "id": "toolcall_bad_attribution_001",
+    "tool_id": "tool_external_search",
+    "tool_name": "External Search",
+    "tool_type": "external",
+    "actor_id": "act_agent_001",
+    "attribution": {
+      "source_actor_id": "tool_external_search",
+      "source_actor_type": "tool",
+      "recorded_by_actor_id": "act_agent_001",
+      "role": "raw_stdout",
+      "confidence": 1.0
+    },
+    "scope": [
+      "project"
+    ],
+    "input": {
+      "query": "Alpha report command"
+    },
+    "output": {
+      "answer": "Project Alpha reports are generated with make report-safe."
+    },
+    "evidence_ref": "ev_conformance_001",
+    "executed": true,
+    "status": "completed"
+  }
+}

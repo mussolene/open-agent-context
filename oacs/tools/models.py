@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
+from oacs.core.attribution import Attribution
 from oacs.core.ids import new_id
 
 
@@ -29,6 +30,7 @@ class ToolCallResult(BaseModel):
     tool_name: str
     tool_type: str
     actor_id: str | None = None
+    attribution: Attribution | None = None
     scope: list[str] = Field(default_factory=list)
     input: dict[str, object] = Field(default_factory=dict)
     output: dict[str, object] = Field(default_factory=dict)

@@ -57,6 +57,10 @@ acs tool ingest-result \
 This writes the same `tool_result` evidence shape and an
 `evidence.ingest_tool_result` audit event. OACS governs provenance, scope,
 hashing, and later context projection; it does not choose or schedule the tool.
+The reference implementation records tool-result attribution as
+`role=tool_observation`, with the tool as `source_actor_id` and the ingesting
+actor as `recorded_by_actor_id`, so later consumers can separate tool evidence
+from user instructions and agent decisions.
 For non-bootstrap actors, evidence ingestion is tool-scoped: grant
 `evidence.ingest` through `acs capability grant-evidence --tool <tool-id>` or an
 equivalent `acs capability grant --operation evidence.ingest --tool <tool-id>`.
@@ -155,6 +159,10 @@ acs tool ingest-result \
 Это пишет тот же `tool_result` evidence shape и audit event
 `evidence.ingest_tool_result`. OACS отвечает за provenance, scope, hashing и
 последующую projection в context; он не выбирает и не планирует tool.
+Reference implementation записывает attribution tool-result как
+`role=tool_observation`, где tool является `source_actor_id`, а ingesting actor
+— `recorded_by_actor_id`, чтобы последующие consumers отличали tool evidence от
+user instructions и agent decisions.
 Для non-bootstrap actors evidence ingestion ограничен конкретными tools:
 выдавайте `evidence.ingest` через
 `acs capability grant-evidence --tool <tool-id>` или эквивалентный

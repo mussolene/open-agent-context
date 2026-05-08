@@ -1,0 +1,32 @@
+{
+  "schema": "memory_record.schema.json",
+  "reason": "Memory attribution role must be one of the portable OACS attribution roles.",
+  "payload": {
+    "id": "mem_bad_attribution_001",
+    "memory_type": "procedure",
+    "depth": 2,
+    "lifecycle_status": "active",
+    "status": "active",
+    "namespace": "default",
+    "scope": [
+      "project"
+    ],
+    "owner_actor_id": "act_agent_001",
+    "content": {
+      "text": "Bad attribution role.",
+      "kind": "procedure",
+      "tags": [],
+      "confidence": 1.0,
+      "evidence": [],
+      "attribution": {
+        "source_actor_id": "act_agent_001",
+        "source_actor_type": "agent",
+        "recorded_by_actor_id": "act_agent_001",
+        "role": "assistant_guess",
+        "confidence": 1.0
+      }
+    },
+    "evidence_refs": [],
+    "supersedes": null
+  }
+}

@@ -34,9 +34,23 @@
         "day": null,
         "slot": "command",
         "order": 1,
-        "trajectory_step": null
+        "trajectory_step": null,
+        "attribution": {
+          "source_actor_id": "act_agent_001",
+          "source_actor_type": "agent",
+          "recorded_by_actor_id": "act_agent_001",
+          "role": "agent_decision",
+          "confidence": 1.0
+        }
       }
-    ]
+    ],
+    "attribution": {
+      "source_actor_id": "act_agent_001",
+      "source_actor_type": "agent",
+      "recorded_by_actor_id": "act_agent_001",
+      "role": "agent_decision",
+      "confidence": 1.0
+    }
   },
   "evidence_refs": [
     "ev_conformance_001"

@@ -39,6 +39,17 @@ implementation records tool outputs as `tool_result` `EvidenceRef` records, so
 later context assembly can cite tool evidence without treating tool stdout as
 uncontrolled memory.
 
+Attribution is part of the portable evidence semantics. `owner_actor_id`
+describes ownership/accountability for a record, `actor_id` describes the actor
+performing an operation, and attribution describes where a claim, decision,
+observation, or policy came from. Portable attribution carries
+`source_actor_id`, `source_actor_type`, `recorded_by_actor_id`, `role`, and
+`confidence`. Context consumers must preserve the distinction between
+`user_instruction`, `agent_decision`, `tool_observation`, `project_policy`,
+`human_approval`, `derived_memory`, and `system_policy`; reading a Context
+Capsule must not force a model to infer whether a decision was made by a user or
+by an agent from plain text alone.
+
 This document is the v1.0 standard contract. The Python package in this
 repository is the reference implementation for the standard.
 Other runtimes can implement OACS by emitting and accepting the JSON records in
@@ -134,6 +145,16 @@ Execution `ToolBinding` создаёт envelope `ToolCallResult`. Reference
 implementation записывает tool outputs как `tool_result` `EvidenceRef`, чтобы
 последующая сборка контекста могла ссылаться на evidence от tools без
 превращения stdout в uncontrolled memory.
+
+Attribution является частью portable evidence semantics. `owner_actor_id`
+описывает ownership/accountability записи, `actor_id` описывает actor,
+выполняющего operation, а attribution описывает, откуда пришли claim, decision,
+observation или policy. Portable attribution содержит `source_actor_id`,
+`source_actor_type`, `recorded_by_actor_id`, `role` и `confidence`. Context
+consumers должны сохранять различие между `user_instruction`, `agent_decision`,
+`tool_observation`, `project_policy`, `human_approval`, `derived_memory` и
+`system_policy`; чтение Context Capsule не должно заставлять модель угадывать
+из plain text, было ли решение принято пользователем или агентом.
 
 Этот документ является v1.0 contract стандарта. Python package в этом
 репозитории — reference implementation для стандарта.

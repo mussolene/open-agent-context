@@ -110,6 +110,29 @@ def test_conformance_fixtures_link_memory_capsule_tool_and_evidence() -> None:
     assert skill["required_rules"] == [rule["id"]]
 
 
+def test_conformance_fixtures_preserve_attribution_roles() -> None:
+    memory = load_json(FIXTURES / "memory_record.json")
+    evidence = load_json(FIXTURES / "evidence_ref.json")
+    tool_result = load_json(FIXTURES / "tool_call_result.json")
+
+    content = memory["content"]
+    assert isinstance(content, dict)
+    memory_attribution = content["attribution"]
+    assert isinstance(memory_attribution, dict)
+    assert memory_attribution["role"] == "agent_decision"
+
+    public_payload = evidence["public_payload"]
+    assert isinstance(public_payload, dict)
+    evidence_attribution = public_payload["attribution"]
+    assert isinstance(evidence_attribution, dict)
+    assert evidence_attribution["role"] == "tool_observation"
+    assert evidence_attribution["source_actor_type"] == "tool"
+
+    tool_attribution = tool_result["attribution"]
+    assert isinstance(tool_attribution, dict)
+    assert tool_attribution["role"] == "tool_observation"
+
+
 def test_rule_manifest_fixture_hash_uses_canonical_json() -> None:
     rule = load_json(FIXTURES / "rule_manifest.json")
     provided = rule.pop("content_hash")
@@ -167,6 +190,22 @@ def test_negative_schema_fixture_rejects_sql_storage_selector() -> None:
 
 def test_negative_schema_fixture_rejects_depth_outside_d0_d5() -> None:
     negative = load_json(NEGATIVE / "capability_grant_depth_overflow.json")
+
+    with pytest.raises(ValidationError):
+        validate(negative["payload"], schema(str(negative["schema"])))
+
+
+@pytest.mark.parametrize(
+    "fixture_name",
+    [
+        "memory_record_unknown_attribution_role.json",
+        "tool_call_result_unknown_attribution_role.json",
+    ],
+)
+def test_negative_schema_fixtures_reject_unknown_attribution_role(
+    fixture_name: str,
+) -> None:
+    negative = load_json(NEGATIVE / fixture_name)
 
     with pytest.raises(ValidationError):
         validate(negative["payload"], schema(str(negative["schema"])))

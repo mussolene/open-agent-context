@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+## 1.0.9 - 2026-05-08
+
+### Added
+
+- Added portable attribution semantics for memory content, embedded evidence,
+  tool-call results, and tool-result `EvidenceRef` public payloads so consumers
+  can distinguish user instructions, agent decisions, tool observations, project
+  policies, human approvals, derived memory, and system policy.
+- Added JSON Schema and conformance fixture coverage for attribution roles,
+  including negative fixtures that reject unknown roles.
+
+### Changed
+
+- Updated the `codex_oacs_runtime` dogfood skill to preserve attribution when
+  it distills repository episodes and structured evidence.
+
 ## 1.0.8 - 2026-05-04
 
 ### Fixed

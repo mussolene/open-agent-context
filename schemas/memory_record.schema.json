@@ -136,9 +136,136 @@
                   "integer",
                   "null"
                 ]
+              },
+              "attribution": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "description": "Portable provenance for the embedded evidence item: who originated it, who recorded it, and which role it plays.",
+                "required": [
+                  "role"
+                ],
+                "properties": {
+                  "source_actor_id": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "Actor-like identifier that originated the claim, decision, observation, or policy."
+                  },
+                  "source_actor_type": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "enum": [
+                      "human",
+                      "agent",
+                      "tool",
+                      "service",
+                      "application",
+                      "organization",
+                      "system",
+                      null
+                    ],
+                    "description": "Portable type of the originating source."
+                  },
+                  "recorded_by_actor_id": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "Actor identifier for the runtime or agent that recorded the value into OACS."
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "user_instruction",
+                      "agent_decision",
+                      "tool_observation",
+                      "project_policy",
+                      "human_approval",
+                      "derived_memory",
+                      "system_policy"
+                    ],
+                    "description": "How this item should be interpreted by context consumers."
+                  },
+                  "confidence": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Confidence in the attribution metadata, not in the underlying claim."
+                  }
+                },
+                "additionalProperties": false
               }
-            }
+            },
+            "additionalProperties": false
           }
+        },
+        "attribution": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "Portable provenance for the memory content as a whole: who originated it, who recorded it, and which role it plays.",
+          "required": [
+            "role"
+          ],
+          "properties": {
+            "source_actor_id": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "Actor-like identifier that originated the memory content."
+            },
+            "source_actor_type": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "enum": [
+                "human",
+                "agent",
+                "tool",
+                "service",
+                "application",
+                "organization",
+                "system",
+                null
+              ],
+              "description": "Portable type of the originating source."
+            },
+            "recorded_by_actor_id": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "Actor identifier for the runtime or agent that recorded the memory into OACS."
+            },
+            "role": {
+              "type": "string",
+              "enum": [
+                "user_instruction",
+                "agent_decision",
+                "tool_observation",
+                "project_policy",
+                "human_approval",
+                "derived_memory",
+                "system_policy"
+              ],
+              "description": "How this memory should be interpreted by context consumers."
+            },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Confidence in the attribution metadata, not in the memory content."
+            }
+          },
+          "additionalProperties": false
         }
       },
       "description": "Portable memory content envelope; protected or encrypted content must not be projected as plaintext."

@@ -12,7 +12,7 @@ from oacs.context.capsule import ContextCapsule
 def test_cli_version():
     result = CliRunner().invoke(app, ["--version"])
     assert result.exit_code == 0
-    assert result.output.strip() == "acs 1.0.8"
+    assert result.output.strip() == "acs 1.0.9"
 
 
 def test_cli_init_key_actor_memory(tmp_path):
@@ -334,6 +334,8 @@ def test_cli_checkpoint_resume_and_run(tmp_path):
     assert run_payload["output"]["exit_code"] == 0
     assert "workflow-ok" in run_payload["output"]["stdout"]
     assert run_payload["evidence_ref"].startswith("ev_")
+    assert run_payload["attribution"]["role"] == "tool_observation"
+    assert run_payload["attribution"]["source_actor_type"] == "tool"
 
     resume = runner.invoke(app, ["resume", "--db", str(db), "--json"])
     assert resume.exit_code == 0, resume.output

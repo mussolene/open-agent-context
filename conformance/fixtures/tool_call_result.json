@@ -4,6 +4,13 @@
   "tool_name": "External Search",
   "tool_type": "external",
   "actor_id": "act_agent_001",
+  "attribution": {
+    "source_actor_id": "tool_external_search",
+    "source_actor_type": "tool",
+    "recorded_by_actor_id": "act_agent_001",
+    "role": "tool_observation",
+    "confidence": 1.0
+  },
   "scope": [
     "project",
     "repo:oacs"

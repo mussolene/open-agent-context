@@ -12,6 +12,13 @@
     "output": {
       "answer": "Project Alpha reports are generated with make report-safe."
     },
+    "attribution": {
+      "source_actor_id": "tool_external_search",
+      "source_actor_type": "tool",
+      "recorded_by_actor_id": "act_agent_001",
+      "role": "tool_observation",
+      "confidence": 1.0
+    },
     "source_uri": "repo://conformance/project-alpha-report"
   }
 }

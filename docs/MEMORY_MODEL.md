@@ -37,11 +37,16 @@ boundary and lets the generic memory-call loop consume a stable shape:
 - `scope`
 - optional dimensions such as `participant`, `day`, `slot`, `order`, and
   `trajectory_step`
+- optional `attribution` with `source_actor_id`, `source_actor_type`,
+  `recorded_by_actor_id`, `role`, and `confidence`
 
 Core memory_calls must not depend on benchmark-specific text markers. Importers
 or adapters may parse external formats, but they must write structured evidence
 before generic retrieval and context building use it. Domain-specific evidence
 selection belongs in selector/adapters, not in the memory-call orchestrator.
+If an item represents a user decision, agent decision, tool observation, or
+project policy, adapters should write that role explicitly instead of relying on
+the wording of `claim` or `value`.
 
 ### Retrieval Contract
 
@@ -132,12 +137,17 @@ deprecated -> superseded -> forgotten.
 - `scope`
 - optional dimensions: `participant`, `day`, `slot`, `order`,
   `trajectory_step`
+- optional `attribution` с `source_actor_id`, `source_actor_type`,
+  `recorded_by_actor_id`, `role` и `confidence`
 
 Core memory_calls не должны зависеть от benchmark-specific text markers.
 Importers или adapters могут парсить внешние форматы, но перед generic retrieval
 и context building они должны записывать structured evidence. Domain-specific
 evidence selection должен жить в selector/adapters, а не в memory-call
 orchestrator.
+Если item представляет user decision, agent decision, tool observation или
+project policy, adapters должны явно записывать role, а не полагаться на текст
+`claim` или `value`.
 
 ### Retrieval Contract
 

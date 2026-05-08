@@ -4,6 +4,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from oacs.core.attribution import Attribution
 from oacs.core.ids import new_id
 from oacs.core.time import now_iso
 
@@ -32,6 +33,7 @@ class EvidenceItem(BaseModel):
     slot: str = "evidence"
     order: int | None = None
     trajectory_step: int | None = None
+    attribution: Attribution | None = None
 
 
 class MemoryContent(BaseModel):
@@ -40,6 +42,7 @@ class MemoryContent(BaseModel):
     tags: list[str] = Field(default_factory=list)
     confidence: float = 1.0
     evidence: list[EvidenceItem] = Field(default_factory=list)
+    attribution: Attribution | None = None
 
 
 class MemoryRecord(BaseModel):

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from oacs.audit import AuditService
+from oacs.core.attribution import Attribution
 from oacs.core.ids import new_id
 from oacs.core.json import hash_json
 from oacs.core.time import now_iso
@@ -71,11 +72,18 @@ class EvidenceService:
             output=output,
             source_uri=source_uri,
         )
+        attribution = Attribution(
+            source_actor_id=tool_id,
+            source_actor_type="tool",
+            recorded_by_actor_id=actor_id,
+            role="tool_observation",
+        )
         result = ToolCallResult(
             tool_id=tool_id,
             tool_name=resolved_name,
             tool_type=tool_type,
             actor_id=actor_id,
+            attribution=attribution,
             scope=ingest_scope,
             input=input_payload or {},
             output=output,
@@ -117,6 +125,13 @@ class EvidenceService:
             "tool_type": tool_type,
             "input_hash": hash_json(input_payload),
             "output": output,
+            "attribution": {
+                "source_actor_id": tool_id,
+                "source_actor_type": "tool",
+                "recorded_by_actor_id": actor_id,
+                "role": "tool_observation",
+                "confidence": 1.0,
+            },
         }
         if source_uri:
             public_payload["source_uri"] = source_uri

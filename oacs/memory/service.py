@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import Any, cast
 
 from cryptography.exceptions import InvalidTag
 
+from oacs.core.attribution import Attribution
 from oacs.core.errors import MemoryDecryptError, NotFound, ValidationFailure
 from oacs.core.json import dumps, hash_json, loads
 from oacs.core.time import now_iso
@@ -34,7 +36,15 @@ class MemoryService:
     ) -> MemoryRecord:
         write_scope = scope or []
         self.policy.require(actor_id, "memory.observe", 0, write_scope, "default")
-        return self._create("trace", 0, text, "observed", actor_id, write_scope)
+        attribution = Attribution(
+            source_actor_id=actor_id,
+            source_actor_type="human",
+            recorded_by_actor_id=actor_id,
+            role="user_instruction",
+        )
+        return self._create(
+            "trace", 0, text, "observed", actor_id, write_scope, attribution=attribution
+        )
 
     def propose(
         self,
@@ -43,12 +53,20 @@ class MemoryService:
         text: str,
         actor_id: str | None,
         scope: list[str] | None = None,
-        evidence: list[EvidenceItem | dict[str, object]] | None = None,
+        evidence: Sequence[EvidenceItem | dict[str, object]] | None = None,
+        attribution: Attribution | dict[str, object] | None = None,
     ) -> MemoryRecord:
         write_scope = scope or []
         self.policy.require(actor_id, "memory.propose", depth, write_scope, "default")
         return self._create(
-            memory_type, depth, text, "candidate", actor_id, write_scope, evidence=evidence
+            memory_type,
+            depth,
+            text,
+            "candidate",
+            actor_id,
+            write_scope,
+            evidence=evidence,
+            attribution=attribution,
         )
 
     def commit(self, memory_id: str, actor_id: str | None) -> MemoryRecord:
@@ -214,19 +232,37 @@ class MemoryService:
         actor_id: str | None,
         scope: list[str],
         supersedes: str | None = None,
-        evidence: list[EvidenceItem | dict[str, object]] | None = None,
+        evidence: Sequence[EvidenceItem | dict[str, object]] | None = None,
+        attribution: Attribution | dict[str, object] | None = None,
     ) -> MemoryRecord:
         structured_evidence = [
             item if isinstance(item, EvidenceItem) else EvidenceItem(**cast(dict[str, Any], item))
             for item in (evidence or [])
         ]
+        resolved_attribution = (
+            attribution
+            if isinstance(attribution, Attribution)
+            else Attribution(**cast(dict[str, Any], attribution))
+            if attribution
+            else Attribution(
+                source_actor_id=actor_id,
+                source_actor_type="agent",
+                recorded_by_actor_id=actor_id,
+                role="agent_decision",
+            )
+        )
         mem = MemoryRecord(
             memory_type=memory_type,
             depth=depth,
             lifecycle_status=lifecycle_status,  # type: ignore[arg-type]
             scope=scope,
             owner_actor_id=actor_id,
-            content=MemoryContent(text=text, kind=memory_type, evidence=structured_evidence),
+            content=MemoryContent(
+                text=text,
+                kind=memory_type,
+                evidence=structured_evidence,
+                attribution=resolved_attribution,
+            ),
             supersedes=supersedes,
         )
         return self._save(mem)
