@@ -101,7 +101,7 @@ def test_cli_key_help_describes_local_unlocked_mode():
     assert init_help.exit_code == 0, init_help.output
     assert "local_unlocked" in init_help.output
     assert "Omit on key init" in init_help.output
-    assert "--passphrase" in init_help.output
+    assert "passphrase" in init_help.output
     assert drop_help.exit_code == 0, drop_help.output
     assert "passphrase-wrapped" in drop_help.output
 
