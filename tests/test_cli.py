@@ -12,7 +12,57 @@ from oacs.context.capsule import ContextCapsule
 def test_cli_version():
     result = CliRunner().invoke(app, ["--version"])
     assert result.exit_code == 0
-    assert result.output.strip() == "acs 1.0.11"
+    assert result.output.strip() == "acs 1.0.12"
+
+
+def test_cli_context_gate_builds_for_release_work():
+    result = CliRunner().invoke(
+        app,
+        [
+            "context",
+            "gate",
+            "--intent",
+            "repo_development",
+            "--scope",
+            "project",
+            "--task",
+            "release consumer pack with verification and leak scan",
+            "--json",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["decision"] == "build"
+    assert payload["should_build_context"] is True
+    assert payload["reason"] == "context_signals_detected"
+    assert "release" in payload["signals"]["build_terms"]
+    assert payload["standard_boundary"] == "reference_consumer_pack_convenience_not_oacs_standard"
+    assert payload["next_command"].startswith("acs context build")
+
+
+def test_cli_context_gate_skips_tiny_visible_file_edits():
+    result = CliRunner().invoke(
+        app,
+        [
+            "context",
+            "gate",
+            "--intent",
+            "repo_development",
+            "--scope",
+            "project",
+            "--task",
+            "small typo",
+            "--json",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["decision"] == "skip"
+    assert payload["should_build_context"] is False
+    assert payload["reason"] == "simple_visible_file_edit"
+    assert payload["next_command"] is None
 
 
 def test_cli_init_key_actor_memory(tmp_path):

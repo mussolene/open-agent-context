@@ -64,6 +64,9 @@ Reference adapters:
 - Done: Agent Workflow UX added as reference CLI convenience:
   project-local discovery/status, resume aggregation, task checkpoints,
   governed command evidence, and deny-pattern policy helpers.
+- Done: `acs context gate` added as a reference consumer-pack convenience for
+  explicit build/skip decisions before context build; it does not expand the
+  portable standard surface.
 - Done: CLI release smoke UX includes `acs --version` / `acs -V`.
 - Observed on `google/gemma-4-e2b`: medium/large/long memory tasks can improve
   token use and relevance through compact evidence projection; tiny tasks can
@@ -300,6 +303,9 @@ Reference adapters:
 - Готово: Agent Workflow UX добавлен как reference CLI convenience:
   project-local discovery/status, resume aggregation, task checkpoints,
   governed command evidence и deny-pattern policy helpers.
+- Готово: `acs context gate` добавлен как reference convenience для consumer
+  packs, чтобы явно принимать build/skip решение перед context build; это не
+  расширяет portable standard surface.
 - Готово: CLI release smoke UX включает `acs --version` / `acs -V`.
 - Наблюдение на `google/gemma-4-e2b`: medium/large/long memory tasks могут
   улучшать token use и relevance через compact evidence projection; tiny tasks

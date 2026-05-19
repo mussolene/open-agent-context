@@ -7,11 +7,12 @@ or run tools for the assistant.
 Required loop:
 
 1. State scope and acceptance criteria before implementation.
-2. Decide whether OACS context is needed. Use it for durable project memory,
-   previous decisions, policy, evidence, checkpoints, or long-running state.
-   Skip context build for simple visible-file edits where current files and the
-   user request are sufficient.
-3. Build context only when prior memory or evidence matters:
+2. Ask the reference context gate before building context:
+   `acs context gate --intent repo_development --scope project --task "<task>" --json`.
+   If the gate returns `decision=skip`, proceed from visible files and the user
+   request. If it returns `decision=build`, build context.
+3. Build context only when the gate says `build` or prior memory/evidence
+   clearly matters:
    `acs context build --intent repo_development --scope project --json`.
 4. Record canonical command results as evidence with
    `acs tool ingest-result ...`.
@@ -27,8 +28,8 @@ Completion bar:
 - Verification is current and passing.
 - OACS evidence exists for important command outputs.
 - A checkpoint records the outcome and next step.
-- OACS context was selected only when it added project memory, policy,
-  evidence, or prior-decision value.
+- OACS context was selected through `acs context gate` or an equivalent explicit
+  decision.
 - No `.agent/oacs/key.json`, `.agent/oacs/unlocked.key`, `.agent/oacs`,
   `.oacs`, keys, passphrases, local databases, or private agent state are read,
   printed, or committed.

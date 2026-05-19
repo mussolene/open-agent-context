@@ -26,6 +26,10 @@ Consumer packs must keep these boundaries:
   when durable project memory, previous decisions, policy, evidence,
   checkpoints, or long-running state matter; skip it for simple visible-file
   edits where current files and user instructions are sufficient.
+- `acs context gate --intent ... --scope ... --task ... --json` is the
+  reference consumer-pack convenience for making that explicit build/skip
+  decision before `acs context build`. It is reference behavior, not a portable
+  standard requirement.
 - Command output, CI, retrieval, package publication, and manual verification
   become `EvidenceRef` records through `acs tool ingest-result`.
 - Standalone tool evidence does not enter a `ContextCapsule` by itself; it must
@@ -71,6 +75,10 @@ Consumer packs должны сохранять границы:
   context, когда важны durable project memory, previous decisions, policy,
   evidence, checkpoints или long-running state; пропускайте его для простых
   visible-file edits, где достаточно текущих файлов и инструкции пользователя.
+- `acs context gate --intent ... --scope ... --task ... --json` — reference
+  convenience для consumer packs, чтобы явно принять build/skip решение перед
+  `acs context build`. Это reference behavior, а не переносимое требование
+  стандарта.
 - Command output, CI, retrieval, package publication и manual verification
   становятся `EvidenceRef` через `acs tool ingest-result`.
 - Standalone tool evidence само не попадает в `ContextCapsule`; его нужно

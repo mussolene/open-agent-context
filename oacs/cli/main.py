@@ -102,6 +102,105 @@ def _evidence_ingest_grant_hint(actor: str | None, tool_id: str) -> str:
     return f"acs capability grant-evidence --subject {subject} --tool {tool_id}"
 
 
+_CONTEXT_GATE_BUILD_TERMS = {
+    "architecture",
+    "architectural",
+    "audit",
+    "benchmark",
+    "checkpoint",
+    "ci",
+    "conformance",
+    "consumer",
+    "consumer pack",
+    "cross repo",
+    "decision",
+    "deploy",
+    "deployment",
+    "evidence",
+    "hardening",
+    "history",
+    "integration",
+    "leak",
+    "memory",
+    "migration",
+    "policy",
+    "publication",
+    "publish",
+    "release",
+    "roadmap",
+    "security",
+    "standard",
+    "subagent",
+    "verification",
+}
+
+_CONTEXT_GATE_SKIP_TERMS = {
+    "format",
+    "formatting",
+    "lint typo",
+    "small typo",
+    "typo",
+    "visible file",
+    "visible-file",
+    "whitespace",
+}
+
+
+def _context_gate_decision(
+    intent: str,
+    task: str,
+    scope: list[str],
+    budget: int,
+) -> dict[str, object]:
+    text = f"{intent} {task}".casefold()
+    matched_build = sorted(term for term in _CONTEXT_GATE_BUILD_TERMS if term in text)
+    matched_skip = sorted(term for term in _CONTEXT_GATE_SKIP_TERMS if term in text)
+    scoped_project = "project" in scope or "*" in scope
+    tiny_task = bool(task) and len(task.split()) <= 8
+
+    should_build = bool(matched_build)
+    reason = "context_signals_detected" if should_build else "no_context_signals_detected"
+    if not should_build and matched_skip and tiny_task:
+        reason = "simple_visible_file_edit"
+    if (
+        not should_build
+        and scoped_project
+        and intent in {"repo_development", "release"}
+        and not tiny_task
+    ):
+        should_build = True
+        reason = "project_scoped_repo_work"
+
+    decision = "build" if should_build else "skip"
+    build_command = [
+        "acs",
+        "context",
+        "build",
+        "--intent",
+        intent,
+        *[part for item in scope for part in ("--scope", item)],
+        "--budget",
+        str(budget),
+        "--json",
+    ]
+    return {
+        "decision": decision,
+        "should_build_context": should_build,
+        "reason": reason,
+        "intent": intent,
+        "scope": scope,
+        "budget": budget,
+        "signals": {
+            "build_terms": matched_build,
+            "skip_terms": matched_skip,
+            "tiny_task": tiny_task,
+            "project_scoped": scoped_project,
+        },
+        "next_command": " ".join(build_command) if should_build else None,
+        "standard_boundary": "reference_consumer_pack_convenience_not_oacs_standard",
+    }
+
+
 def _version_callback(value: bool) -> None:
     if value:
         typer.echo(f"acs {__version__}")
@@ -826,6 +925,30 @@ def context_build(
     if svc.context.last_warnings:
         payload = {"capsule": payload, "warnings": svc.context.last_warnings}
     emit(payload, json_out)
+
+
+@context_app.command("gate")
+def context_gate(
+    intent: Annotated[str, typer.Option("--intent")],
+    task: Annotated[
+        str | None,
+        typer.Option(
+            "--task",
+            help="Short task description used to decide whether OACS context is worth building.",
+        ),
+    ] = None,
+    scope: ScopeOpt = None,
+    budget: Annotated[int, typer.Option("--budget")] = 4000,
+    json_out: JsonOpt = False,
+) -> None:
+    """Decide whether to build OACS context before a task.
+
+    This is a reference/consumer-pack convenience command. It does not read
+    memory, decrypt local state, or replace `acs context build`.
+    """
+
+    decision = _context_gate_decision(intent, task or "", scope or [], budget)
+    emit(decision, json_out)
 
 
 @context_app.command("explain")

@@ -12,11 +12,12 @@ the OACS standard.
 ## Required Loop
 
 1. State task scope and acceptance criteria (`AC1`, `AC2`, ...).
-2. Decide whether OACS context is needed. Use it for durable repository memory,
-   previous decisions, policy, evidence, checkpoints, or long-running state.
-   Skip OACS context for simple visible-file edits where current files and the
-   user request are sufficient.
-3. If prior repository memory or evidence matters, build context:
+2. Ask the reference context gate before building context:
+   `acs context gate --intent repo_development --scope project --task "<task>" --json`.
+   If the gate returns `decision=skip`, proceed from visible files and the user
+   request. If it returns `decision=build`, build context.
+3. If the gate says `build` or prior repository memory/evidence clearly matters,
+   build context:
    `acs context build --intent repo_development --scope project --json`.
 4. Run tools normally. OACS does not orchestrate tools.
 5. Record canonical command output, CI, retrieval, deployment, package publish,
@@ -34,8 +35,8 @@ the OACS standard.
 - Do not claim completion until all acceptance criteria are `PASS`.
 - Do not rely on chat history as proof; prefer files, command output, OACS
   evidence, and checkpoints.
-- Do not prepend OACS context unconditionally. Select context only when it adds
-  project memory, policy, evidence, or prior-decision value.
+- Do not prepend OACS context unconditionally. Use `acs context gate` or an
+  equivalent explicit decision before context build.
 - Standalone tool-result evidence does not enter `ContextCapsule.evidence_refs`
   by itself. Attach evidence refs to reviewed memory when they should guide
   future context builds.

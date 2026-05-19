@@ -18,11 +18,16 @@ git status --short
 acs status --json
 ```
 
-3. Decide whether OACS context is useful. Use it for durable project memory,
-   previous decisions, policy, evidence, checkpoints, or long-running state.
-   Skip it for simple visible-file edits where current files and the user
-   request are sufficient.
-4. Build context only when useful:
+3. Ask the reference context gate before building context:
+
+```bash
+acs context gate --intent repo_development --scope project --task "<task>" --json
+```
+
+Treat `decision=skip` as permission to proceed from visible files and the user
+request. Treat `decision=build` as the signal to build context.
+4. Build context only when the gate says `build` or prior memory/evidence
+   clearly matters:
 
 ```bash
 acs context build --intent repo_development --scope project --json
@@ -79,8 +84,8 @@ acs checkpoint add \
 ## Guardrails
 
 - OACS is not the tool orchestrator.
-- Do not prepend OACS context unconditionally. Select it only when it adds
-  project memory, policy, evidence, or prior-decision value.
+- Do not prepend OACS context unconditionally. Use `acs context gate` or an
+  equivalent explicit decision before context build.
 - Standalone tool evidence is not projected into context unless a reviewed
   memory references it.
 - Preserve attribution roles in distilled memory.

@@ -22,6 +22,7 @@ def test_cursor_rule_is_always_on_and_preserves_oacs_boundaries() -> None:
     assert "alwaysApply: true" in text
     assert "OACS does not orchestrate tools" in text
     assert "Do not prepend OACS context unconditionally" in text
+    assert "acs context gate" in text
     assert "Standalone tool-result evidence does not enter" in text
     assert "Preserve attribution" in text
     assert ".agent/oacs/unlocked.key" in text
@@ -35,7 +36,10 @@ def test_root_fragments_select_context_and_protect_private_oacs_state() -> None:
         ]
     )
 
-    assert "Decide whether OACS context is needed" in combined
+    assert "Ask the reference context gate" in combined
+    assert "acs context gate" in combined
+    assert "decision=build" in combined
+    assert "decision=skip" in combined
     assert "Do not prepend OACS context unconditionally" in combined
     assert "Do not read, print, or commit `.agent/oacs/key.json`" in combined
     assert ".agent/oacs/unlocked.key" in combined

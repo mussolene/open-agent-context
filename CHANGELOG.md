@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+## 1.0.12 - 2026-05-19
+
+### Added
+
+- Added `acs context gate` as a reference consumer-pack convenience for explicit
+  build/skip decisions before `acs context build`.
+
+### Changed
+
+- Updated the OACS repo development consumer pack to call `acs context gate`
+  before context build and keep the gate outside the portable standard surface.
+
 ## 1.0.11 - 2026-05-19
 
 ### Changed

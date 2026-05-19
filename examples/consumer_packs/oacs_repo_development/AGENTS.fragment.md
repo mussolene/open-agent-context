@@ -8,12 +8,13 @@ for one.
 Required sequence:
 
 1. State task scope and explicit acceptance criteria (`AC1`, `AC2`, ...).
-2. Decide whether OACS context is needed before building it. Use OACS for
-   durable project memory, previous decisions, policy, evidence, checkpoints,
-   or long-running state. Skip OACS context for simple visible-file edits where
-   current files and user instructions are sufficient.
-3. Build or inspect repository context through OACS only when prior project
-   memory or evidence matters:
+2. Ask the reference context gate before building context:
+   `acs context gate --intent repo_development --scope project --task "<task>" --json`.
+   Treat `decision=build` as the signal to continue with context build; treat
+   `decision=skip` as permission to proceed from visible files and user
+   instructions.
+3. Build or inspect repository context through OACS only when the gate says
+   `build` or prior project memory/evidence clearly matters:
    `acs context build --intent repo_development --scope project --json`.
 4. Run external tools normally. OACS does not schedule tools; it records their
    canonical results as governed evidence.
@@ -36,8 +37,8 @@ Hard rules:
 - Verifiers judge current files and current command results, not chat claims.
 - OACS is not the tool orchestrator; it is the governed memory/context/evidence
   layer.
-- Do not prepend OACS context unconditionally. Context should be selected for
-  tasks that need durable memory, policy, evidence, or prior decisions.
+- Do not prepend OACS context unconditionally. Use `acs context gate` or an
+  equivalent explicit decision before context build.
 - Standalone tool-result evidence does not enter `ContextCapsule.evidence_refs`
   by itself. It is projected only through included memories that reference it.
 - Preserve attribution when distilling memory: user instructions, agent
