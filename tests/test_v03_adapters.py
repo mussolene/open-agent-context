@@ -146,20 +146,19 @@ def test_api_tool_call_and_audit_verify(db, monkeypatch) -> None:
         ["tool.call"],
         tools_allowed=["tool_local_echo"],
     )
-    client = TestClient(create_app())
+    with TestClient(create_app()) as client:
+        response = client.post(
+            "/v1/tools/local_echo/call",
+            json={"actor_id": actor.id, "payload": {"ok": True}},
+        )
+        assert response.status_code == 200
+        body = response.json()
+        assert body["output"]["echo"] == {"ok": True}
+        assert body["evidence_ref"].startswith("ev_")
 
-    response = client.post(
-        "/v1/tools/local_echo/call",
-        json={"actor_id": actor.id, "payload": {"ok": True}},
-    )
-    assert response.status_code == 200
-    body = response.json()
-    assert body["output"]["echo"] == {"ok": True}
-    assert body["evidence_ref"].startswith("ev_")
-
-    verify = client.get("/v1/audit/verify")
-    assert verify.status_code == 200
-    assert verify.json()["valid"] is True
+        verify = client.get("/v1/audit/verify")
+        assert verify.status_code == 200
+        assert verify.json()["valid"] is True
 
 
 def test_tool_runner_records_evidence_and_validates_output_schema(svc) -> None:
@@ -515,19 +514,18 @@ def test_api_ingests_external_tool_result(db, monkeypatch) -> None:
         ["evidence.ingest"],
         tools_allowed=["external_api"],
     )
-    client = TestClient(create_app())
-
-    response = client.post(
-        "/v1/tools/results/ingest",
-        json={
-            "actor_id": actor.id,
-            "tool_id": "external_api",
-            "tool_name": "External API",
-            "input": {"query": "beta"},
-            "output": {"result": "beta evidence"},
-            "source_uri": "https://example.test/result/beta",
-        },
-    )
+    with TestClient(create_app()) as client:
+        response = client.post(
+            "/v1/tools/results/ingest",
+            json={
+                "actor_id": actor.id,
+                "tool_id": "external_api",
+                "tool_name": "External API",
+                "input": {"query": "beta"},
+                "output": {"result": "beta evidence"},
+                "source_uri": "https://example.test/result/beta",
+            },
+        )
 
     assert response.status_code == 200
     body = response.json()

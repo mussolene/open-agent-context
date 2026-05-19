@@ -7,9 +7,9 @@ from cryptography.exceptions import InvalidTag
 
 from oacs.core.attribution import Attribution
 from oacs.core.errors import MemoryDecryptError, NotFound, ValidationFailure
-from oacs.core.json import dumps, hash_json, loads
+from oacs.core.json import hash_json
 from oacs.core.time import now_iso
-from oacs.crypto.aead import decrypt_json_bytes, encrypt_json_bytes
+from oacs.crypto.payload_codec import PayloadCodec
 from oacs.identity.policy import PolicyEngine
 from oacs.memory.lifecycle import can_transition
 from oacs.memory.models import EvidenceItem, MemoryContent, MemoryRecord
@@ -22,12 +22,12 @@ class MemoryService:
         self,
         repo: Repository,
         policy: PolicyEngine,
-        master_key: bytes,
+        codec: PayloadCodec,
         retrieval_provider: RetrievalProvider | None = None,
     ):
         self.repo = repo
         self.policy = policy
-        self.master_key = master_key
+        self.codec = codec
         self.retrieval_provider = retrieval_provider or HybridRetrievalProvider()
         self.last_warnings: list[dict[str, object]] = []
 
@@ -280,7 +280,7 @@ class MemoryService:
         content = mem.content.model_dump()
         mem.content_hash = hash_json(content)
         aad = f"memory:{mem.id}".encode()
-        nonce, ciphertext = encrypt_json_bytes(self.master_key, dumps(content).encode("utf-8"), aad)
+        encoded = self.codec.encode(content, aad)
         self.repo.save(
             {
                 "id": mem.id,
@@ -291,8 +291,8 @@ class MemoryService:
                 "namespace": mem.namespace,
                 "scope": mem.scope,
                 "owner_actor_id": mem.owner_actor_id,
-                "content_ciphertext": ciphertext,
-                "content_nonce": nonce,
+                "content_ciphertext": encoded.ciphertext,
+                "content_nonce": encoded.nonce,
                 "content_aad": aad.decode("utf-8"),
                 "content_hash": mem.content_hash,
                 "evidence_refs": mem.evidence_refs,
@@ -305,13 +305,10 @@ class MemoryService:
 
     def _decrypt(self, row: dict[str, object]) -> MemoryRecord:
         try:
-            content = loads(
-                decrypt_json_bytes(
-                    self.master_key,
-                    row["content_nonce"],  # type: ignore[arg-type]
-                    row["content_ciphertext"],  # type: ignore[arg-type]
-                    str(row["content_aad"]).encode("utf-8"),
-                )
+            content = self.codec.decode(
+                row["content_nonce"],
+                row["content_ciphertext"],
+                str(row["content_aad"]).encode("utf-8"),
             )
         except (InvalidTag, ValueError, TypeError, KeyError) as exc:
             raise MemoryDecryptError("memory record is unreadable", _safe_row_error(row)) from exc
@@ -324,7 +321,7 @@ class MemoryService:
             namespace=str(row["namespace"]),
             scope=row["scope"],  # type: ignore[arg-type]
             owner_actor_id=row["owner_actor_id"],  # type: ignore[arg-type]
-            content=MemoryContent(**content),
+            content=MemoryContent(**cast(dict[str, Any], content)),
             evidence_refs=row["evidence_refs"],  # type: ignore[arg-type]
             supersedes=row["supersedes"],  # type: ignore[arg-type]
             created_at=str(row["created_at"]),

@@ -5,8 +5,10 @@ Threats addressed by OACS: plaintext memory exposure, accidental capability
 leaks, hidden memory writes, fuzzy memory used as fact, and unaudited access.
 
 Memory and capsule payloads use envelope-style AEAD encryption at rest. The
-local passphrase provider wraps a master key; an unlocked session key can be
-stored locally for development and removed with `acs key lock`.
+local development provider stores the master key in ignored `unlocked.key`
+material so agents in the same workspace do not need to share a passphrase.
+Passphrase wrapping remains available for local stores that need a lockable
+session key; those sessions can be removed with `acs key lock`.
 
 Audit events store operation metadata and hashes, not secret content.
 
@@ -56,9 +58,11 @@ OACS закрывает риски: хранение памяти в откры�
 capability, скрытые записи памяти, использование fuzzy memory как факта и
 доступ без аудита.
 
-Payload памяти и capsules шифруются AEAD. Локальный passphrase provider
-оборачивает master key; unlock-сессия может храниться локально для разработки
-и удаляется через `acs key lock`.
+Payload памяти и capsules шифруются AEAD. Local development provider хранит
+master key в ignored `unlocked.key`, чтобы агентам в одном workspace не нужно
+было передавать passphrase. Passphrase wrapping остаётся доступным для локальных
+stores, где нужна lockable session key; такую сессию можно удалить через
+`acs key lock`.
 
 Audit events содержат metadata и хэши, но не секретный контент.
 

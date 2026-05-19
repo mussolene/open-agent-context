@@ -146,17 +146,16 @@ def test_api_audits_memory_and_context_operations(db, monkeypatch) -> None:
     svc = services(str(db))
     mem = svc.memory.propose("fact", 2, "audited memory", None, ["project"])
     svc.memory.commit(mem.id, None)
-    client = TestClient(create_app())
-
-    assert client.post("/v1/memory/query", json={"query": "audited"}).status_code == 200
-    assert client.get(f"/v1/memory/{mem.id}").status_code == 200
-    built = client.post(
-        "/v1/context/build",
-        json={"intent": "audited", "scope": ["project"]},
-    )
-    assert built.status_code == 200
-    capsule_id = built.json()["id"]
-    assert client.get(f"/v1/context/{capsule_id}").status_code == 200
+    with TestClient(create_app()) as client:
+        assert client.post("/v1/memory/query", json={"query": "audited"}).status_code == 200
+        assert client.get(f"/v1/memory/{mem.id}").status_code == 200
+        built = client.post(
+            "/v1/context/build",
+            json={"intent": "audited", "scope": ["project"]},
+        )
+        assert built.status_code == 200
+        capsule_id = built.json()["id"]
+        assert client.get(f"/v1/context/{capsule_id}").status_code == 200
 
     operations = [event["operation"] for event in services(str(db)).audit.list()]
     assert "memory.query" in operations
@@ -171,13 +170,12 @@ def test_api_denied_memory_read_and_query_are_audited(db, monkeypatch) -> None:
     actor = svc.actors.create("agent", "DeniedApi")
     mem = svc.memory.propose("fact", 2, "hidden content", None, ["project"])
     svc.memory.commit(mem.id, None)
-    client = TestClient(create_app())
-
-    query_response = client.post(
-        "/v1/memory/query",
-        json={"actor_id": actor.id, "query": "hidden", "scope": ["project"]},
-    )
-    read_response = client.get(f"/v1/memory/{mem.id}", params={"actor_id": actor.id})
+    with TestClient(create_app()) as client:
+        query_response = client.post(
+            "/v1/memory/query",
+            json={"actor_id": actor.id, "query": "hidden", "scope": ["project"]},
+        )
+        read_response = client.get(f"/v1/memory/{mem.id}", params={"actor_id": actor.id})
 
     assert query_response.status_code == 403
     assert read_response.status_code == 403

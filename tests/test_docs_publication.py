@@ -157,8 +157,22 @@ def test_v1_release_checklist_blocks_freeze_release_risks() -> None:
         assert required in checklist
     assert "python3 -m oacs.cli.main conformance validate --json" in checklist
     assert "acs conformance validate --json" in checklist
+    assert " examples " in checklist
+    assert "examples/skills" not in checklist
     assert "docs/V1_RELEASE_CHECKLIST.md" in roadmap
     assert "Open freeze-prep work:\n\n- None." in manifest
+
+
+def test_public_docs_link_consumer_packs_as_adapter_layer() -> None:
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    skills = (ROOT / "docs" / "SKILLS.md").read_text(encoding="utf-8")
+    consumer_packs = (ROOT / "docs" / "CONSUMER_PACKS.md").read_text(encoding="utf-8")
+    normalized_consumer_packs = " ".join(consumer_packs.split())
+
+    assert "docs/CONSUMER_PACKS.md" in readme
+    assert "docs/CONSUMER_PACKS.md" in skills
+    assert "not part of the OACS v1.0 standard surface" in normalized_consumer_packs
+    assert ".agent/oacs" in consumer_packs
 
 
 def test_public_docs_do_not_use_stale_reference_version() -> None:

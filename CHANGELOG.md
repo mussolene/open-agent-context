@@ -2,6 +2,29 @@
 
 ## Unreleased
 
+## 1.0.10 - 2026-05-19
+
+### Added
+
+- Added `local_unlocked` local development key material so agents in one
+  workspace can share an encrypted OACS store without rediscovering a
+  passphrase between sessions.
+- Added `acs key drop-passphrase` for converting a passphrase-wrapped local
+  store to `local_unlocked` without rewriting encrypted memory rows.
+- Added consumer-pack documentation, examples, and tests for portable OACS
+  adoption outside the reference implementation.
+
+### Changed
+
+- `acs key init` now defaults to `local_unlocked`; passing `--passphrase`
+  keeps the passphrase-wrapped local provider.
+- CLI help for key management now explains optional passphrases,
+  `local_unlocked`, and `drop-passphrase`.
+- Local status output reports the active encryption mode.
+- Documentation now distinguishes reference local key providers from the
+  portable standard surface and keeps `.agent/oacs` / `.oacs` data out of
+  consumer packs.
+
 ## 1.0.9 - 2026-05-08
 
 ### Added

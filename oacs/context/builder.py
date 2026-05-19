@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+from typing import Any, cast
+
 from oacs.context.capsule import ContextCapsule, ContextCapsuleExport
 from oacs.core.errors import NotFound
-from oacs.core.json import dumps, hash_json, loads
+from oacs.core.json import hash_json
 from oacs.core.time import now_iso
-from oacs.crypto.aead import decrypt_json_bytes, encrypt_json_bytes
+from oacs.crypto.payload_codec import PayloadCodec
 from oacs.identity.policy import PolicyEngine
 from oacs.memory.service import MemoryService
 from oacs.rules.engine import RuleEngine
@@ -22,7 +24,7 @@ class ContextBuilder:
         skills: SkillRegistry,
         tools: ToolRegistry,
         policy: PolicyEngine,
-        master_key: bytes,
+        codec: PayloadCodec,
     ):
         self.repo = repo
         self.memory = memory
@@ -30,7 +32,7 @@ class ContextBuilder:
         self.skills = skills
         self.tools = tools
         self.policy = policy
-        self.master_key = master_key
+        self.codec = codec
         self.last_warnings: list[dict[str, object]] = []
 
     def build(
@@ -115,7 +117,7 @@ class ContextBuilder:
     def export_capsule(self, capsule_id: str, actor_id: str | None) -> ContextCapsuleExport:
         self.policy.require(actor_id, "context.export")
         capsule = self._load(capsule_id)
-        return ContextCapsuleExport.create(capsule, self.master_key)
+        return ContextCapsuleExport.create(capsule, self._integrity_key())
 
     def explain(self, capsule_id: str, actor_id: str | None) -> dict[str, object]:
         self.policy.require(actor_id, "context.explain")
@@ -134,7 +136,7 @@ class ContextBuilder:
         self.policy.require(actor_id, "context.import")
         if payload.get("export_type") == "context_capsule_export":
             export = ContextCapsuleExport.model_validate(payload)
-            export.validate_integrity(self.master_key)
+            export.validate_integrity(self._integrity_key())
             capsule = export.capsule
         else:
             capsule = ContextCapsule.model_validate(payload)
@@ -145,7 +147,7 @@ class ContextBuilder:
     def validate_payload(self, payload: dict[str, object]) -> dict[str, object]:
         if payload.get("export_type") == "context_capsule_export":
             export = ContextCapsuleExport.model_validate(payload)
-            export.validate_integrity(self.master_key)
+            export.validate_integrity(self._integrity_key())
             return {
                 "valid": True,
                 "id": export.capsule.id,
@@ -184,20 +186,17 @@ class ContextBuilder:
 
     def _load(self, capsule_id: str) -> ContextCapsule:
         row = self.repo.get(capsule_id)
-        payload = loads(
-            decrypt_json_bytes(
-                self.master_key,
-                row["payload_nonce"],
-                row["payload_ciphertext"],
-                str(row["payload_aad"]).encode("utf-8"),
-            )
+        payload = self.codec.decode(
+            row["payload_nonce"],
+            row["payload_ciphertext"],
+            str(row["payload_aad"]).encode("utf-8"),
         )
-        return ContextCapsule(**payload)
+        return ContextCapsule(**cast(dict[str, Any], payload))
 
     def _save(self, capsule: ContextCapsule) -> None:
         payload = capsule.model_dump()
         aad = f"context:{capsule.id}".encode()
-        nonce, ciphertext = encrypt_json_bytes(self.master_key, dumps(payload).encode("utf-8"), aad)
+        encoded = self.codec.encode(payload, aad)
         now = now_iso()
         self.repo.save(
             {
@@ -208,8 +207,8 @@ class ContextBuilder:
                 "agent_id": capsule.agent_id,
                 "scope": capsule.scope,
                 "token_budget": capsule.token_budget,
-                "payload_ciphertext": ciphertext,
-                "payload_nonce": nonce,
+                "payload_ciphertext": encoded.ciphertext,
+                "payload_nonce": encoded.nonce,
                 "payload_aad": aad.decode("utf-8"),
                 "checksum": capsule.checksum,
                 "status": "active",
@@ -220,6 +219,9 @@ class ContextBuilder:
                 "content_hash": hash_json(payload),
             }
         )
+
+    def _integrity_key(self) -> bytes:
+        return self.codec.master_key or b"\x00" * 32
 
 
 def _status_operation(status: str) -> str:

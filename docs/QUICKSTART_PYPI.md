@@ -7,13 +7,12 @@ implementation.
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install oacs==1.0.9
+pip install oacs==1.0.10
 
 export OACS_DB=./.oacs/oacs.db
-export OACS_PASSPHRASE="<choose-a-local-dev-passphrase>"
 
 acs init --json
-acs key init --passphrase "$OACS_PASSPHRASE" --json
+acs key init --json
 acs actor create --type human --name "User" --json
 ```
 
@@ -42,13 +41,12 @@ implementation.
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install oacs==1.0.9
+pip install oacs==1.0.10
 
 export OACS_DB=./.oacs/oacs.db
-export OACS_PASSPHRASE="<choose-a-local-dev-passphrase>"
 
 acs init --json
-acs key init --passphrase "$OACS_PASSPHRASE" --json
+acs key init --json
 acs actor create --type human --name "User" --json
 ```
 

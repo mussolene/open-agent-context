@@ -29,3 +29,9 @@ class StorageBackend(Protocol):
 
     def delete(self, table: str, record_id: str) -> None:
         """Delete a record by id if it exists."""
+
+    def get_metadata(self, key: str) -> str | None:
+        """Return reference-implementation storage metadata."""
+
+    def set_metadata(self, key: str, value: str) -> None:
+        """Set reference-implementation storage metadata."""

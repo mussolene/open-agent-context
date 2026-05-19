@@ -21,10 +21,9 @@ Agent workflow in this repository:
 
 ```bash
 export OACS_DB=./.oacs/dogfood.db
-export OACS_PASSPHRASE="<local-passphrase>"
 
 acs init --json
-acs key init --passphrase "$OACS_PASSPHRASE" --json
+acs key init --json
 acs skill scan examples/skills --json
 
 acs skill run codex_oacs_runtime \
@@ -121,10 +120,9 @@ Agent workflow в этом репозитории:
 
 ```bash
 export OACS_DB=./.oacs/dogfood.db
-export OACS_PASSPHRASE="<local-passphrase>"
 
 acs init --json
-acs key init --passphrase "$OACS_PASSPHRASE" --json
+acs key init --json
 acs skill scan examples/skills --json
 
 acs skill run codex_oacs_runtime \

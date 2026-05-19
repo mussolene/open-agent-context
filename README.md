@@ -55,10 +55,9 @@ source .venv/bin/activate
 pip install -e ".[dev,crypto]"
 
 export OACS_DB=./.oacs/oacs.db
-export OACS_PASSPHRASE="<choose-a-local-dev-passphrase>"
 
 acs init --json
-acs key init --passphrase "$OACS_PASSPHRASE" --json
+acs key init --json
 acs actor create --type human --name "User" --json
 
 CANDIDATE_ID=$(acs memory propose --type procedure --depth 2 --scope project \
@@ -134,6 +133,10 @@ acs skill run codex_oacs_runtime \
 The dogfood skill is a source-checkout adapter. Auto mode commits only D1 repo
 episodes; D2/D3 memory remains explicit review.
 
+Consumer packs for projecting the same OACS-backed repository workflow into
+Codex, Claude, and Cursor local instruction surfaces are documented in
+`docs/CONSUMER_PACKS.md`.
+
 ### LM Studio
 
 Start LM Studio with an OpenAI-compatible server at `http://localhost:1234/v1`.
@@ -157,9 +160,16 @@ checklist in `docs/RELEASE.md`; see `docs/BUILD.md` for local build parity.
 ### Security Model
 
 Memory and sensitive capsule payloads are encrypted before they are written to
-SQLite. The default provider is passphrase-based envelope encryption. PQC is a
-key-wrapping integration point only; no fake post-quantum claims are made when
-optional PQ libraries are absent.
+SQLite. For local repository development, the default provider is
+`local_unlocked`: `acs key init` creates ignored local key material and no
+passphrase handoff is required between agents sharing the same workspace. Use
+`acs key init --passphrase "$OACS_PASSPHRASE"` when you want passphrase-based
+wrapping. Existing passphrase-wrapped local stores can be converted with
+`acs key drop-passphrase --passphrase "$OACS_PASSPHRASE"`. OS keychain support is
+the intended external provider path for stronger local storage; until that
+adapter is present, use an external vault/keychain through `ProtectedRef` rather
+than storing secret plaintext in OACS. PQC is a key-wrapping integration point
+only; no fake post-quantum claims are made when optional PQ libraries are absent.
 
 OACS is not a vault. Protected values are represented as external `ProtectedRef`
 records; secret storage, rotation, revocation, and plaintext release belong to
@@ -233,10 +243,9 @@ source .venv/bin/activate
 pip install -e ".[dev,crypto]"
 
 export OACS_DB=./.oacs/oacs.db
-export OACS_PASSPHRASE="<choose-a-local-dev-passphrase>"
 
 acs init --json
-acs key init --passphrase "$OACS_PASSPHRASE" --json
+acs key init --json
 acs actor create --type human --name "User" --json
 
 CANDIDATE_ID=$(acs memory propose --type procedure --depth 2 --scope project \
@@ -311,6 +320,9 @@ acs skill run codex_oacs_runtime \
 Dogfood skill является source-checkout adapter. Auto mode коммитит только D1
 repo episodes; D2/D3 memory остаётся под явным review.
 
+Consumer packs для проекции того же OACS-backed repository workflow в локальные
+instruction surfaces Codex, Claude и Cursor описаны в `docs/CONSUMER_PACKS.md`.
+
 ### LM Studio
 
 Запустите LM Studio с OpenAI-compatible server на `http://localhost:1234/v1`.
@@ -334,10 +346,17 @@ CLI smoke checks. Публичные package публикации использ
 
 ### Security model
 
-Memory и sensitive capsule payloads шифруются до записи в SQLite. Default
-provider использует passphrase-based envelope encryption. PQC - только
-integration point для key wrapping; если optional PQ libraries отсутствуют,
-проект не делает fake post-quantum claims.
+Memory и sensitive capsule payloads шифруются до записи в SQLite. Для локальной
+repo development работы default provider — `local_unlocked`: `acs key init`
+создаёт ignored local key material, и passphrase не нужно передавать между
+агентами в одном workspace. Если нужно passphrase-based wrapping, используйте
+`acs key init --passphrase "$OACS_PASSPHRASE"`. Существующие локальные базы с
+passphrase можно перевести через `acs key drop-passphrase --passphrase
+"$OACS_PASSPHRASE"`. OS keychain — целевой путь external provider для более
+строгого локального хранения; пока adapter не реализован, используйте внешний
+vault/keychain через `ProtectedRef`, а не записывайте plaintext secrets в OACS.
+PQC - только integration point для key wrapping; если optional PQ libraries
+отсутствуют, проект не делает fake post-quantum claims.
 
 OACS не является vault. Protected values представлены как внешние
 `ProtectedRef` records; secret storage, rotation, revocation и plaintext release

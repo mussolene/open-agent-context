@@ -108,6 +108,20 @@ class SQLiteStore:
             conn.execute(f"DELETE FROM {table} WHERE id=?", (record_id,))
             conn.commit()
 
+    def get_metadata(self, key: str) -> str | None:
+        with closing(self.connect()) as conn:
+            row = conn.execute("SELECT value FROM key_metadata WHERE id=?", (key,)).fetchone()
+        return str(row["value"]) if row else None
+
+    def set_metadata(self, key: str, value: str) -> None:
+        with closing(self.connect()) as conn:
+            conn.execute(
+                "INSERT INTO key_metadata (id, value) VALUES (?, ?) "
+                "ON CONFLICT(id) DO UPDATE SET value=excluded.value",
+                (key, value),
+            )
+            conn.commit()
+
 
 def normalize_row(row: sqlite3.Row) -> dict[str, Any]:
     out = dict(row)
@@ -232,5 +246,8 @@ CREATE TABLE IF NOT EXISTS benchmark_runs (
   created_at TEXT NOT NULL, updated_at TEXT NOT NULL, status TEXT NOT NULL,
   namespace TEXT NOT NULL, scope TEXT NOT NULL, owner_actor_id TEXT,
   content_hash TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS key_metadata (
+  id TEXT PRIMARY KEY, value TEXT NOT NULL
 );
 """

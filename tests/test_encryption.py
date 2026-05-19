@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sqlite3
+from contextlib import closing
 from pathlib import Path
 
 import pytest
@@ -12,7 +13,7 @@ from oacs.core.errors import LockedKeyError, MemoryDecryptError
 
 
 def corrupt_memory_ciphertext(db: Path, memory_id: str) -> None:
-    with sqlite3.connect(db) as conn:
+    with closing(sqlite3.connect(db)) as conn:
         conn.execute(
             "UPDATE memory_records SET content_ciphertext=? WHERE id=?",
             (b"not-valid-ciphertext", memory_id),
@@ -34,6 +35,41 @@ def test_wrong_passphrase_fails(tmp_path: Path):
     svc.key_provider.lock()
     with pytest.raises(LockedKeyError):
         services(str(db), passphrase="wrong")
+
+
+def test_key_init_without_passphrase_uses_local_unlocked(tmp_path: Path):
+    db = tmp_path / "oacs.db"
+    runner = CliRunner()
+
+    initialized = runner.invoke(app, ["key", "init", "--db", str(db), "--json"])
+    assert initialized.exit_code == 0, initialized.output
+    assert '"provider": "local_unlocked"' in initialized.output
+
+    svc = services(str(db))
+    mem = svc.memory.propose("fact", 2, "no passphrase required", None, ["project"])
+    svc.memory.commit(mem.id, None)
+
+    assert services(str(db)).memory.read(mem.id, None).content.text == "no passphrase required"
+    assert b"no passphrase required" not in db.read_bytes()
+
+
+def test_drop_passphrase_keeps_existing_records_readable(tmp_path: Path):
+    db = tmp_path / "oacs.db"
+    svc = services(str(db), require_key=False)
+    svc.key_provider.generate("old-passphrase")
+    mem = services(str(db)).memory.propose("fact", 2, "legacy encrypted", None, ["project"])
+    services(str(db)).memory.commit(mem.id, None)
+    svc.key_provider.lock()
+
+    runner = CliRunner()
+    migrated = runner.invoke(
+        app,
+        ["key", "drop-passphrase", "--db", str(db), "--passphrase", "old-passphrase", "--json"],
+    )
+    assert migrated.exit_code == 0, migrated.output
+    assert '"provider": "local_unlocked"' in migrated.output
+
+    assert services(str(db)).memory.read(mem.id, None).content.text == "legacy encrypted"
 
 
 def test_context_build_reports_uninitialized_key_for_existing_db(tmp_path: Path):

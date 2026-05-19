@@ -15,7 +15,7 @@ class KeyStatus:
 
 class KeyProvider(ABC):
     @abstractmethod
-    def generate(self, passphrase: str) -> dict[str, object]:
+    def generate(self, passphrase: str | None = None) -> dict[str, object]:
         raise NotImplementedError
 
     @abstractmethod

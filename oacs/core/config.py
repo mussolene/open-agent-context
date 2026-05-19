@@ -10,6 +10,7 @@ class OacsConfig:
     db_path: Path
     base_dir: Path
     passphrase: str | None = None
+    encryption: str | None = None
 
     @classmethod
     def from_values(cls, db: str | None = None, passphrase: str | None = None) -> OacsConfig:
@@ -19,6 +20,7 @@ class OacsConfig:
             db_path=db_path,
             base_dir=db_path.parent,
             passphrase=passphrase or os.getenv("OACS_PASSPHRASE"),
+            encryption=os.getenv("OACS_ENCRYPTION"),
         )
 
     @property

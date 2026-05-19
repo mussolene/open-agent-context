@@ -21,7 +21,7 @@ class HybridPQCKeyProvider(KeyProvider):
         except Exception:
             self._available = False
 
-    def generate(self, passphrase: str) -> dict[str, object]:
+    def generate(self, passphrase: str | None = None) -> dict[str, object]:
         self._raise_unavailable()
         raise AssertionError("unreachable")
 

@@ -12,7 +12,7 @@ from oacs.context.capsule import ContextCapsule
 def test_cli_version():
     result = CliRunner().invoke(app, ["--version"])
     assert result.exit_code == 0
-    assert result.output.strip() == "acs 1.0.9"
+    assert result.output.strip() == "acs 1.0.10"
 
 
 def test_cli_init_key_actor_memory(tmp_path):
@@ -87,6 +87,23 @@ def test_cli_repo_is_not_core_surface():
 def test_cli_vault_is_not_core_surface():
     result = CliRunner().invoke(app, ["vault", "--help"])
     assert result.exit_code != 0
+
+
+def test_cli_key_help_describes_local_unlocked_mode():
+    runner = CliRunner()
+    key_help = runner.invoke(app, ["key", "--help"])
+    init_help = runner.invoke(app, ["key", "init", "--help"])
+    drop_help = runner.invoke(app, ["key", "drop-passphrase", "--help"])
+
+    assert key_help.exit_code == 0, key_help.output
+    assert "Manage local OACS key material" in key_help.output
+    assert "drop-passphrase" in key_help.output
+    assert init_help.exit_code == 0, init_help.output
+    assert "local_unlocked" in init_help.output
+    assert "Omit on key init" in init_help.output
+    assert "--passphrase" in init_help.output
+    assert drop_help.exit_code == 0, drop_help.output
+    assert "passphrase-wrapped" in drop_help.output
 
 
 def test_cli_conformance_validate_json():

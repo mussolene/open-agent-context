@@ -14,6 +14,9 @@ the portable standard surface and is run through normal `acs skill scan` /
 `acs skill run` operations. The intended long-term shape is a separately
 installable skill package.
 
+Client consumer packs for Codex, Claude, and Cursor are adapter bundles, not
+skill registry records or standard requirements. See `docs/CONSUMER_PACKS.md`.
+
 ## RU
 Skills используют структуру `.skills/<name>/skill.json`, `SKILL.md`, `scripts/`,
 `refs/`. Reference built-ins ориентированы на metadata: memory critical solving,
@@ -26,3 +29,6 @@ Codex runtime workflow для OACS-backed context rebuilds, evidence, checkpoint
 multi-agent coordination. Он не является частью OACS conformance или portable
 standard surface и запускается через обычные `acs skill scan` / `acs skill run`
 operations. Долгосрочная форма - отдельный устанавливаемый skill package.
+
+Client consumer packs для Codex, Claude и Cursor являются adapter bundles, а не
+skill registry records или требованиями стандарта. См. `docs/CONSUMER_PACKS.md`.

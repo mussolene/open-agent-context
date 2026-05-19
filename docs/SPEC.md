@@ -101,10 +101,10 @@ implemented by explicit adapters, but they are disabled by default, require no
 network for conformance, and are not required for OACS conformance.
 
 Python-specific behavior is reference-only unless this specification or a JSON
-Schema says otherwise. The `acs` CLI, FastAPI routes, SQLite backend, local
-passphrase key provider, local CLI execution, HTTP execution, LM Studio support,
-benchmark runners, and repo dogfood workflow are validation and integration
-surfaces around the standard contract, not mandatory runtime features.
+Schema says otherwise. The `acs` CLI, FastAPI routes, SQLite backend, local key
+providers, local CLI execution, HTTP execution, LM Studio support, benchmark
+runners, and repo dogfood workflow are validation and integration surfaces
+around the standard contract, not mandatory runtime features.
 
 ## RU
 OACS v1.0 задаёт детерминированный нижний слой агентского контекста. Модель получает
@@ -207,7 +207,6 @@ structured evidence retrieval по `MemoryContent.evidence`. Embeddings могу
 
 Python-specific behavior является reference-only, если эта спецификация или
 JSON Schema не говорит обратного. `acs` CLI, FastAPI routes, SQLite backend,
-local passphrase key provider, local CLI execution, HTTP execution, LM Studio
-support, benchmark runners и repo dogfood workflow являются validation и
-integration surfaces вокруг standard contract, а не обязательными runtime
-features.
+local key providers, local CLI execution, HTTP execution, LM Studio support,
+benchmark runners и repo dogfood workflow являются validation и integration
+surfaces вокруг standard contract, а не обязательными runtime features.

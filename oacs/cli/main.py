@@ -31,7 +31,7 @@ from oacs.tools.models import ToolBinding
 
 app = typer.Typer(help="acs - Agent Context Shell")
 actor_app = typer.Typer()
-key_app = typer.Typer()
+key_app = typer.Typer(help="Manage local OACS key material and passphrase wrapping.")
 memory_app = typer.Typer()
 context_app = typer.Typer()
 capsule_app = typer.Typer()
@@ -74,7 +74,16 @@ JsonOpt = Annotated[bool, typer.Option("--json")]
 ActorOpt = Annotated[str | None, typer.Option("--actor")]
 AgentOpt = Annotated[str | None, typer.Option("--agent")]
 ScopeOpt = Annotated[list[str] | None, typer.Option("--scope")]
-PassOpt = Annotated[str | None, typer.Option("--passphrase")]
+PassOpt = Annotated[
+    str | None,
+    typer.Option(
+        "--passphrase",
+        help=(
+            "Optional local passphrase. Omit on key init to create a local_unlocked "
+            "development key."
+        ),
+    ),
+]
 
 
 def emit(data: object, json_out: bool) -> None:
@@ -196,6 +205,7 @@ def status(db: DbOpt = None, json_out: JsonOpt = False) -> None:
             "db": str(svc.config.db_path),
             "db_exists": svc.config.db_path.exists(),
             "base_dir": str(svc.config.base_dir),
+            "encryption_mode": svc.encryption_mode,
             "key": key_status.__dict__,
             "memory_decrypt_health": memory_health,
             "counts": {table: len(svc.store.list(table, limit=None)) for table in tables},
@@ -344,17 +354,23 @@ def run_command(
 
 
 @key_app.command("init")
-def key_init(passphrase: PassOpt, db: DbOpt = None, json_out: JsonOpt = False) -> None:
-    if not passphrase:
-        raise typer.BadParameter("--passphrase is required")
+def key_init(
+    passphrase: PassOpt = None, db: DbOpt = None, json_out: JsonOpt = False
+) -> None:
+    """Initialize local key material; omit --passphrase for local_unlocked dev mode."""
     cfg = OacsConfig.from_values(db, passphrase)
     cfg.base_dir.mkdir(parents=True, exist_ok=True)
     svc = services(db, require_key=False)
     metadata = svc.key_provider.generate(passphrase)
+    svc.store.set_metadata("encryption_mode", str(metadata["provider"]))
     emit(
         {
             "status": "initialized",
-            "public": {k: metadata[k] for k in ("provider", "algorithm_name", "kdf")},
+            "public": {
+                k: metadata[k]
+                for k in ("provider", "algorithm_name", "kdf")
+                if k in metadata
+            },
         },
         json_out,
     )
@@ -362,14 +378,39 @@ def key_init(passphrase: PassOpt, db: DbOpt = None, json_out: JsonOpt = False) -
 
 @key_app.command("unlock")
 def key_unlock(passphrase: PassOpt, db: DbOpt = None, json_out: JsonOpt = False) -> None:
+    """Unlock passphrase-wrapped key material into the local unlocked key file."""
     svc = services(db, require_key=False)
     svc.key_provider.unwrap_key(passphrase or "")
     emit({"status": "unlocked"}, json_out)
 
 
+@key_app.command("drop-passphrase")
+def key_drop_passphrase(
+    passphrase: PassOpt = None, db: DbOpt = None, json_out: JsonOpt = False
+) -> None:
+    """Convert a passphrase-wrapped local store to local_unlocked key material."""
+    svc = services(db, require_key=False)
+    metadata = svc.key_provider.drop_passphrase(passphrase)
+    svc.store.set_metadata("encryption_mode", "local_unlocked")
+    emit({"status": "passphrase_removed", "public": metadata}, json_out)
+
+
 @key_app.command("lock")
 def key_lock(db: DbOpt = None, json_out: JsonOpt = False) -> None:
+    """Lock passphrase sessions; local_unlocked key material is left unchanged."""
     svc = services(db, require_key=False)
+    if svc.key_provider.status().provider == "local_unlocked":
+        emit(
+            {
+                "status": "unchanged",
+                "reason": (
+                    "local_unlocked stores the local master key in unlocked.key; "
+                    "use passphrase provider before locking"
+                ),
+            },
+            json_out,
+        )
+        return
     svc.key_provider.lock()
     emit({"status": "locked"}, json_out)
 
