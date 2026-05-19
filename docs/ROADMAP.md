@@ -5,7 +5,16 @@ This roadmap keeps the OACS v1.0 standard small. Core work must define
 memory, context, permissions, audit, and deterministic operation contracts.
 Reference adapters prove integration, but they do not expand the standard.
 
-### Current Position: v1.0 Released / Post-1.0 Hardening
+### Current Position: v1.0.13 Released / Post-1.0 Hardening
+
+OACS is currently at `v1.0.13`. The portable v1.0 standard surface is still the
+stable JSON records, lifecycle, capability, audit, evidence, context, and
+conformance contract. Post-1.0 work is hardening reference adapters and consumer
+packs around that contract. `acs context gate` is in this reference-adapter
+bucket: it helps local consumers make an explicit build/skip decision before
+`acs context build`, but it is not a new portable schema or conformance
+requirement.
+
 Core contract:
 
 - Done: OACS v1.0 terminology, schemas, encrypted `MemoryRecord`,
@@ -248,7 +257,16 @@ Reference adapters:
 определять memory, context, permissions, audit и deterministic operation
 contracts. Reference adapters доказывают интеграцию, но не расширяют стандарт.
 
-### Текущая позиция: v1.0 Released / Post-1.0 Hardening
+### Текущая позиция: v1.0.13 Released / Post-1.0 hardening
+
+OACS сейчас находится на `v1.0.13`. Portable v1.0 standard surface всё ещё
+состоит из stable JSON records, lifecycle, capability, audit, evidence, context
+и conformance contract. Post-1.0 работа усиливает reference adapters и consumer
+packs вокруг этого contract. `acs context gate` находится именно в этом
+reference-adapter слое: он помогает локальным consumers явно принять build/skip
+решение перед `acs context build`, но не является новой portable schema или
+conformance requirement.
+
 Core contract:
 
 - Готово: OACS v1.0 terminology, schemas, encrypted `MemoryRecord`,

@@ -41,6 +41,18 @@ Consumer packs must keep these boundaries:
 - Client-specific rules may be strict, but they must not redefine the OACS
   standard.
 
+Machine-facing gate contract:
+
+- Command: `acs context gate --intent <intent> --scope <scope> --task <text> --json`.
+- Required consumer decision keys: `decision`, `should_build_context`, `reason`,
+  and `standard_boundary`.
+- Valid `decision` values are `build` and `skip`.
+- `decision=build` means run the returned `next_command` or an equivalent
+  `acs context build`; `decision=skip` means do not prepend OACS context unless
+  the agent has another explicit reason.
+- `standard_boundary` must remain
+  `reference_consumer_pack_convenience_not_oacs_standard`.
+
 The reference pack in `examples/consumer_packs/oacs_repo_development` contains:
 
 - `AGENTS.fragment.md` for Codex-style root instructions.
@@ -89,6 +101,18 @@ Consumer packs должны сохранять границы:
   state нельзя читать, печатать или коммитить.
 - Client-specific rules могут быть жёсткими, но не должны переопределять OACS
   standard.
+
+Machine-facing contract для gate:
+
+- Команда: `acs context gate --intent <intent> --scope <scope> --task <text> --json`.
+- Обязательные для consumer decision keys: `decision`,
+  `should_build_context`, `reason` и `standard_boundary`.
+- Допустимые значения `decision`: `build` и `skip`.
+- `decision=build` означает запустить возвращённый `next_command` или
+  эквивалентный `acs context build`; `decision=skip` означает не добавлять OACS
+  context в prompt, если у agent нет другой явной причины.
+- `standard_boundary` должен оставаться
+  `reference_consumer_pack_convenience_not_oacs_standard`.
 
 Reference pack в `examples/consumer_packs/oacs_repo_development` содержит:
 

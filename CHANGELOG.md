@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+## 1.0.13 - 2026-05-19
+
+### Changed
+
+- Documented the current `v1.0.13` roadmap position and clarified that
+  `acs context gate` remains a reference-adapter convenience outside the
+  portable standard surface.
+- Added a machine-facing consumer-pack gate contract with required decision
+  keys, `build`/`skip` semantics, and the standard-boundary sentinel.
+- Aligned root repository workflow and agent workflow docs to ask the context
+  gate before context build.
+
 ## 1.0.12 - 2026-05-19
 
 ### Added

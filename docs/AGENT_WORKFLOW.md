@@ -41,6 +41,18 @@ acs resume --scope project --json
 `acs resume` aggregates the latest checkpoint, recent tool-result evidence,
 recent memory metadata, recent Context Capsules, and recent audit events.
 
+Context selection gate:
+
+```bash
+acs context gate --intent repo_development --scope project \
+  --task "release consumer pack with verification" \
+  --json
+```
+
+`acs context gate` is a reference CLI convenience for consumer packs. It returns
+an explicit `build` or `skip` decision before `acs context build`; it does not
+read memory, decrypt local state, or add a portable standard schema.
+
 Governed command evidence:
 
 ```bash
@@ -119,6 +131,19 @@ acs resume --scope project --json
 
 `acs resume` собирает latest checkpoint, recent tool-result evidence, metadata
 последних memories, Context Capsules и audit events.
+
+Gate выбора context:
+
+```bash
+acs context gate --intent repo_development --scope project \
+  --task "release consumer pack with verification" \
+  --json
+```
+
+`acs context gate` является reference CLI convenience для consumer packs. Он
+возвращает явное решение `build` или `skip` перед `acs context build`; он не
+читает memory, не расшифровывает local state и не добавляет portable standard
+schema.
 
 Governed command evidence:
 

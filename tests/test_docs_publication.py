@@ -107,6 +107,8 @@ def test_freeze_prep_status_is_current_in_roadmap_and_manifest() -> None:
     manifest = (ROOT / "docs" / "FREEZE_PREP.md").read_text(encoding="utf-8")
 
     assert "stable-candidate schemas reject unknown top-level fields" in roadmap
+    assert f"Current Position: v{__version__} Released / Post-1.0 Hardening" in roadmap
+    assert "`acs context gate` is in this reference-adapter\nbucket" in roadmap
     assert "portable field descriptions" in roadmap
     assert "stable-candidate schemas have strict top-level shape" in roadmap
     assert "stable-candidate schemas имеют strict top-level shape" in roadmap
@@ -120,6 +122,27 @@ def test_freeze_prep_status_is_current_in_roadmap_and_manifest() -> None:
     assert "Решить, что `actor` и `context_capsule_export` остаются `draft_support`" in manifest
     assert "Publish `docs/V1_RELEASE_CHECKLIST.md`" in manifest
     assert "Open freeze-prep work:\n\n- None." in manifest
+
+
+def test_context_gate_docs_keep_standard_boundary_machine_contract() -> None:
+    roadmap = (ROOT / "docs" / "ROADMAP.md").read_text(encoding="utf-8")
+    consumer_packs = (ROOT / "docs" / "CONSUMER_PACKS.md").read_text(encoding="utf-8")
+    agent_workflow = (ROOT / "docs" / "AGENT_WORKFLOW.md").read_text(encoding="utf-8")
+    spec = (ROOT / "docs" / "SPEC.md").read_text(encoding="utf-8")
+
+    assert (
+        "acs context gate --intent <intent> --scope <scope> --task <text> --json"
+        in consumer_packs
+    )
+    assert "Required consumer decision keys" in consumer_packs
+    assert "`decision` values are `build` and `skip`" in consumer_packs
+    assert "reference_consumer_pack_convenience_not_oacs_standard" in consumer_packs
+    assert (
+        "does not\nread memory, decrypt local state, or add a portable standard schema"
+        in agent_workflow
+    )
+    assert "not a new portable schema or conformance\nrequirement" in roadmap
+    assert "context gate" not in spec.casefold()
 
 
 def test_draft_support_schema_decisions_stay_outside_v1_stable_surface() -> None:

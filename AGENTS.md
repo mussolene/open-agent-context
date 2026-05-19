@@ -8,21 +8,24 @@ Required sequence:
 
 1. State the task scope and explicit acceptance criteria (`AC1`, `AC2`, ...)
    before implementation.
-2. Build or inspect repo context through OACS when prior project memory matters:
+2. Ask the context gate before building repo context:
+   `acs context gate --intent repo_development --scope project --task "<task>" --json`.
+3. Build or inspect repo context through OACS when the gate returns `build` or
+   prior project memory clearly matters:
    `acs context build --intent repo_development --scope project --json`.
-3. Treat command outputs, external retrieval, CI results, package publication
+4. Treat command outputs, external retrieval, CI results, package publication
    results, and other canonical project facts as evidence:
    `acs tool ingest-result ...`.
-4. Use `acs evidence inspect <ev_...>` and
+5. Use `acs evidence inspect <ev_...>` and
    `acs evidence list --kind tool_result --json` for proof/debugging.
-5. If evidence should become durable project knowledge, distill it into memory
+6. If evidence should become durable project knowledge, distill it into memory
    and attach the evidence ref with `acs memory sharpen`.
-6. For each completed iteration, record an OACS checkpoint/commit with the
+7. For each completed iteration, record an OACS checkpoint/commit with the
    relevant evidence refs, next step, and outcome.
-7. Run a fresh verification pass and a leak/secret check against the current
+8. Run a fresh verification pass and a leak/secret check against the current
    codebase, then ingest both results as evidence.
-8. Rerun failed checks after fixes.
-9. If verification is not `PASS`, explain the problem, apply the smallest safe
+9. Rerun failed checks after fixes.
+10. If verification is not `PASS`, explain the problem, apply the smallest safe
    fix, and reverify.
 
 Hard rules:
