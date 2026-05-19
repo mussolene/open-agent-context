@@ -8,21 +8,25 @@ for one.
 Required sequence:
 
 1. State task scope and explicit acceptance criteria (`AC1`, `AC2`, ...).
-2. Build or inspect repository context through OACS when prior project memory
-   matters:
+2. Decide whether OACS context is needed before building it. Use OACS for
+   durable project memory, previous decisions, policy, evidence, checkpoints,
+   or long-running state. Skip OACS context for simple visible-file edits where
+   current files and user instructions are sufficient.
+3. Build or inspect repository context through OACS only when prior project
+   memory or evidence matters:
    `acs context build --intent repo_development --scope project --json`.
-3. Run external tools normally. OACS does not schedule tools; it records their
+4. Run external tools normally. OACS does not schedule tools; it records their
    canonical results as governed evidence.
-4. Treat command outputs, external retrieval, CI results, package publication,
+5. Treat command outputs, external retrieval, CI results, package publication,
    deployment results, and manual verification as evidence:
    `acs tool ingest-result ...`.
-5. Inspect important evidence with `acs evidence inspect <ev_...> --json`.
-6. If evidence should become durable project knowledge, distill it into memory
+6. Inspect important evidence with `acs evidence inspect <ev_...> --json`.
+7. If evidence should become durable project knowledge, distill it into memory
    and attach the evidence ref with the memory lifecycle commands.
-7. Record a checkpoint for each completed iteration with outcome, evidence
+8. Record a checkpoint for each completed iteration with outcome, evidence
    refs, and next step:
    `acs checkpoint add ... --evidence <ev_...> --json`.
-8. Run current verification and a leak/secret check before claiming completion.
+9. Run current verification and a leak/secret check before claiming completion.
 
 Hard rules:
 
@@ -32,10 +36,13 @@ Hard rules:
 - Verifiers judge current files and current command results, not chat claims.
 - OACS is not the tool orchestrator; it is the governed memory/context/evidence
   layer.
+- Do not prepend OACS context unconditionally. Context should be selected for
+  tasks that need durable memory, policy, evidence, or prior decisions.
 - Standalone tool-result evidence does not enter `ContextCapsule.evidence_refs`
   by itself. It is projected only through included memories that reference it.
 - Preserve attribution when distilling memory: user instructions, agent
   decisions, tool observations, project policies, human approvals, derived
   memory, and system policy are different roles.
-- Do not commit `.agent/oacs`, `.oacs`, key material, passphrases, local
-  databases, or private agent state.
+- Do not read, print, or commit `.agent/oacs/key.json`,
+  `.agent/oacs/unlocked.key`, `.agent/oacs`, `.oacs`, local databases,
+  passphrases, or private agent state.

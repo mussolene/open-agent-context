@@ -22,13 +22,18 @@ of them so each agent follows the same memory and proof discipline.
 Consumer packs must keep these boundaries:
 
 - OACS is the governed memory/context/evidence layer, not the tool scheduler.
+- OACS context should be selected, not prepended unconditionally. Build context
+  when durable project memory, previous decisions, policy, evidence,
+  checkpoints, or long-running state matter; skip it for simple visible-file
+  edits where current files and user instructions are sufficient.
 - Command output, CI, retrieval, package publication, and manual verification
   become `EvidenceRef` records through `acs tool ingest-result`.
 - Standalone tool evidence does not enter a `ContextCapsule` by itself; it must
   be attached to reviewed memory when it should guide future context.
 - D2+ durable facts/procedures and D3-D5 patterns require explicit review.
-- Local `.agent/oacs`, `.oacs`, key material, passphrases, and private agent
-  state must not be committed.
+- Local `.agent/oacs/key.json`, `.agent/oacs/unlocked.key`, `.agent/oacs`,
+  `.oacs`, key material, passphrases, databases, and private agent state must
+  not be read, printed, or committed.
 - Client-specific rules may be strict, but they must not redefine the OACS
   standard.
 
@@ -62,13 +67,18 @@ Cursor устойчивые surfaces — `.cursor/rules/*.mdc` и
 Consumer packs должны сохранять границы:
 
 - OACS — governed memory/context/evidence layer, а не scheduler tools.
+- OACS context нужно выбирать, а не добавлять в prompt безусловно. Стройте
+  context, когда важны durable project memory, previous decisions, policy,
+  evidence, checkpoints или long-running state; пропускайте его для простых
+  visible-file edits, где достаточно текущих файлов и инструкции пользователя.
 - Command output, CI, retrieval, package publication и manual verification
   становятся `EvidenceRef` через `acs tool ingest-result`.
 - Standalone tool evidence само не попадает в `ContextCapsule`; его нужно
   привязать к reviewed memory, если оно должно влиять на будущий context.
 - D2+ durable facts/procedures и D3-D5 patterns требуют explicit review.
-- Локальные `.agent/oacs`, `.oacs`, key material, passphrases и private agent
-  state нельзя коммитить.
+- Локальные `.agent/oacs/key.json`, `.agent/oacs/unlocked.key`,
+  `.agent/oacs`, `.oacs`, key material, passphrases, databases и private agent
+  state нельзя читать, печатать или коммитить.
 - Client-specific rules могут быть жёсткими, но не должны переопределять OACS
   standard.
 

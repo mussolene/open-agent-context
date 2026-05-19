@@ -21,11 +21,13 @@ def test_cursor_rule_is_always_on_and_preserves_oacs_boundaries() -> None:
 
     assert "alwaysApply: true" in text
     assert "OACS does not orchestrate tools" in text
+    assert "Do not prepend OACS context unconditionally" in text
     assert "Standalone tool-result evidence does not enter" in text
     assert "Preserve attribution" in text
+    assert ".agent/oacs/unlocked.key" in text
 
 
-def test_root_fragments_do_not_commit_private_oacs_state() -> None:
+def test_root_fragments_select_context_and_protect_private_oacs_state() -> None:
     combined = "\n".join(
         [
             (PACK / "AGENTS.fragment.md").read_text(encoding="utf-8"),
@@ -33,7 +35,10 @@ def test_root_fragments_do_not_commit_private_oacs_state() -> None:
         ]
     )
 
-    assert "Do not commit `.agent/oacs`, `.oacs`" in combined
+    assert "Decide whether OACS context is needed" in combined
+    assert "Do not prepend OACS context unconditionally" in combined
+    assert "Do not read, print, or commit `.agent/oacs/key.json`" in combined
+    assert ".agent/oacs/unlocked.key" in combined
     assert "OACS is not the tool orchestrator" in combined
     assert "acs checkpoint add" in combined
 

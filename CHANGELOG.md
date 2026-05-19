@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+## 1.0.11 - 2026-05-19
+
+### Changed
+
+- Updated the OACS repo development consumer pack to teach selective context
+  usage instead of unconditional context prepend for simple visible-file edits.
+- Strengthened consumer-pack guidance around local OACS key material:
+  `.agent/oacs/key.json`, `.agent/oacs/unlocked.key`, local databases, and
+  passphrases must not be read, printed, or committed.
+- Clarified that `local_unlocked` is the default local development path while
+  passphrase-wrapped stores remain supported for repositories that already use
+  `OACS_PASSPHRASE`.
+
 ## 1.0.10 - 2026-05-19
 
 ### Added

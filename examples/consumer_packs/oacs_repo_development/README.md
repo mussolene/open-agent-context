@@ -18,7 +18,18 @@ Remove `--dry-run` after reviewing the target paths.
 
 The pack does not create `.agent/oacs`, `.oacs`, keys, passphrases, or
 databases. Initialize those explicitly in the target repository when local
-memory is wanted.
+memory is wanted. For local development, `acs key init --json` creates
+`local_unlocked` key material by default. Passphrase-wrapped stores remain
+supported when a repository already uses `OACS_PASSPHRASE`.
+
+The pack teaches selective OACS usage. Agents should build context only when
+project memory, prior decisions, policy, evidence, checkpoints, or long-running
+state matter. Simple visible-file edits should use current files and user
+instructions without unconditional OACS context prepend.
+
+Local OACS key material is private runtime state. Agents must not read, print,
+or commit `.agent/oacs/key.json`, `.agent/oacs/unlocked.key`, databases,
+passphrases, `.agent/oacs`, `.oacs`, or private agent state.
 
 ## Included Surfaces
 

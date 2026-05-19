@@ -1,9 +1,9 @@
 ---
 name: oacs-repo-memory
-description: Use OACS/ACS during substantial repository work to build governed context, record command results as evidence, checkpoint iterations, and preserve attribution across user instructions, agent decisions, and tool observations.
+description: Use OACS/ACS selectively during substantial repository work to build governed context only when project memory, prior decisions, policy, evidence, or checkpoints matter; record command results as evidence and checkpoint iterations.
 ---
 
-# OACS Repo Memory
+# OACS Repo Context
 
 This is a Cursor-facing client skill for repositories that use OACS/ACS. It is
 not part of the OACS standard.
@@ -18,7 +18,11 @@ git status --short
 acs status --json
 ```
 
-3. Build context when useful:
+3. Decide whether OACS context is useful. Use it for durable project memory,
+   previous decisions, policy, evidence, checkpoints, or long-running state.
+   Skip it for simple visible-file edits where current files and the user
+   request are sufficient.
+4. Build context only when useful:
 
 ```bash
 acs context build --intent repo_development --scope project --json
@@ -75,8 +79,11 @@ acs checkpoint add \
 ## Guardrails
 
 - OACS is not the tool orchestrator.
+- Do not prepend OACS context unconditionally. Select it only when it adds
+  project memory, policy, evidence, or prior-decision value.
 - Standalone tool evidence is not projected into context unless a reviewed
   memory references it.
 - Preserve attribution roles in distilled memory.
-- Never commit `.agent/oacs`, `.oacs`, key material, passphrases, local
-  databases, or private agent state.
+- Never read, print, or commit `.agent/oacs/key.json`,
+  `.agent/oacs/unlocked.key`, `.agent/oacs`, `.oacs`, key material,
+  passphrases, local databases, or private agent state.
