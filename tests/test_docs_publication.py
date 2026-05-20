@@ -137,6 +137,9 @@ def test_context_gate_docs_keep_standard_boundary_machine_contract() -> None:
     assert "Required consumer decision keys" in consumer_packs
     assert "`decision` values are `build` and `skip`" in consumer_packs
     assert "reference_consumer_pack_convenience_not_oacs_standard" in consumer_packs
+    assert "substantial repository work is still to use the OACS proof loop" in consumer_packs
+    assert "domain-heavy repositories as `build` or explicit OACS\n  unavailable" in consumer_packs
+    assert "does not relax evidence/checkpoint requirements for substantial work" in consumer_packs
     assert (
         "does not\nread memory, decrypt local state, or add a portable standard schema"
         in agent_workflow

@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+## 1.0.14 - 2026-05-21
+
+### Changed
+
+- Restored stricter OACS repo development consumer-pack defaults around
+  `acs context gate`: `decision=skip` is valid only for tiny visible-file edits,
+  while substantial, ambiguous, domain-heavy, release/CI/security/tooling work
+  must build OACS context or explicitly report OACS context unavailable.
+- Clarified that `decision=skip` does not relax evidence, verification,
+  leak/secret review, or checkpoint requirements for substantial work.
+- Added regression coverage so consumer surfaces cannot reintroduce the loose
+  "visible files are enough" gate semantics.
+
 ## 1.0.13 - 2026-05-19
 
 ### Changed

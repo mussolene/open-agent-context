@@ -9,10 +9,12 @@ Required loop:
 1. State scope and acceptance criteria before implementation.
 2. Ask the reference context gate before building context:
    `acs context gate --intent repo_development --scope project --task "<task>" --json`.
-   If the gate returns `decision=skip`, proceed from visible files and the user
-   request. If it returns `decision=build`, build context.
-3. Build context only when the gate says `build` or prior memory/evidence
-   clearly matters:
+   If the gate returns `decision=build`, build context. Treat `decision=skip`
+   as valid only for tiny visible-file edits; when work is substantial,
+   ambiguous, domain-heavy, or release/CI/security/tooling related, build
+   context or explicitly report that OACS context is unavailable.
+3. Build context when the gate says `build`, when prior memory/evidence may
+   matter, or when in doubt:
    `acs context build --intent repo_development --scope project --json`.
 4. Record canonical command results as evidence with
    `acs tool ingest-result ...`.
@@ -28,8 +30,8 @@ Completion bar:
 - Verification is current and passing.
 - OACS evidence exists for important command outputs.
 - A checkpoint records the outcome and next step.
-- OACS context was selected through `acs context gate` or an equivalent explicit
-  decision.
+- `decision=skip` was used only for tiny visible-file edits and did not bypass
+  verification, evidence, or checkpoint requirements for substantial work.
 - No `.agent/oacs/key.json`, `.agent/oacs/unlocked.key`, `.agent/oacs`,
   `.oacs`, keys, passphrases, local databases, or private agent state are read,
   printed, or committed.

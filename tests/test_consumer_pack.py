@@ -40,11 +40,30 @@ def test_root_fragments_select_context_and_protect_private_oacs_state() -> None:
     assert "acs context gate" in combined
     assert "decision=build" in combined
     assert "decision=skip" in combined
+    assert "valid only for tiny visible-file edits" in combined
+    assert "when in doubt" in combined
     assert "Do not prepend OACS context unconditionally" in combined
     assert "Do not read, print, or commit `.agent/oacs/key.json`" in combined
     assert ".agent/oacs/unlocked.key" in combined
     assert "OACS is not the tool orchestrator" in combined
     assert "acs checkpoint add" in combined
+
+
+def test_consumer_pack_does_not_let_gate_skip_bypass_substantial_work() -> None:
+    surfaces = [
+        PACK / "AGENTS.fragment.md",
+        PACK / "CLAUDE.fragment.md",
+        PACK / "cursor" / "rules" / "oacs-repo-memory.mdc",
+        PACK / "cursor" / "skills" / "oacs-repo-memory" / "SKILL.md",
+    ]
+    combined = "\n".join(path.read_text(encoding="utf-8") for path in surfaces)
+
+    assert "permission to proceed from visible files" not in combined
+    assert "skip context build for simple visible-file edits" not in combined
+    assert "substantial" in combined
+    assert "domain-heavy" in combined
+    assert "release/CI/security/tooling" in combined
+    assert "do not let `skip` bypass the proof loop" in combined
 
 
 def test_consumer_pack_installer_dry_run(tmp_path: Path) -> None:
