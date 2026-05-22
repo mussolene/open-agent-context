@@ -6,8 +6,10 @@ from pathlib import Path
 
 def test_wheel_includes_top_level_schemas():
     pyproject = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
+    build = pyproject["tool"]["hatch"]["build"]
     wheel = pyproject["tool"]["hatch"]["build"]["targets"]["wheel"]
     sdist = pyproject["tool"]["hatch"]["build"]["targets"]["sdist"]
+    assert build["dev-mode-exact"] is True
     assert wheel["force-include"]["schemas"] == "schemas"
     assert sdist["force-include"]["schemas"] == "schemas"
     assert wheel["force-include"]["conformance"] == "conformance"
@@ -21,7 +23,7 @@ def test_public_package_metadata_is_release_ready():
     urls = project["urls"]
 
     assert project["name"] == "oacs"
-    assert project["version"] == "1.0.14"
+    assert project["version"] == "1.0.15"
     assert "Open Agent Context Standard" in project["description"]
     assert "Development Status :: 5 - Production/Stable" in project["classifiers"]
     assert "License :: OSI Approved :: Apache Software License" in project["classifiers"]

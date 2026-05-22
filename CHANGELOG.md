@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## 1.0.15 - 2026-05-22
+
+### Fixed
+
+- Prevented editable installs from adding the OACS repository root to
+  `sys.path`, so top-level development folders such as `tests/` no longer leak
+  into neighboring Python projects while `oacs`, bundled schemas, and
+  conformance fixtures remain available.
+
 ## 1.0.14 - 2026-05-21
 
 ### Changed
