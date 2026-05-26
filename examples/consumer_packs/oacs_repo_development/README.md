@@ -22,10 +22,9 @@ memory is wanted. For local development, `acs key init --json` creates
 `local_unlocked` key material by default. Passphrase-wrapped stores remain
 supported when a repository already uses `OACS_PASSPHRASE`.
 
-The pack teaches selective OACS usage. Agents should build context only when
-project memory, prior decisions, policy, evidence, checkpoints, or long-running
-state matter. Simple visible-file edits should use current files and user
-instructions without unconditional OACS context prepend.
+The pack teaches direct OACS context usage for substantial repository work.
+Agents build context before implementation, then record command evidence,
+verification, leak/secret review, and checkpoints.
 
 Local OACS key material is private runtime state. Agents must not read, print,
 or commit `.agent/oacs/key.json`, `.agent/oacs/unlocked.key`, databases,

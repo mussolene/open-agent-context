@@ -1,6 +1,6 @@
 ---
 name: oacs-repo-memory
-description: Use OACS/ACS selectively during substantial repository work to build governed context only when project memory, prior decisions, policy, evidence, or checkpoints matter; record command results as evidence and checkpoint iterations.
+description: Use OACS/ACS during substantial repository work to build governed context, record command results as evidence, and checkpoint iterations.
 ---
 
 # OACS Repo Context
@@ -18,26 +18,11 @@ git status --short
 acs status --json
 ```
 
-3. Ask the reference context gate before building context:
-
-```bash
-acs context gate --intent repo_development --scope project --task "<task>" --json
-```
-
-Treat `decision=build` as the signal to build context. Treat `decision=skip` as
-valid only for tiny visible-file edits; when work is substantial, ambiguous,
-domain-heavy, or release/CI/security/tooling related, build context or
-explicitly report that OACS context is unavailable.
-4. Build context when the gate says `build`, when prior memory/evidence may
-   matter, or when in doubt:
+3. Build context:
 
 ```bash
 acs context build --intent repo_development --scope project --json
 ```
-
-If context build fails because keys are not initialized or unlocked, continue
-only with public records and file inspection unless the user explicitly wants
-memory decryption setup.
 
 ## During Work
 
@@ -86,8 +71,8 @@ acs checkpoint add \
 ## Guardrails
 
 - OACS is not the tool orchestrator.
-- Do not prepend OACS context unconditionally. Use `acs context gate` as a
-  preflight, but do not let `skip` bypass the proof loop for substantial work.
+- Do not replace OACS context build with a local heuristic for substantial
+  repository work.
 - Standalone tool evidence is not projected into context unless a reviewed
   memory references it.
 - Preserve attribution roles in distilled memory.

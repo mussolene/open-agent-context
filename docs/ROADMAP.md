@@ -5,15 +5,13 @@ This roadmap keeps the OACS v1.0 standard small. Core work must define
 memory, context, permissions, audit, and deterministic operation contracts.
 Reference adapters prove integration, but they do not expand the standard.
 
-### Current Position: v1.0.15 Released / Post-1.0 Hardening
+### Current Position: v1.0.16 Released / Post-1.0 Hardening
 
-OACS is currently at `v1.0.15`. The portable v1.0 standard surface is still the
+OACS is currently at `v1.0.16`. The portable v1.0 standard surface is still the
 stable JSON records, lifecycle, capability, audit, evidence, context, and
 conformance contract. Post-1.0 work is hardening reference adapters and consumer
-packs around that contract. `acs context gate` is in this reference-adapter
-bucket: it helps local consumers make an explicit build/skip decision before
-`acs context build`, but it is not a new portable schema or conformance
-requirement.
+packs around that contract without adding local workflow protocols to the
+portable surface.
 
 Core contract:
 
@@ -73,9 +71,6 @@ Reference adapters:
 - Done: Agent Workflow UX added as reference CLI convenience:
   project-local discovery/status, resume aggregation, task checkpoints,
   governed command evidence, and deny-pattern policy helpers.
-- Done: `acs context gate` added as a reference consumer-pack convenience for
-  explicit build/skip decisions before context build; it does not expand the
-  portable standard surface.
 - Done: CLI release smoke UX includes `acs --version` / `acs -V`.
 - Observed on `google/gemma-4-e2b`: medium/large/long memory tasks can improve
   token use and relevance through compact evidence projection; tiny tasks can
@@ -257,15 +252,13 @@ Reference adapters:
 определять memory, context, permissions, audit и deterministic operation
 contracts. Reference adapters доказывают интеграцию, но не расширяют стандарт.
 
-### Текущая позиция: v1.0.15 Released / Post-1.0 hardening
+### Текущая позиция: v1.0.16 Released / Post-1.0 hardening
 
-OACS сейчас находится на `v1.0.15`. Portable v1.0 standard surface всё ещё
+OACS сейчас находится на `v1.0.16`. Portable v1.0 standard surface всё ещё
 состоит из stable JSON records, lifecycle, capability, audit, evidence, context
 и conformance contract. Post-1.0 работа усиливает reference adapters и consumer
-packs вокруг этого contract. `acs context gate` находится именно в этом
-reference-adapter слое: он помогает локальным consumers явно принять build/skip
-решение перед `acs context build`, но не является новой portable schema или
-conformance requirement.
+packs вокруг этого contract, не добавляя локальные workflow protocols в
+portable surface.
 
 Core contract:
 
@@ -321,9 +314,6 @@ Reference adapters:
 - Готово: Agent Workflow UX добавлен как reference CLI convenience:
   project-local discovery/status, resume aggregation, task checkpoints,
   governed command evidence и deny-pattern policy helpers.
-- Готово: `acs context gate` добавлен как reference convenience для consumer
-  packs, чтобы явно принимать build/skip решение перед context build; это не
-  расширяет portable standard surface.
 - Готово: CLI release smoke UX включает `acs --version` / `acs -V`.
 - Наблюдение на `google/gemma-4-e2b`: medium/large/long memory tasks могут
   улучшать token use и relevance через compact evidence projection; tiny tasks

@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+## 1.0.16 - 2026-05-26
+
+### Changed
+
+- Removed the context decision step from the repo development consumer pack;
+  substantial repository work now calls `acs context build` directly.
+
+### Removed
+
+- Removed the CLI context decision command.
+
 ## 1.0.15 - 2026-05-22
 
 ### Fixed
@@ -15,45 +26,39 @@
 
 ### Changed
 
-- Restored stricter OACS repo development consumer-pack defaults around
-  `acs context gate`: `decision=skip` is valid only for tiny visible-file edits,
-  while substantial, ambiguous, domain-heavy, release/CI/security/tooling work
-  must build OACS context or explicitly report OACS context unavailable.
-- Clarified that `decision=skip` does not relax evidence, verification,
-  leak/secret review, or checkpoint requirements for substantial work.
-- Added regression coverage so consumer surfaces cannot reintroduce the loose
-  "visible files are enough" gate semantics.
+- Restored stricter OACS repo development consumer-pack defaults so
+  substantial, ambiguous, domain-heavy, release/CI/security/tooling work uses
+  OACS context plus evidence, verification, leak/secret review, and checkpoint
+  requirements.
+- Added regression coverage so consumer surfaces keep the OACS context and
+  proof loop for substantial repository work.
 
 ## 1.0.13 - 2026-05-19
 
 ### Changed
 
 - Documented the current `v1.0.13` roadmap position and clarified that
-  `acs context gate` remains a reference-adapter convenience outside the
-  portable standard surface.
-- Added a machine-facing consumer-pack gate contract with required decision
-  keys, `build`/`skip` semantics, and the standard-boundary sentinel.
-- Aligned root repository workflow and agent workflow docs to ask the context
-  gate before context build.
+  consumer-pack behavior remains outside the portable standard surface.
+- Aligned root repository workflow and agent workflow docs around explicit
+  context build before substantial repository work.
 
 ## 1.0.12 - 2026-05-19
 
 ### Added
 
-- Added `acs context gate` as a reference consumer-pack convenience for explicit
-  build/skip decisions before `acs context build`.
+- Added a reference consumer-pack context decision step before context build.
 
 ### Changed
 
-- Updated the OACS repo development consumer pack to call `acs context gate`
-  before context build and keep the gate outside the portable standard surface.
+- Updated the OACS repo development consumer pack to keep local workflow
+  guidance outside the portable standard surface.
 
 ## 1.0.11 - 2026-05-19
 
 ### Changed
 
-- Updated the OACS repo development consumer pack to teach selective context
-  usage instead of unconditional context prepend for simple visible-file edits.
+- Updated the OACS repo development consumer pack to document direct context
+  use for repository work.
 - Strengthened consumer-pack guidance around local OACS key material:
   `.agent/oacs/key.json`, `.agent/oacs/unlocked.key`, local databases, and
   passphrases must not be read, printed, or committed.
