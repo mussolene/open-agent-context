@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -10,6 +11,7 @@ from oacs.api.server import create_app
 from oacs.app import services
 from oacs.cli.main import _evidence_ingest_grant_hint, app
 from oacs.core.errors import AccessDenied
+from oacs.core.json import hash_json
 from oacs.tools.models import ToolBinding
 
 
@@ -114,6 +116,58 @@ def test_audit_record_ignores_stale_tail_metadata(svc) -> None:
 
     assert third["previous_hash"] == second["content_hash"]
     assert svc.audit.verify_chain()["valid"] is True
+
+
+def test_audit_repair_chain_linearizes_forked_previous_hashes(svc) -> None:
+    first = svc.audit.record("test.first", "actor")
+    svc.audit.record("test.second", "actor")
+    third = svc.audit.record("test.third", "actor")
+    forked = dict(third)
+    forked["previous_hash"] = first["content_hash"]
+    forked["content_hash"] = hash_json(
+        {key: value for key, value in forked.items() if key != "content_hash"}
+    )
+    svc.store.put_json("audit_events", forked)
+
+    assert svc.audit.verify_chain()["valid"] is False
+    dry_run = svc.audit.repair_chain()
+    assert dry_run["written"] is False
+    assert dry_run["changed_events"] == 1
+
+    result = svc.audit.repair_chain(write=True)
+    events = svc.audit.list()
+
+    assert result["valid_after"] is True
+    assert svc.audit.verify_chain()["valid"] is True
+    assert events[2]["id"] == third["id"]
+    assert events[2]["previous_hash"] == events[1]["content_hash"]
+
+
+def test_cli_audit_repair_writes_backup_and_repair_event(tmp_path: Path) -> None:
+    db = tmp_path / "oacs.db"
+    svc = services(str(db), require_key=False)
+    first = svc.audit.record("test.first", "actor")
+    svc.audit.record("test.second", "actor")
+    third = svc.audit.record("test.third", "actor")
+    forked = dict(third)
+    forked["previous_hash"] = first["content_hash"]
+    forked["content_hash"] = hash_json(
+        {key: value for key, value in forked.items() if key != "content_hash"}
+    )
+    svc.store.put_json("audit_events", forked)
+
+    runner = CliRunner()
+    dry_run = runner.invoke(app, ["audit", "repair", "--db", str(db), "--json"])
+    assert dry_run.exit_code == 0, dry_run.output
+    assert json.loads(dry_run.output)["written"] is False
+
+    repaired = runner.invoke(app, ["audit", "repair", "--db", str(db), "--write", "--json"])
+    assert repaired.exit_code == 0, repaired.output
+    payload = json.loads(repaired.output)
+
+    assert payload["verify_after_write"]["valid"] is True
+    assert payload["repair_audit_event_id"].startswith("aud_")
+    assert Path(payload["backup_path"]).exists()
 
 
 def test_cli_tool_and_skill_calls_require_resource_grants(tmp_path) -> None:

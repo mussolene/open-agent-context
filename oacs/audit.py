@@ -66,6 +66,33 @@ class AuditService:
 
     def verify_chain(self) -> dict[str, object]:
         events = self.list()
+        return _verify_ordered_events(events)
+
+    def repair_chain(self, write: bool = False) -> dict[str, object]:
+        events = self.repo.list(order_by=[("created_at", "asc"), ("id", "asc")])
+        repaired, summary = _repair_events(events)
+        if write and summary["content_hash_mismatch_count"]:
+            raise ValueError("audit repair refused because existing content hashes do not validate")
+        if write:
+            rewrite = getattr(self.repo.store, "rewrite_audit_events", None)
+            if callable(rewrite):
+                rewrite(repaired)
+            else:
+                for event in repaired:
+                    self.repo.save(event)
+                if repaired:
+                    tail = repaired[-1]
+                    self.repo.store.set_metadata(
+                        _AUDIT_TAIL_HASH_KEY, str(tail["content_hash"])
+                    )
+                    self.repo.store.set_metadata(
+                        _AUDIT_TAIL_CREATED_AT_KEY, str(tail["created_at"])
+                    )
+            summary["written"] = True
+        return summary
+
+
+def _verify_ordered_events(events: list[dict[str, object]]) -> dict[str, object]:
         errors: list[dict[str, object]] = []
         previous_hash: str | None = None
         for index, event in enumerate(events):
@@ -162,6 +189,53 @@ def _audit_tail(events: list[dict[str, Any]]) -> dict[str, Any] | None:
     }
     tails = [event for event in events if str(event.get("content_hash")) not in referenced]
     return max(tails or events, key=_event_sort_key)
+
+
+def _repair_events(
+    events: list[dict[str, object]],
+) -> tuple[list[dict[str, object]], dict[str, object]]:
+    ordered = sorted(events, key=_event_sort_key)
+    before = _verify_ordered_events(_chain_order(ordered))
+    repaired: list[dict[str, object]] = []
+    changed_ids: list[str] = []
+    mismatch_ids: list[str] = []
+    previous_hash: str | None = None
+    previous_created_at: str | None = None
+    for event in ordered:
+        if event.get("content_hash") != _event_hash(event):
+            mismatch_ids.append(str(event.get("id")))
+        fixed = dict(event)
+        fixed["previous_hash"] = previous_hash
+        fixed["created_at"] = _after_previous_timestamp(
+            str(fixed.get("created_at") or ""), previous_created_at
+        )
+        fixed["content_hash"] = _event_hash(fixed)
+        if (
+            fixed.get("previous_hash") != event.get("previous_hash")
+            or fixed.get("created_at") != event.get("created_at")
+            or fixed.get("content_hash") != event.get("content_hash")
+        ):
+            changed_ids.append(str(event.get("id")))
+        repaired.append(fixed)
+        previous_hash = str(fixed["content_hash"])
+        previous_created_at = str(fixed["created_at"])
+
+    after = _verify_ordered_events(repaired)
+    before_errors = cast(list[dict[str, object]], before["errors"])
+    after_errors = cast(list[dict[str, object]], after["errors"])
+    summary: dict[str, object] = {
+        "valid_before": before["valid"],
+        "valid_after": after["valid"],
+        "events": len(events),
+        "error_count_before": len(before_errors),
+        "error_count_after": len(after_errors),
+        "changed_events": len(changed_ids),
+        "first_changed_ids": changed_ids[:20],
+        "content_hash_mismatch_count": len(mismatch_ids),
+        "first_content_hash_mismatch_ids": mismatch_ids[:20],
+        "written": False,
+    }
+    return repaired, summary
 
 
 def _parse_datetime(value: str | None) -> datetime | None:

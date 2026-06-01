@@ -45,6 +45,12 @@ must be granted together with explicit `tools_allowed` or `skills_allowed`
 entries, plus namespace and scope constraints. Audit chain verification detects
 local tampering with recorded operations.
 
+`acs audit repair` is a local recovery command for stores that already contain
+forked historical audit links. It defaults to dry-run; `--write` creates a
+SQLite backup, linearizes `previous_hash` pointers, recomputes dependent hashes,
+and appends an `audit.repair` event. It refuses to write if existing
+`content_hash` values do not validate.
+
 Secrets and non-public infrastructure values use the external protected value
 boundary documented in `docs/VAULT.md`. OACS records only `ProtectedRef` and
 leak-prevention metadata. Passwords, tokens, private keys, internal IPs,
@@ -98,6 +104,12 @@ Tool и skill adapters тоже deny-by-default. `tool.call` и `skill.run` до
 быть выданы вместе с explicit `tools_allowed` или `skills_allowed`, а также с
 namespace и scope constraints. Audit chain verification помогает обнаружить
 локальное изменение записанных операций.
+
+`acs audit repair` — локальная команда восстановления для store, где уже есть
+forked historical audit links. По умолчанию она работает как dry-run; `--write`
+создаёт SQLite backup, линеаризует `previous_hash`, пересчитывает зависимые
+hash и добавляет событие `audit.repair`. Если существующие `content_hash` не
+валидируются, запись восстановления отклоняется.
 
 Secrets и непубличные infrastructure values используют external protected value
 boundary из `docs/VAULT.md`. OACS записывает только `ProtectedRef` и metadata

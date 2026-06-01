@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sqlite3
+from collections.abc import Sequence
 from contextlib import closing, suppress
 from pathlib import Path
 from typing import Any
@@ -140,6 +141,17 @@ class SQLiteStore:
             conn.commit()
         return event
 
+    def rewrite_audit_events(self, events: Sequence[dict[str, Any]]) -> None:
+        with closing(self.connect()) as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            for event in events:
+                _insert_json(conn, "audit_events", event)
+            if events:
+                tail = events[-1]
+                _set_metadata(conn, _AUDIT_TAIL_HASH_KEY, str(tail["content_hash"]))
+                _set_metadata(conn, _AUDIT_TAIL_CREATED_AT_KEY, str(tail["created_at"]))
+            conn.commit()
+
 
 def normalize_row(row: sqlite3.Row) -> dict[str, Any]:
     out = dict(row)
@@ -169,14 +181,16 @@ def _audit_tail(conn: sqlite3.Connection) -> tuple[str | None, str | None]:
     metadata_hash = _get_metadata(conn, _AUDIT_TAIL_HASH_KEY)
     if metadata_hash:
         row = conn.execute(
-            "SELECT content_hash, created_at FROM audit_events WHERE content_hash=? LIMIT 1",
+            """
+            SELECT a.content_hash, a.created_at
+            FROM audit_events a
+            LEFT JOIN audit_events child ON child.previous_hash = a.content_hash
+            WHERE a.content_hash=? AND child.id IS NULL
+            LIMIT 1
+            """,
             (metadata_hash,),
         ).fetchone()
-        child = conn.execute(
-            "SELECT 1 FROM audit_events WHERE previous_hash=? LIMIT 1",
-            (metadata_hash,),
-        ).fetchone()
-        if row is not None and child is None:
+        if row is not None:
             return str(row["content_hash"]), str(row["created_at"])
 
     row = conn.execute(

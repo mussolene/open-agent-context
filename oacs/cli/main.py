@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 import subprocess
 from pathlib import Path
 from typing import Annotated
@@ -95,6 +96,19 @@ def emit(data: object, json_out: bool) -> None:
 
 def fail(message: str) -> None:
     raise typer.BadParameter(message)
+
+
+def _backup_sqlite_db(svc: OacsServices, label: str) -> str | None:
+    store_path = getattr(svc.store, "path", None)
+    if store_path is None:
+        return None
+    source = Path(store_path)
+    if not source.exists():
+        return None
+    timestamp = now_iso().replace(":", "").replace("+", "")
+    backup = source.with_name(f"{source.name}.{label}.{timestamp}.bak")
+    shutil.copy2(source, backup)
+    return str(backup)
 
 
 def _evidence_ingest_grant_hint(actor: str | None, tool_id: str) -> str:
@@ -1683,6 +1697,38 @@ def audit_export(db: DbOpt = None, json_out: JsonOpt = False) -> None:
 @audit_app.command("verify")
 def audit_verify(db: DbOpt = None, json_out: JsonOpt = False) -> None:
     emit(services(db, require_key=False).audit.verify_chain(), json_out)
+
+
+@audit_app.command("repair")
+def audit_repair(
+    db: DbOpt = None,
+    write: Annotated[bool, typer.Option("--write")] = False,
+    no_backup: Annotated[bool, typer.Option("--no-backup")] = False,
+    json_out: JsonOpt = False,
+) -> None:
+    svc = services(db, require_key=False)
+    backup_path = None
+    if write and not no_backup:
+        backup_path = _backup_sqlite_db(svc, "audit-repair")
+    try:
+        result = svc.audit.repair_chain(write=write)
+    except ValueError as exc:
+        fail(str(exc))
+    if write:
+        event = svc.audit.record(
+            "audit.repair",
+            "system",
+            None,
+            {
+                "changed_events": result["changed_events"],
+                "error_count_before": result["error_count_before"],
+                "backup_path": backup_path,
+            },
+        )
+        result["backup_path"] = backup_path
+        result["repair_audit_event_id"] = event["id"]
+        result["verify_after_write"] = svc.audit.verify_chain()
+    emit(result, json_out)
 
 
 if __name__ == "__main__":

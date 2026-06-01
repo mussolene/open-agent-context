@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+## 1.0.19 - 2026-06-01
+
+### Fixed
+
+- Added `acs audit repair` for local audit stores that were already forked by
+  historical non-atomic append behavior. The command defaults to dry-run, writes
+  only with `--write`, creates a SQLite backup, linearizes `previous_hash`
+  pointers, recomputes dependent hashes, and appends an `audit.repair` event.
+- Added regression coverage for forked audit-chain repair so long-lived stores
+  can be restored without ad hoc SQLite edits.
+
 ## 1.0.18 - 2026-06-01
 
 ### Fixed

@@ -12,7 +12,7 @@ from oacs.context.capsule import ContextCapsule
 def test_cli_version():
     result = CliRunner().invoke(app, ["--version"])
     assert result.exit_code == 0
-    assert result.output.strip() == "acs 1.0.18"
+    assert result.output.strip() == "acs 1.0.19"
 
 
 def test_cli_context_decision_command_is_not_exposed():
