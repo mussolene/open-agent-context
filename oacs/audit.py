@@ -17,8 +17,8 @@ class AuditService:
         target_id: str | None = None,
         metadata: dict[str, object] | None = None,
     ) -> dict[str, object]:
-        previous = self.repo.list(order_by=[("created_at", "desc")], limit=1)
-        previous_hash = previous[0]["content_hash"] if previous else None
+        previous = self.list()
+        previous_hash = previous[-1]["content_hash"] if previous else None
         event: dict[str, object] = {
             "id": new_id("aud"),
             "operation": operation,
@@ -37,7 +37,8 @@ class AuditService:
         return event
 
     def list(self) -> list[dict[str, object]]:
-        return self.repo.list(order_by=[("created_at", "asc")])
+        events = self.repo.list(order_by=[("created_at", "asc"), ("id", "asc")])
+        return _chain_order(events)
 
     def verify_chain(self) -> dict[str, object]:
         events = self.list()
@@ -68,3 +69,50 @@ class AuditService:
 def _event_hash(event: dict[str, object]) -> str:
     payload = {key: value for key, value in event.items() if key != "content_hash"}
     return hash_json(payload)
+
+
+def _chain_order(events: list[dict[str, object]]) -> list[dict[str, object]]:
+    sorted_events = sorted(events, key=_event_sort_key)
+    children: dict[str | None, list[dict[str, object]]] = {}
+    for event in sorted_events:
+        previous_hash = event.get("previous_hash")
+        key = str(previous_hash) if previous_hash else None
+        children.setdefault(key, []).append(event)
+
+    ordered: list[dict[str, object]] = []
+    seen: set[str] = set()
+
+    def event_key(event: dict[str, object]) -> str:
+        return str(event.get("id") or id(event))
+
+    def append_chain(start: dict[str, object]) -> None:
+        current: dict[str, object] | None = start
+        while current is not None:
+            key = event_key(current)
+            if key in seen:
+                return
+            ordered.append(current)
+            seen.add(key)
+
+            content_hash = current.get("content_hash")
+            if not content_hash:
+                return
+            next_events = [
+                event
+                for event in children.get(str(content_hash), [])
+                if event_key(event) not in seen
+            ]
+            current = next_events[0] if next_events else None
+
+    for event in children.get(None, []):
+        append_chain(event)
+
+    for event in sorted_events:
+        if event_key(event) not in seen:
+            append_chain(event)
+
+    return ordered
+
+
+def _event_sort_key(event: dict[str, object]) -> tuple[str, str]:
+    return (str(event.get("created_at") or ""), str(event.get("id") or ""))

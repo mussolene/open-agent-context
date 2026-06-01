@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 1.0.17 - 2026-06-01
+
+### Fixed
+
+- Made audit event ordering follow the `previous_hash` chain when timestamps tie,
+  preventing fast sequential audit writes from choosing an older event as the
+  chain tail.
+
 ## 1.0.16 - 2026-05-26
 
 ### Changed

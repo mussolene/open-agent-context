@@ -74,6 +74,23 @@ def test_audit_chain_verify_detects_tampering(svc) -> None:
     assert result["errors"][0]["error"] == "content_hash_mismatch"
 
 
+def test_audit_chain_uses_hash_links_when_timestamps_tie(svc, monkeypatch) -> None:
+    monkeypatch.setattr("oacs.audit.now_iso", lambda: "2026-01-01T00:00:00+00:00")
+
+    first = svc.audit.record("test.first", "actor")
+    second = svc.audit.record("test.second", "actor")
+    third = svc.audit.record("test.third", "actor")
+
+    assert second["previous_hash"] == first["content_hash"]
+    assert third["previous_hash"] == second["content_hash"]
+    assert [event["id"] for event in svc.audit.list()] == [
+        first["id"],
+        second["id"],
+        third["id"],
+    ]
+    assert svc.audit.verify_chain()["valid"] is True
+
+
 def test_cli_tool_and_skill_calls_require_resource_grants(tmp_path) -> None:
     db = tmp_path / "oacs.db"
     runner = CliRunner()
