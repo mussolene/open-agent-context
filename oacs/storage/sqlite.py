@@ -5,8 +5,11 @@ from contextlib import closing, suppress
 from pathlib import Path
 from typing import Any
 
-from oacs.core.json import dumps, loads
+from oacs.core.json import dumps, hash_json, loads
 from oacs.storage.backend import OrderBy
+
+_AUDIT_TAIL_HASH_KEY = "audit_tail_hash"
+_AUDIT_TAIL_CREATED_AT_KEY = "audit_tail_created_at"
 
 _ALLOWED_TABLES = {
     "actors",
@@ -122,6 +125,21 @@ class SQLiteStore:
             )
             conn.commit()
 
+    def append_audit_event(self, event: dict[str, Any]) -> dict[str, Any]:
+        with closing(self.connect()) as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            previous_hash, previous_created_at = _audit_tail(conn)
+            event["previous_hash"] = previous_hash
+            event["created_at"] = _after_previous_timestamp(
+                str(event["created_at"]), previous_created_at
+            )
+            event["content_hash"] = hash_json(event)
+            _insert_json(conn, "audit_events", event)
+            _set_metadata(conn, _AUDIT_TAIL_HASH_KEY, str(event["content_hash"]))
+            _set_metadata(conn, _AUDIT_TAIL_CREATED_AT_KEY, str(event["created_at"]))
+            conn.commit()
+        return event
+
 
 def normalize_row(row: sqlite3.Row) -> dict[str, Any]:
     out = dict(row)
@@ -130,6 +148,81 @@ def normalize_row(row: sqlite3.Row) -> dict[str, Any]:
             with suppress(Exception):
                 out[key] = loads(value)
     return out
+
+
+def _insert_json(conn: sqlite3.Connection, table: str, record: dict[str, Any]) -> None:
+    _validate_identifier(table, _ALLOWED_TABLES, "table")
+    cols = list(record)
+    for col in cols:
+        _validate_identifier(col, set(cols), "column")
+    placeholders = ",".join("?" for _ in cols)
+    updates = ",".join(f"{col}=excluded.{col}" for col in cols if col != "id")
+    sql = (
+        f"INSERT INTO {table} ({','.join(cols)}) VALUES ({placeholders}) "
+        f"ON CONFLICT(id) DO UPDATE SET {updates}"
+    )
+    values = [dumps(v) if isinstance(v, (dict, list)) else v for v in record.values()]
+    conn.execute(sql, values)
+
+
+def _audit_tail(conn: sqlite3.Connection) -> tuple[str | None, str | None]:
+    metadata_hash = _get_metadata(conn, _AUDIT_TAIL_HASH_KEY)
+    if metadata_hash:
+        row = conn.execute(
+            "SELECT content_hash, created_at FROM audit_events WHERE content_hash=? LIMIT 1",
+            (metadata_hash,),
+        ).fetchone()
+        child = conn.execute(
+            "SELECT 1 FROM audit_events WHERE previous_hash=? LIMIT 1",
+            (metadata_hash,),
+        ).fetchone()
+        if row is not None and child is None:
+            return str(row["content_hash"]), str(row["created_at"])
+
+    row = conn.execute(
+        """
+        SELECT a.content_hash, a.created_at
+        FROM audit_events a
+        WHERE NOT EXISTS (
+          SELECT 1 FROM audit_events b WHERE b.previous_hash = a.content_hash
+        )
+        ORDER BY a.created_at DESC, a.id DESC
+        LIMIT 1
+        """
+    ).fetchone()
+    if row is None:
+        return None, None
+    _set_metadata(conn, _AUDIT_TAIL_HASH_KEY, str(row["content_hash"]))
+    _set_metadata(conn, _AUDIT_TAIL_CREATED_AT_KEY, str(row["created_at"]))
+    return str(row["content_hash"]), str(row["created_at"])
+
+
+def _get_metadata(conn: sqlite3.Connection, key: str) -> str | None:
+    row = conn.execute("SELECT value FROM key_metadata WHERE id=?", (key,)).fetchone()
+    return str(row["value"]) if row else None
+
+
+def _set_metadata(conn: sqlite3.Connection, key: str, value: str) -> None:
+    conn.execute(
+        "INSERT INTO key_metadata (id, value) VALUES (?, ?) "
+        "ON CONFLICT(id) DO UPDATE SET value=excluded.value",
+        (key, value),
+    )
+
+
+def _after_previous_timestamp(candidate: str, previous: str | None) -> str:
+    if previous is None:
+        return candidate
+    from datetime import datetime, timedelta
+
+    try:
+        candidate_dt = datetime.fromisoformat(candidate)
+        previous_dt = datetime.fromisoformat(previous)
+    except ValueError:
+        return candidate
+    if candidate_dt > previous_dt:
+        return candidate
+    return (previous_dt + timedelta(microseconds=1)).isoformat()
 
 
 def _validate_identifier(
@@ -250,4 +343,8 @@ CREATE TABLE IF NOT EXISTS benchmark_runs (
 CREATE TABLE IF NOT EXISTS key_metadata (
   id TEXT PRIMARY KEY, value TEXT NOT NULL
 );
+CREATE INDEX IF NOT EXISTS idx_audit_events_previous_hash
+  ON audit_events(previous_hash);
+CREATE INDEX IF NOT EXISTS idx_audit_events_created_at_id
+  ON audit_events(created_at, id);
 """

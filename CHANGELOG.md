@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+## 1.0.18 - 2026-06-01
+
+### Fixed
+
+- Fixed the audit append regression introduced in 1.0.17: `AuditService.record`
+  no longer rebuilds the full audit chain for each new event.
+- Added SQLite atomic audit append using `BEGIN IMMEDIATE`, persisted tail
+  metadata, and audit indexes so local stores do not fork under serialized
+  writers or degrade quadratically as audit history grows.
+- Preserved valid audit ordering when multiple audit writes receive the same
+  clock timestamp by making appended event timestamps monotonic relative to the
+  current audit tail.
+
 ## 1.0.17 - 2026-06-01
 
 ### Fixed

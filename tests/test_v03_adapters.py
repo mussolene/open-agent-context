@@ -91,6 +91,31 @@ def test_audit_chain_uses_hash_links_when_timestamps_tie(svc, monkeypatch) -> No
     assert svc.audit.verify_chain()["valid"] is True
 
 
+def test_audit_record_append_does_not_rebuild_full_chain(svc, monkeypatch) -> None:
+    first = svc.audit.record("test.first", "actor")
+
+    def fail_full_chain_read() -> list[dict[str, object]]:
+        raise AssertionError("record() must not call audit.list() to append")
+
+    monkeypatch.setattr(svc.audit, "list", fail_full_chain_read)
+
+    second = svc.audit.record("test.second", "actor")
+
+    assert second["previous_hash"] == first["content_hash"]
+
+
+def test_audit_record_ignores_stale_tail_metadata(svc) -> None:
+    first = svc.audit.record("test.first", "actor")
+    second = svc.audit.record("test.second", "actor")
+    svc.store.set_metadata("audit_tail_hash", str(first["content_hash"]))
+    svc.store.set_metadata("audit_tail_created_at", str(first["created_at"]))
+
+    third = svc.audit.record("test.third", "actor")
+
+    assert third["previous_hash"] == second["content_hash"]
+    assert svc.audit.verify_chain()["valid"] is True
+
+
 def test_cli_tool_and_skill_calls_require_resource_grants(tmp_path) -> None:
     db = tmp_path / "oacs.db"
     runner = CliRunner()
