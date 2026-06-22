@@ -115,6 +115,11 @@ Tool onboarding is documented in `docs/TOOL_BINDINGS.md`.
 Long agent workflow conveniences such as `acs status`, `acs resume`,
 `acs checkpoint`, `acs run`, and project deny-pattern policy helpers are
 documented in `docs/AGENT_WORKFLOW.md`.
+Prompt rendering guidance for presenting a `ContextCapsule` to a model without
+flattening facts, hypotheses, evidence refs, tool observations, rules, and
+forbidden assumptions into one narrative is documented in
+`docs/CONTEXT_PROMPTING.md`; see `examples/context_prompting/` and
+`acs context build --render-prompt` for the reference adapter path.
 
 ### Development Dogfood
 
@@ -302,6 +307,11 @@ Raw artifacts пишутся в output directory; начинать стоит с
 Tool onboarding описан в `docs/TOOL_BINDINGS.md`. Длинный agent workflow UX:
 `acs status`, `acs resume`, `acs checkpoint`, `acs run` и project deny-pattern
 policy helpers описаны в `docs/AGENT_WORKFLOW.md`.
+Prompt rendering guidance для передачи `ContextCapsule` модели без смешивания
+facts, hypotheses, evidence refs, tool observations, rules и forbidden
+assumptions в один narrative описан в `docs/CONTEXT_PROMPTING.md`; reference
+adapter path см. в `examples/context_prompting/` и
+`acs context build --render-prompt`.
 
 ### Development dogfood
 

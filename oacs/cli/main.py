@@ -19,6 +19,8 @@ from oacs.benchmark.packs import download_task_pack, load_task_pack, tasks_from_
 from oacs.benchmark.reports import compare_runs, select_comparison_runs
 from oacs.benchmark.runner import MemoryCriticalBenchmark
 from oacs.conformance import validate_conformance
+from oacs.context.capsule import ContextCapsule
+from oacs.context.prompt_renderer import PromptRenderMode, render_context_prompt
 from oacs.core.config import OacsConfig
 from oacs.core.errors import AccessDenied, LockedKeyError, MemoryDecryptError, NotFound
 from oacs.core.ids import new_id
@@ -825,6 +827,20 @@ def context_build(
     strict: Annotated[bool, typer.Option("--strict")] = False,
     db: DbOpt = None,
     json_out: JsonOpt = False,
+    render_prompt: Annotated[
+        bool,
+        typer.Option(
+            "--render-prompt",
+            help="Include reference prompt rendering beside the capsule output.",
+        ),
+    ] = False,
+    prompt_mode: Annotated[
+        str,
+        typer.Option(
+            "--prompt-mode",
+            help="Reference prompt rendering mode: answer or falsification_ledger.",
+        ),
+    ] = "answer",
 ) -> None:
     try:
         svc = services(db)
@@ -837,8 +853,32 @@ def context_build(
         raise typer.Exit(2) from exc
     svc.audit.record("context.build", actor, capsule.id)
     payload: object = capsule.model_dump()
+    if render_prompt:
+        if prompt_mode not in {"answer", "falsification_ledger"}:
+            fail("prompt-mode must be answer or falsification_ledger")
+        render_mode: PromptRenderMode = (
+            "falsification_ledger" if prompt_mode == "falsification_ledger" else "answer"
+        )
+        rendered = render_context_prompt(
+            capsule,
+            task=intent,
+            memories=svc.context.last_memories,
+            mode=render_mode,
+        )
+        payload = {
+            "capsule": capsule.model_dump(),
+            "prompt_rendering": {
+                "mode": rendered.mode,
+                "sections": rendered.sections,
+                "standard_boundary": "reference_rendering_not_oacs_conformance_record",
+            },
+            "prompt": rendered.prompt,
+        }
     if svc.context.last_warnings:
-        payload = {"capsule": payload, "warnings": svc.context.last_warnings}
+        if isinstance(payload, dict) and isinstance(payload.get("capsule"), dict):
+            payload["warnings"] = svc.context.last_warnings
+        else:
+            payload = {"capsule": payload, "warnings": svc.context.last_warnings}
     emit(payload, json_out)
 
 
@@ -919,6 +959,48 @@ def context_validate(
     requires_key = payload.get("export_type") == "context_capsule_export"
     result = services(db, require_key=requires_key).context.validate_payload(payload)
     emit(result, json_out)
+
+
+@context_app.command("render-prompt")
+def context_render_prompt(
+    file: Annotated[Path, typer.Option("--file")],
+    task: Annotated[str | None, typer.Option("--task")] = None,
+    mode: Annotated[
+        str,
+        typer.Option(
+            "--mode",
+            help="Reference prompt rendering mode: answer or falsification_ledger.",
+        ),
+    ] = "answer",
+    json_out: JsonOpt = False,
+) -> None:
+    payload = json.loads(file.read_text(encoding="utf-8"))
+    if payload.get("export_type") == "context_capsule_export" or isinstance(
+        payload.get("capsule"), dict
+    ):
+        capsule_payload = payload["capsule"]
+    else:
+        capsule_payload = payload
+    capsule = ContextCapsule.model_validate(capsule_payload)
+    capsule.validate_checksum()
+    if mode not in {"answer", "falsification_ledger"}:
+        fail("mode must be answer or falsification_ledger")
+    render_mode: PromptRenderMode = (
+        "falsification_ledger" if mode == "falsification_ledger" else "answer"
+    )
+    rendered = render_context_prompt(capsule, task=task, mode=render_mode)
+    if json_out:
+        emit(
+            {
+                "mode": rendered.mode,
+                "sections": rendered.sections,
+                "prompt": rendered.prompt,
+                "standard_boundary": "reference_rendering_not_oacs_conformance_record",
+            },
+            True,
+        )
+        return
+    typer.echo(rendered.prompt)
 
 
 @capsule_app.command("create")

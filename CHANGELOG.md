@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+## 1.0.20 - 2026-06-22
+
+### Added
+
+- Added a reference context prompt renderer that keeps D0-D2 facts, D3-D5
+  hypotheses, evidence refs, tool observations, rules, permissions, and
+  forbidden assumptions in separate prompt sections.
+- Added `acs context build --render-prompt` with `--prompt-mode answer` and
+  `--prompt-mode falsification_ledger` so fresh context builds can return a
+  role-preserving prompt surface beside the portable capsule output.
+- Added `acs context render-prompt --file` for already exported or saved
+  capsules.
+
+### Changed
+
+- Documented context prompt rendering as reference adapter behavior, not a new
+  OACS core conformance requirement.
+
 ## 1.0.19 - 2026-06-01
 
 ### Fixed

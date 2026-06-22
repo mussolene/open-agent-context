@@ -8,6 +8,7 @@ from oacs.core.json import hash_json
 from oacs.core.time import now_iso
 from oacs.crypto.payload_codec import PayloadCodec
 from oacs.identity.policy import PolicyEngine
+from oacs.memory.models import MemoryRecord
 from oacs.memory.service import MemoryService
 from oacs.rules.engine import RuleEngine
 from oacs.skills.registry import SkillRegistry
@@ -34,6 +35,7 @@ class ContextBuilder:
         self.policy = policy
         self.codec = codec
         self.last_warnings: list[dict[str, object]] = []
+        self.last_memories: list[MemoryRecord] = []
 
     def build(
         self,
@@ -47,8 +49,10 @@ class ContextBuilder:
     ) -> ContextCapsule:
         requested_scope = scope or []
         self.last_warnings = []
+        self.last_memories = []
         self.policy.require(actor_id, "context.build", scope=requested_scope, namespace="default")
         memories = self.memory.query(intent, actor_id, requested_scope, strict=strict)
+        self.last_memories = list(memories)
         self.last_warnings = list(self.memory.last_warnings)
         rules = self.rules.check("context.build", {"memories": [m.model_dump() for m in memories]})
         skills = [

@@ -18,6 +18,13 @@ the same value. The MAC proves the export was produced by a holder of that local
 key, but it is not a public-key signature and does not prove author identity to
 third parties.
 
+Prompt rendering is a reference adapter concern, not a new stable capsule
+schema. Consumers should avoid flattening a capsule into neutral prose before a
+model sees it. A runtime adapter should preserve the roles of facts, hypotheses,
+evidence refs, tool observations, rules, permissions, and forbidden assumptions
+on the prompt surface. See `docs/CONTEXT_PROMPTING.md` and
+`examples/context_prompting/` for the reference renderer and bad/good examples.
+
 ## RU
 Context Capsule — переносимый объект, передаваемый агенту. Он содержит purpose,
 task, actor, agent, scope, token budget, ID включённой памяти/правил/skills/tools,
@@ -35,3 +42,10 @@ master key; `integrity.signature` принимается как deprecated compa
 для того же значения. MAC показывает, что export создан держателем этого local
 key, но не является public-key signature и не доказывает author identity третьим
 сторонам.
+
+Prompt rendering является задачей reference adapter, а не новой stable capsule
+schema. Consumers не должны превращать capsule в нейтральную прозу перед
+передачей модели. Runtime adapter должен сохранять роли facts, hypotheses,
+evidence refs, tool observations, rules, permissions и forbidden assumptions на
+prompt surface. См. `docs/CONTEXT_PROMPTING.md` и
+`examples/context_prompting/` для reference renderer и bad/good examples.
