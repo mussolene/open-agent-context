@@ -82,6 +82,39 @@ def test_lexical_retrieval_is_deterministic_for_ties_and_repeated_runs() -> None
     assert orders == [["mem_b", "mem_a", "mem_c"]] * 5
 
 
+def test_lexical_retrieval_drops_zero_score_memories() -> None:
+    provider = LexicalRetrievalProvider()
+    memory = MemoryRecord(
+        id="mem_unrelated",
+        memory_type="fact",
+        depth=2,
+        content=MemoryContent(text="Blue elephants calibrate lunar telescopes."),
+    )
+
+    hits = provider.retrieve(
+        RetrievalQuery(text="answer_project_question"),
+        [memory],
+    )
+
+    assert hits == []
+
+
+def test_lexical_retrieval_keeps_explicit_empty_query_list_behavior() -> None:
+    provider = LexicalRetrievalProvider()
+    memory = MemoryRecord(
+        id="mem_listed",
+        memory_type="fact",
+        depth=2,
+        content=MemoryContent(text="Listable memory."),
+    )
+
+    hits = provider.retrieve(RetrievalQuery(text=""), [memory])
+
+    assert [hit.memory.id for hit in hits] == [memory.id]
+    assert hits[0].score == 0
+    assert hits[0].reasons == ["explicit_empty_query_all"]
+
+
 def test_structured_evidence_retrieval_is_generic_not_benchmark_specific() -> None:
     provider = StructuredEvidenceRetrievalProvider()
     memory = MemoryRecord(

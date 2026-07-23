@@ -18,6 +18,23 @@ def test_memory_loop_returns_capsule_and_proposal(svc):
     assert result.operation_metrics["memory_calls_count"] == 3
 
 
+def test_loop_keeps_categorical_purpose_and_queries_with_user_request(svc):
+    mem = svc.memory.propose(
+        "procedure", 2, "Alpha reports use make report-safe.", None, ["project"]
+    )
+    svc.memory.commit(mem.id, None)
+
+    result = svc.loop.run(
+        "How do I generate the Alpha report?",
+        None,
+        scope=["project"],
+    )
+    capsule = svc.context.read(result.context_capsule_id, None)
+
+    assert capsule.purpose == "answer_project_question"
+    assert result.memories_used == [mem.id]
+
+
 def test_memory_loop_can_disable_memory_calls(svc):
     result = svc.loop.run(
         "Short task",

@@ -24,6 +24,7 @@ class ContextBuild(BaseModel):
     actor_id: str | None = None
     agent_id: str | None = None
     intent: str
+    query: str | None = None
     scope: list[str] = []
     token_budget: int = 4000
 
@@ -33,7 +34,12 @@ def build(req: ContextBuild) -> dict[str, object]:
     svc = services()
     try:
         capsule = svc.context.build(
-            req.intent, req.actor_id, req.agent_id, req.scope, req.token_budget
+            req.intent,
+            req.actor_id,
+            req.agent_id,
+            req.scope,
+            req.token_budget,
+            query=req.query,
         )
     except AccessDenied as exc:
         svc.audit.record("context.build", req.actor_id, None, {"status": "denied"})

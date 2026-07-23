@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, cast
 
 from oacs.context.capsule import ContextCapsule, ContextCapsuleExport
+from oacs.context.reducer import select_memories_for_token_budget
 from oacs.core.errors import NotFound
 from oacs.core.json import hash_json
 from oacs.core.time import now_iso
@@ -46,14 +47,30 @@ class ContextBuilder:
         token_budget: int = 4000,
         task_id: str | None = None,
         strict: bool = False,
+        query: str | None = None,
     ) -> ContextCapsule:
         requested_scope = scope or []
         self.last_warnings = []
         self.last_memories = []
         self.policy.require(actor_id, "context.build", scope=requested_scope, namespace="default")
-        memories = self.memory.query(intent, actor_id, requested_scope, strict=strict)
+        retrieved_memories = self.memory.query(
+            query or intent, actor_id, requested_scope, strict=strict
+        )
+        memories, budget_usage = select_memories_for_token_budget(
+            retrieved_memories, token_budget
+        )
         self.last_memories = list(memories)
         self.last_warnings = list(self.memory.last_warnings)
+        if budget_usage["skipped_memories"]:
+            self.last_warnings.append(
+                {
+                    "type": "ReferenceMemoryBudgetApplied",
+                    "token_budget": token_budget,
+                    **budget_usage,
+                    "estimator": "whitespace_tokens_for_reference_memory_lines",
+                    "standard_boundary": "python_reference_selection_policy",
+                }
+            )
         rules = self.rules.check("context.build", {"memories": [m.model_dump() for m in memories]})
         skills = [
             skill

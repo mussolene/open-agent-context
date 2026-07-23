@@ -17,6 +17,52 @@ def test_context_build_and_explain(svc):
     assert mem.id in explanation["included_memories"]
 
 
+def test_context_build_separates_purpose_from_retrieval_query(svc):
+    mem = svc.memory.propose(
+        "procedure", 2, "Alpha reports use make report-safe.", None, ["project"]
+    )
+    svc.memory.commit(mem.id, None)
+
+    capsule = svc.context.build(
+        "answer_project_question",
+        None,
+        scope=["project"],
+        query="How do I generate the Alpha report?",
+    )
+
+    assert capsule.purpose == "answer_project_question"
+    assert capsule.included_memories == [mem.id]
+
+
+def test_context_build_applies_reference_memory_token_budget(svc):
+    mem = svc.memory.propose(
+        "procedure", 2, "Alpha reports use make report-safe.", None, ["project"]
+    )
+    svc.memory.commit(mem.id, None)
+
+    capsule = svc.context.build(
+        "answer_project_question",
+        None,
+        scope=["project"],
+        token_budget=1,
+        query="Alpha report",
+    )
+
+    assert capsule.included_memories == []
+    assert svc.context.last_memories == []
+    assert svc.context.last_warnings == [
+        {
+            "type": "ReferenceMemoryBudgetApplied",
+            "token_budget": 1,
+            "estimated_memory_tokens": 0,
+            "selected_memories": 0,
+            "skipped_memories": 1,
+            "estimator": "whitespace_tokens_for_reference_memory_lines",
+            "standard_boundary": "python_reference_selection_policy",
+        }
+    ]
+
+
 def test_context_capsule_validate_import_round_trip(svc, tmp_path):
     capsule = svc.context.build("round trip", None, scope=["project"])
     payload = capsule.model_dump()

@@ -39,18 +39,25 @@ class LexicalRetrievalProvider:
     def retrieve(
         self, query: RetrievalQuery, memories: list[MemoryRecord]
     ) -> list[RetrievalHit]:
+        empty_query = not tokens(query.text)
         hits = [
             RetrievalHit(
                 memory=memory,
                 score=float(lexical_score(query.text, memory.content.text)),
                 provider=self.name,
-                reasons=["lexical_text_overlap"],
+                reasons=(
+                    ["explicit_empty_query_all"]
+                    if empty_query
+                    else ["lexical_text_overlap"]
+                ),
             )
             for memory in memories
         ]
         ranked = sorted(hits, key=lambda hit: (-hit.score, hit.memory.depth, hit.memory.id))
+        if empty_query:
+            return ranked[: query.limit]
         nonzero = [hit for hit in ranked if hit.score > 0]
-        return (nonzero or ranked)[: query.limit]
+        return nonzero[: query.limit]
 
 
 class StructuredEvidenceRetrievalProvider:

@@ -61,6 +61,7 @@ to the portable capsule:
 ```bash
 acs context build \
   --intent "answer_project_question" \
+  --query "How do I generate the Alpha report?" \
   --scope project \
   --render-prompt \
   --prompt-mode falsification_ledger \
@@ -70,6 +71,14 @@ acs context build \
 The `prompt` and `prompt_rendering` fields are CLI output wrapper fields. They
 are not stored inside the `ContextCapsule` and do not expand the OACS core
 contract.
+
+For this Python reference path, `--intent` is the categorical capsule purpose
+and `--query` is the retrieval text. `token_budget` is applied as a
+deterministic whitespace-token estimate over candidate reference memory lines.
+If records do not fit, the CLI/API warning reports estimated memory usage and
+skipped records. This is a reference selection policy: it is not a
+model-tokenizer guarantee, does not bound the fixed prompt envelope, and does
+not change the portable v1.0 capsule contract.
 
 For an already exported capsule, use the file renderer:
 
@@ -175,6 +184,7 @@ CLI:
 ```bash
 acs context build \
   --intent "answer_project_question" \
+  --query "Как сгенерировать отчёт Alpha?" \
   --scope project \
   --render-prompt \
   --prompt-mode falsification_ledger \
@@ -183,6 +193,14 @@ acs context build \
 
 Поля `prompt` и `prompt_rendering` находятся в CLI output wrapper. Они не
 записываются внутрь `ContextCapsule` и не расширяют core contract OACS.
+
+В этом Python reference path `--intent` является категориальным purpose
+capsule, а `--query` передаёт retrieval text. `token_budget` применяется как
+детерминированная whitespace-token оценка candidate reference memory lines.
+Если записи не помещаются, warning CLI/API сообщает оценённый расход и число
+пропущенных записей. Это reference selection policy, а не гарантия конкретного
+model tokenizer или предел для фиксированного prompt envelope; portable v1.0
+capsule contract не меняется.
 
 Для уже экспортированной capsule используйте file renderer:
 

@@ -19,6 +19,9 @@ checks `context.read`; export checks `context.export` separately.
 or export envelopes. For envelopes, `integrity.mac` is an HMAC tag, not
 public-key signing; `integrity.signature` is a deprecated compatibility alias.
 
+`POST /v1/context/build` also accepts optional `query`, keeping retrieval text
+separate from categorical capsule `intent`.
+
 `POST /v1/loop/run` accepts `user_request`, optional `actor_id`, `agent_id`,
 `scope`, `token_budget`, `allowed_tools`, and `model_config`. The response
 includes the Context Capsule id, memories used, `memory_calls`, selected
@@ -67,6 +70,9 @@ Context endpoints включают `POST /v1/context/build`, `GET /v1/context/{i
 metadata `capsule` и `integrity`. Validation/import принимают raw capsules или
 export envelopes. Для envelopes `integrity.mac` является HMAC tag, а не
 public-key signing; `integrity.signature` - deprecated compatibility alias.
+
+`POST /v1/context/build` также принимает optional `query`, отделяя retrieval
+text от категориального capsule `intent`.
 
 `POST /v1/loop/run` принимает `user_request`, optional `actor_id`, `agent_id`,
 `scope`, `token_budget`, `allowed_tools` и `model_config`. Ответ включает id

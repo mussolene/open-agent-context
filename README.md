@@ -66,11 +66,14 @@ CANDIDATE_ID=$(acs memory propose --type procedure --depth 2 --scope project \
 
 acs memory commit "$CANDIDATE_ID" --json
 acs memory query --query "Alpha report" --scope project --json
-acs context build --intent answer_project_question --scope project --budget 4000 --json
+acs context build --intent answer_project_question --query "Alpha report" \
+  --scope project --budget 4000 --json
 ```
 
 Expected result: `memory query` returns the committed procedure and
-`context build` returns a `ctx_...` capsule with that memory included.
+`context build` returns a `ctx_...` capsule with that memory included. In the
+Python reference implementation, `--intent` remains the categorical capsule
+purpose while `--query` supplies retrieval text.
 
 ### Validation Adapters
 
@@ -259,11 +262,14 @@ CANDIDATE_ID=$(acs memory propose --type procedure --depth 2 --scope project \
 
 acs memory commit "$CANDIDATE_ID" --json
 acs memory query --query "Alpha отчёты" --scope project --json
-acs context build --intent answer_project_question --scope project --budget 4000 --json
+acs context build --intent answer_project_question --query "Alpha отчёты" \
+  --scope project --budget 4000 --json
 ```
 
 Ожидаемый результат: `memory query` возвращает committed procedure, а
-`context build` возвращает capsule `ctx_...` с этой memory внутри.
+`context build` возвращает capsule `ctx_...` с этой memory внутри. В Python
+reference implementation `--intent` остаётся категориальным purpose capsule, а
+`--query` передаёт текст для retrieval.
 
 ### Validation adapters
 

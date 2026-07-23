@@ -841,10 +841,25 @@ def context_build(
             help="Reference prompt rendering mode: answer or falsification_ledger.",
         ),
     ] = "answer",
+    query: Annotated[
+        str | None,
+        typer.Option(
+            "--query",
+            help="Optional retrieval text, separate from the capsule purpose in --intent.",
+        ),
+    ] = None,
 ) -> None:
     try:
         svc = services(db)
-        capsule = svc.context.build(intent, actor, agent, scope or [], budget, strict=strict)
+        capsule = svc.context.build(
+            intent,
+            actor,
+            agent,
+            scope or [],
+            budget,
+            strict=strict,
+            query=query,
+        )
     except LockedKeyError as exc:
         emit({"error": "LockedKeyError", "message": str(exc)}, json_out)
         raise typer.Exit(2) from exc
@@ -861,7 +876,7 @@ def context_build(
         )
         rendered = render_context_prompt(
             capsule,
-            task=intent,
+            task=query or intent,
             memories=svc.context.last_memories,
             mode=render_mode,
         )

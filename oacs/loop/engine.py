@@ -57,7 +57,12 @@ class MemoryLoopEngine:
         intent: dict[str, object] = {"name": intent_name, "query": user_request}
         self.memory.observe(user_request, actor_id, scope or [])
         capsule = self.context_builder.build(
-            intent_name, actor_id, agent_id, scope or [], token_budget
+            intent_name,
+            actor_id,
+            agent_id,
+            scope or [],
+            token_budget,
+            query=user_request,
         )
         memories = [self.memory.read(mid, actor_id) for mid in capsule.included_memories]
         context_policy = self.context_policy.decide(user_request, memories, token_budget, config)

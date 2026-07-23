@@ -207,6 +207,8 @@ def test_cli_context_build_can_render_prompt_without_changing_capsule(tmp_path) 
             str(db),
             "--intent",
             "answer_project_question",
+            "--query",
+            "Context prompt tests",
             "--scope",
             "project",
             "--render-prompt",

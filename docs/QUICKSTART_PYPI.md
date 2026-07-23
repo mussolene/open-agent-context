@@ -25,8 +25,14 @@ CANDIDATE_ID=$(acs memory propose --type procedure --depth 2 --scope project \
 
 acs memory commit "$CANDIDATE_ID" --json
 acs memory query --query "Alpha report" --scope project --json
-acs context build --intent answer_project_question --scope project --budget 4000 --json
+acs context build --intent answer_project_question --query "Alpha report" \
+  --scope project --budget 4000 --json
 ```
+
+`--intent` sets the categorical capsule purpose. `--query` is the text used by
+the Python reference retriever. The default lexical provider returns no memory
+when there is no text overlap instead of filling the capsule with zero-score
+records.
 
 Run the local proof demo from a source checkout:
 
@@ -59,8 +65,13 @@ CANDIDATE_ID=$(acs memory propose --type procedure --depth 2 --scope project \
 
 acs memory commit "$CANDIDATE_ID" --json
 acs memory query --query "Alpha отчёты" --scope project --json
-acs context build --intent answer_project_question --scope project --budget 4000 --json
+acs context build --intent answer_project_question --query "Alpha отчёты" \
+  --scope project --budget 4000 --json
 ```
+
+`--intent` задаёт категориальный purpose capsule. `--query` передаёт текст в
+Python reference retriever. Если текстового overlap нет, lexical provider по
+умолчанию не заполняет capsule записями с нулевым score.
 
 Запустить локальное proof demo из source checkout:
 
