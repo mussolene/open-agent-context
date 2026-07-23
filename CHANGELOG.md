@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+## 1.0.21 - 2026-07-23
+
+### Fixed
+
+- Separated categorical capsule purpose from retrieval text across the Python
+  context builder, memory loop, CLI, and API.
+- Removed the default lexical provider's zero-score fallback for non-empty
+  queries while preserving explicit empty-query listing behavior.
+- Applied `token_budget` to candidate reference memory lines with a
+  deterministic estimate and warning metadata when records are skipped. This
+  remains Python reference selection behavior and does not change the portable
+  OACS v1.0 standard.
+
+### Changed
+
+- Updated the PyPI quickstart, context prompting, API, README, and roadmap
+  documentation for the separate `intent` / `query` behavior and reference
+  budget boundary.
+
 ## 1.0.20 - 2026-06-22
 
 ### Added
