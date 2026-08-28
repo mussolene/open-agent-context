@@ -1,9 +1,11 @@
 # v1.0 Freeze Prep Manifest / Манифест подготовки v1.0 freeze
 
 ## EN
-This manifest is the working control surface for stabilizing OACS v1.0. It is
-not the v1.0 freeze itself. It classifies every checked-in JSON Schema and makes
-the conformance coverage target explicit.
+This manifest records the schema coverage used to stabilize OACS v1.0.
+The original status labels are retained for automated coverage checks; the
+current stable contract is defined in [Compatibility](COMPATIBILITY.md).
+It classifies every checked-in JSON Schema and makes the conformance coverage
+target explicit.
 
 Status values:
 
@@ -55,13 +57,14 @@ Completed freeze-prep work:
 
 Open freeze-prep work:
 
-- None. The next step is running the v1.0 release checklist, not expanding the
-  freeze-prep scope.
+- None. OACS v1.0 has been released. Use the [release process](RELEASE.md)
+  for subsequent package versions and retain this manifest for coverage checks.
 
 ## RU
-Этот manifest является рабочей control surface для стабилизации OACS v1.0. Это
-ещё не сам v1.0 freeze. Он классифицирует каждую checked-in JSON Schema и явно
-фиксирует цель conformance coverage.
+Этот манифест фиксирует покрытие схем при подготовке OACS v1.0. Исходные
+метки статуса сохранены для автоматических проверок; действующий стабильный
+контракт описан в [политике совместимости](COMPATIBILITY.md). Манифест
+классифицирует каждую схему JSON и фиксирует требования к покрытию проверками.
 
 Status values:
 
@@ -113,5 +116,5 @@ Completed freeze-prep work:
 
 Open freeze-prep work:
 
-- None. Следующий шаг - запуск v1.0 release checklist, а не расширение
-  freeze-prep scope.
+- None. OACS v1.0 выпущен. Для следующих версий пакета используйте
+  [процесс релиза](RELEASE.md); манифест сохраняется для проверок покрытия.

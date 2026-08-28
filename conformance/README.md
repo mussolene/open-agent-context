@@ -1,7 +1,7 @@
 # OACS Conformance Fixtures / OACS Conformance Fixtures
 
 ## EN
-This directory contains language-neutral JSON fixtures for the OACS v0.1 draft.
+This directory contains language-neutral JSON fixtures for the OACS v1.0.
 They are standard contract examples, not Python object snapshots. A runtime can
 validate them with the JSON Schemas in `schemas/` without importing the `oacs`
 Python package or using SQLite.
@@ -68,7 +68,7 @@ boundary pack:
   conformance inputs unless a schema or fixture explicitly requires them.
 
 ## RU
-Этот каталог содержит language-neutral JSON fixtures для OACS v0.1 draft. Это
+Этот каталог содержит language-neutral JSON fixtures для OACS v1.0. Это
 examples standard contract, а не snapshots Python objects. Runtime может
 валидировать их JSON Schemas из `schemas/` без import Python package `oacs` и
 без SQLite.

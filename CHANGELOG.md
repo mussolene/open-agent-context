@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Changed
+
+- Reorganized the bilingual README and contributor guide around installation,
+  standard boundaries, repository structure, and verification.
+- Added a documentation index, corrected build and release guidance, and
+  refreshed package discovery metadata without changing the runtime contract.
+- Extended publication checks to cover contributor guidance and local links.
+
 ## 1.0.21 - 2026-07-23
 
 ### Fixed

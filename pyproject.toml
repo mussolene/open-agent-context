@@ -5,12 +5,12 @@ build-backend = "hatchling.build"
 [project]
 name = "oacs"
 version = "1.0.21"
-description = "Open Agent Context Standard reference implementation for governed agent memory and context"
+description = "Open Agent Context Standard: portable, governed memory and context for AI agents"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "Apache-2.0" }
 authors = [{ name = "OACS Contributors" }]
-keywords = ["agents", "memory", "context", "ai", "mcp", "sqlite", "fastapi"]
+keywords = ["ai-agents", "agent-memory", "context-engineering", "mcp", "sqlite", "audit", "json-schema"]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Environment :: Console",
@@ -57,7 +57,7 @@ acs = "oacs.cli.main:app"
 Homepage = "https://github.com/mussolene/open-agent-context"
 Repository = "https://github.com/mussolene/open-agent-context"
 Issues = "https://github.com/mussolene/open-agent-context/issues"
-Documentation = "https://github.com/mussolene/open-agent-context/tree/main/docs"
+Documentation = "https://github.com/mussolene/open-agent-context/blob/main/docs/README.md"
 Changelog = "https://github.com/mussolene/open-agent-context/blob/main/CHANGELOG.md"
 
 [tool.hatch.build]

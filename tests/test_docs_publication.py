@@ -3,12 +3,15 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
+from urllib.parse import unquote, urlsplit
 
 from oacs import __version__
 
 ROOT = Path(__file__).resolve().parents[1]
 PUBLIC_MARKDOWN = [
     ROOT / "README.md",
+    ROOT / "CONTRIBUTING.md",
+    ROOT / "conformance" / "README.md",
     *(ROOT / "docs").glob("*.md"),
     *(ROOT / "examples").glob("**/*.md"),
 ]
@@ -17,6 +20,8 @@ PUBLIC_MARKDOWN = [
 def test_publication_docs_have_bilingual_sections() -> None:
     docs = [
         ROOT / "README.md",
+        ROOT / "CONTRIBUTING.md",
+        ROOT / "docs" / "README.md",
         ROOT / "docs" / "SPEC.md",
         ROOT / "docs" / "GLOSSARY.md",
         ROOT / "docs" / "ROADMAP.md",
@@ -29,12 +34,32 @@ def test_publication_docs_have_bilingual_sections() -> None:
         assert "## RU" in text, path
 
 
-def test_readme_separates_draft_and_reference_implementation() -> None:
+def test_readme_separates_standard_and_reference_implementation() -> None:
     text = (ROOT / "README.md").read_text(encoding="utf-8")
     assert "OACS v1.0" in text
     assert "Standard vs Reference Implementation" in text
-    assert "Стандарт и reference implementation" in text
+    assert "Стандарт и эталонная реализация" in text
     assert "docs/COMPATIBILITY.md" in text
+
+
+def test_public_markdown_local_links_resolve() -> None:
+    for path in PUBLIC_MARKDOWN:
+        text = re.sub(r"```.*?```", "", path.read_text(encoding="utf-8"), flags=re.S)
+        for link in re.findall(r"\[[^\]\n]+\]\(([^\s)]+)\)", text):
+            target = urlsplit(link)
+            if target.scheme or target.netloc or not target.path:
+                continue
+            resolved = (path.parent / unquote(target.path)).resolve()
+            assert resolved.is_relative_to(ROOT), (path, link)
+            assert resolved.exists(), (path, link)
+
+
+def test_documentation_index_covers_all_guides() -> None:
+    index = ROOT / "docs" / "README.md"
+    links = set(re.findall(r"\]\(([^\s)]+)\)", index.read_text(encoding="utf-8")))
+    for guide in (ROOT / "docs").glob("*.md"):
+        if guide != index:
+            assert guide.name in links, guide
 
 
 def test_json_schemas_are_valid_json_objects() -> None:

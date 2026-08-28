@@ -1,18 +1,22 @@
 # Release Process / Процесс релиза
 
 ## EN
+
 OACS uses SemVer as the human release policy and PEP 440 spelling for Python
 packages. The Git tag is the release trigger.
 
 ### Version Policy
 
-- Stable release: SemVer `0.4.0`, PyPI version `0.4.0`, tag `v0.4.0`.
-- Alpha release: SemVer `0.4.0-alpha.1`, PyPI version `0.4.0a1`, tag
-  `v0.4.0a1`.
-- Beta release: SemVer `0.4.0-beta.1`, PyPI version `0.4.0b1`, tag
-  `v0.4.0b1`.
-- Release candidate: SemVer `0.4.0-rc.1`, PyPI version `0.4.0rc1`, tag
-  `v0.4.0rc1`.
+These are version-format examples, not the current release. Read the current
+package version from `pyproject.toml`.
+
+- Stable release: SemVer `1.1.0`, PyPI version `1.1.0`, tag `v1.1.0`.
+- Alpha release: SemVer `1.1.0-alpha.1`, PyPI version `1.1.0a1`, tag
+  `v1.1.0a1`.
+- Beta release: SemVer `1.1.0-beta.1`, PyPI version `1.1.0b1`, tag
+  `v1.1.0b1`.
+- Release candidate: SemVer `1.1.0-rc.1`, PyPI version `1.1.0rc1`, tag
+  `v1.1.0rc1`.
 
 Prerelease tags publish to TestPyPI. Stable tags publish to PyPI. Manual
 workflow dispatch remains available for recovery/debugging and for explicitly
@@ -105,26 +109,28 @@ not store PyPI API tokens in the repository.
 
 ### Release Automation Maintenance
 
-Keep release automation free of deprecated action runtimes. The workflow builds
-distributions inside the selected trusted-publishing job instead of passing
-artifacts between jobs, so it does not depend on `actions/upload-artifact` or
-`actions/download-artifact` while those actions use a deprecated Node.js
-runtime. If artifact handoff returns, verify the referenced action versions use
-the current GitHub Actions runtime before cutting a release.
+The workflow builds distributions inside the selected trusted-publishing job
+and does not pass artifacts between jobs. When updating action versions or
+adding artifact handoff, check their runtime support and permissions before
+cutting a release.
 
 ## RU
+
 OACS использует SemVer как человеческую release policy и PEP 440 spelling для
 Python packages. Git tag является release trigger.
 
 ### Version Policy
 
-- Stable release: SemVer `0.4.0`, PyPI version `0.4.0`, tag `v0.4.0`.
-- Alpha release: SemVer `0.4.0-alpha.1`, PyPI version `0.4.0a1`, tag
-  `v0.4.0a1`.
-- Beta release: SemVer `0.4.0-beta.1`, PyPI version `0.4.0b1`, tag
-  `v0.4.0b1`.
-- Release candidate: SemVer `0.4.0-rc.1`, PyPI version `0.4.0rc1`, tag
-  `v0.4.0rc1`.
+Ниже приведены примеры формата версий, не текущий релиз. Текущая версия
+пакета указана в `pyproject.toml`.
+
+- Stable release: SemVer `1.1.0`, PyPI version `1.1.0`, tag `v1.1.0`.
+- Alpha release: SemVer `1.1.0-alpha.1`, PyPI version `1.1.0a1`, tag
+  `v1.1.0a1`.
+- Beta release: SemVer `1.1.0-beta.1`, PyPI version `1.1.0b1`, tag
+  `v1.1.0b1`.
+- Release candidate: SemVer `1.1.0-rc.1`, PyPI version `1.1.0rc1`, tag
+  `v1.1.0rc1`.
 
 Prerelease tags публикуются в TestPyPI. Stable tags публикуются в PyPI. Manual
 workflow dispatch остаётся для recovery/debugging и для явной публикации
@@ -217,9 +223,6 @@ projects для этого repository. Не храните PyPI API tokens в р
 
 ### Release Automation Maintenance
 
-Release automation не должна зависеть от deprecated action runtimes. Workflow
-собирает distributions внутри selected trusted-publishing job вместо передачи
-artifacts между jobs, поэтому он не зависит от `actions/upload-artifact` или
-`actions/download-artifact`, пока эти actions используют deprecated Node.js
-runtime. Если artifact handoff вернётся, перед релизом нужно проверить, что
-referenced action versions используют текущий GitHub Actions runtime.
+Процесс собирает пакеты внутри задания публикации и не передаёт артефакты
+между заданиями. При обновлении версий действий или добавлении передачи
+артефактов проверьте поддержку среды исполнения и разрешения до выпуска релиза.

@@ -1,394 +1,249 @@
-# OACS v1.0 - Open Agent Context Standard
+# OACS: Open Agent Context Standard
+
+[![CI](https://github.com/mussolene/open-agent-context/actions/workflows/ci.yml/badge.svg)](https://github.com/mussolene/open-agent-context/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/oacs)](https://pypi.org/project/oacs/)
+[![Python](https://img.shields.io/pypi/pyversions/oacs)](https://pypi.org/project/oacs/)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+
+**Portable, governed memory and context for AI agents.**
+
+[English](#en) | [Русский](#ru) | [Documentation / Документация](docs/README.md) | [Changelog](CHANGELOG.md)
 
 ## EN
-OACS is an open lower-layer standard contract for agent memory and context:
-`MemoryRecord`, `ContextCapsule`, `CapabilityGrant`, `EvidenceRef`, auditable
-`memory_calls`, and adapter boundaries. The bundled `acs` CLI is the reference
-local interface to that contract.
 
-OACS is not a replacement for MCP. MCP describes tool/server interoperability.
-OACS describes how an agent assembles and governs context before a model or MCP
-tool is used.
+OACS defines how agents store memory, retrieve evidence, and assemble context
+with explicit permissions and an audit trail. This repository contains the
+**OACS v1.0 standard** and its **Python reference implementation**: the `oacs`
+package and `acs` CLI, backed by SQLite with a FastAPI interface.
 
-It is also not an agent framework, model backend, vector database, or benchmark
-harness. Those systems can sit above or beside OACS and call its memory,
-context, capability, and audit operations.
+Use it to preserve project knowledge between sessions, build explainable
+context capsules, and attach tool results as evidence. OACS complements MCP:
+MCP connects tools and servers; OACS governs the memory and context an agent
+uses around those calls. It is not an agent framework, model provider, or vault.
 
 ### Standard vs Reference Implementation
 
-- **OACS v1.0 standard:** terminology, lifecycle, capsule format, security
-  model, and JSON contracts in `docs/` and `schemas/`.
-- **Python reference implementation:** local `oacs` package, `acs` CLI, FastAPI
-  API, SQLite backend, encryption layer, registries, memory loop, and validation
-  adapters.
-  Storage goes through a thin `StorageBackend` protocol; SQLite is the bundled
-  reference backend.
+| Layer | What lives here |
+| --- | --- |
+| Portable standard | Memory lifecycle, context capsules, capability grants, evidence, audit semantics, and [JSON schemas](schemas/). |
+| Python reference implementation | CLI, HTTP API, SQLite storage, encryption, lexical retrieval, and context prompt rendering. |
+| Adapters and examples | Tools, skills, MCP bindings, repository workflows, and benchmark fixtures. These do not expand the standard. |
 
-See `docs/COMPATIBILITY.md` for the v1.0 compatibility policy.
-
-### Core Contracts
-
-The core standard is intentionally small:
-
-- `MemoryRecord`: lifecycle, depth, scope, encrypted content, and evidence.
-- `ContextCapsule`: portable governed context for one task.
-- `CapabilityGrant`: actor-scoped permission record.
-- `EvidenceRef` and structured evidence items: support for memory and context decisions.
-- `ProtectedRef`: portable reference to external secrets and non-public
-  infrastructure facts without storing vault state or plaintext in OACS.
-- `MemoryOperation`, `ContextOperation`, `MemoryLoopRun`, and `memory_call`:
-  auditable operation envelopes.
-
-Benchmarks, LM Studio, MCP execution, repo dogfood, and task packs are reference
-adapters. They validate or exercise the contract but do not expand it.
+Start with the [specification](docs/SPEC.md) and
+[compatibility policy](docs/COMPATIBILITY.md) when implementing OACS in another
+runtime. The standard version and Python package release version are separate;
+see [releases](https://github.com/mussolene/open-agent-context/releases) for
+package changes.
 
 ### Quickstart
 
-This path reaches the first useful OACS result: commit a memory, retrieve it,
-and build an explainable Context Capsule.
-
-For the public PyPI install path, see `docs/QUICKSTART_PYPI.md`.
+Requires Python 3.11 or later. No model server or API key is needed.
+The commands below use a POSIX shell; on Windows, activate the virtual
+environment and set environment variables using your shell's syntax.
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -e ".[dev,crypto]"
+python -m pip install oacs
 
 export OACS_DB=./.oacs/oacs.db
-
 acs init --json
 acs key init --json
-acs actor create --type human --name "User" --json
 
 CANDIDATE_ID=$(acs memory propose --type procedure --depth 2 --scope project \
   --text "In project Alpha reports are generated with make report-safe." --json \
-  | python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])')
-
+  | python -c 'import json,sys; print(json.load(sys.stdin)["id"])')
 acs memory commit "$CANDIDATE_ID" --json
 acs memory query --query "Alpha report" --scope project --json
 acs context build --intent answer_project_question --query "Alpha report" \
   --scope project --budget 4000 --json
 ```
 
-Expected result: `memory query` returns the committed procedure and
-`context build` returns a `ctx_...` capsule with that memory included. In the
-Python reference implementation, `--intent` remains the categorical capsule
-purpose while `--query` supplies retrieval text.
+Expected result: the query finds the committed procedure, and the `ctx_...`
+capsule includes its memory reference. `--intent` describes the task category;
+`--query` supplies retrieval text. The reference budget limits selected memory
+lines, not the total tokens of a later model request.
 
-### Validation Adapters
+For an exact package version and more detail, use the
+[PyPI quickstart](docs/QUICKSTART_PYPI.md). For editable installation and checks,
+see [Contributing](CONTRIBUTING.md).
 
-```bash
-acs benchmark generate --suite memory_critical --count 20 --json
-acs benchmark run --mode baseline_no_memory --json
-acs benchmark run --mode oacs_memory_call_loop --json
-acs benchmark compare --json
-```
+### Core concepts
 
-Benchmarks are validation fixtures for the memory/context contract, not the
-purpose of OACS. `oacs_memory_call_loop` records deterministic OACS
-`memory_calls` such as `memory.query` and `memory.extract_evidence`; benchmark
-scoring stays in the benchmark adapter. Task pack import/download is schema and
-checksum validated; downloads require explicit `--allow-network`.
-`oacs_memory_call_loop` is the preferred execution path for benchmark and
-product validation. `oacs_memory_loop` remains a broad Context Capsule
-compatibility mode.
+- **MemoryRecord**: scoped memory with lifecycle, depth, encrypted content, and
+  evidence. D0-D2 records and D3-D5 hypotheses have different evidence rules.
+- **ContextCapsule**: portable context selected for a task, with permissions,
+  evidence references, and forbidden assumptions.
+- **CapabilityGrant**: actor permissions constrained by operation, scope,
+  namespace, and memory depth.
+- **EvidenceRef**: provenance for observations and decisions. Tool results
+  enter capsule evidence through included memories that reference them.
+- **ProtectedRef**: a reference to an external secret or protected value;
+  plaintext and vault state remain outside OACS.
+- **memory_calls**: auditable memory operation traces, not final model answers.
 
-Current technical reports:
+### Try the local demo
 
-- `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`
-- `examples/benchmarks/full_context_gemma_e2b_2026-05-02.md`
-- `examples/benchmarks/community_memory_gemma_e2b_2026-05-02.md`
-
-### Killer Demo
-
-The local killer demo proves the public product story without a hosted service,
-network access, LM Studio, or a running model. It writes one scoped memory,
-builds and exports a Context Capsule, validates the export envelope, records
-`memory_calls`, imports MCP metadata as an adapter boundary, verifies the audit
-chain, and links the checked-in full-context benchmark comparison.
+From a [source checkout](CONTRIBUTING.md#development-setup):
 
 ```bash
-python3 examples/killer_demo/run_demo.py --out .oacs/killer-demo --force
+python examples/killer_demo/run_demo.py --out .oacs/killer-demo
 ```
 
-Raw artifacts are written to the output directory; start with `SUMMARY.md` and
-`summary.json`.
+The demo writes a memory, builds and exports a capsule, checks the export,
+records memory operations, imports MCP metadata, and verifies the audit chain.
+It runs offline without LM Studio or a model. Read the generated `SUMMARY.md`
+and `summary.json`; see the [demo guide](examples/killer_demo/README.md).
 
-Tool onboarding is documented in `docs/TOOL_BINDINGS.md`.
-Long agent workflow conveniences such as `acs status`, `acs resume`,
-`acs checkpoint`, `acs run`, and project deny-pattern policy helpers are
-documented in `docs/AGENT_WORKFLOW.md`.
-Prompt rendering guidance for presenting a `ContextCapsule` to a model without
-flattening facts, hypotheses, evidence refs, tool observations, rules, and
-forbidden assumptions into one narrative is documented in
-`docs/CONTEXT_PROMPTING.md`; see `examples/context_prompting/` and
-`acs context build --render-prompt` for the reference adapter path.
+### Documentation
 
-### Development Dogfood
+| Goal | Guide |
+| --- | --- |
+| Understand memory and context | [Memory model](docs/MEMORY_MODEL.md), [capsules](docs/CONTEXT_CAPSULES.md), [memory loop](docs/MEMORY_LOOP.md) |
+| Pass context to a model | [Context prompting](docs/CONTEXT_PROMPTING.md) |
+| Integrate tools and services | [API](docs/API.md), [tools](docs/TOOL_BINDINGS.md), [MCP](docs/MCP_BINDINGS.md), [skills](docs/SKILLS.md) |
+| Use OACS during repository work | [Agent workflow](docs/AGENT_WORKFLOW.md), [consumer packs](docs/CONSUMER_PACKS.md), [dogfood](docs/DOGFOOD.md) |
+| Evaluate the implementation | [Conformance](conformance/README.md), [benchmarks](docs/BENCHMARK.md) |
+| Develop or release | [Contributing](CONTRIBUTING.md), [build](docs/BUILD.md), [release](docs/RELEASE.md), [roadmap](docs/ROADMAP.md) |
 
-Optional source-checkout dogfood lives in the removable
-`codex_oacs_runtime` skill under `examples/skills/`. It is not part of the
-standard surface or the minimal installed-package path:
+The [documentation index](docs/README.md) covers all guides and reference material.
 
-```bash
-acs skill scan examples/skills --json
-acs skill run codex_oacs_runtime \
-  --payload '{"action":"capture","task":"tighten memory_calls","summary":"Removed benchmark-specific shortcuts and kept selector metadata typed.","cwd":"."}' --json
-acs skill run codex_oacs_runtime \
-  --payload '{"action":"context","task":"continue OACS development","cwd":"."}' --json
-```
+### Security and limits
 
-The dogfood skill is a source-checkout adapter. Auto mode commits only D1 repo
-episodes; D2/D3 memory remains explicit review.
+Memory and sensitive capsule payloads are encrypted at rest. The default local
+key provider, `local_unlocked`, stores key material beside the local database;
+encryption does not protect against someone who can read both. Keep `.oacs/`
+private and out of version control. Passphrase wrapping is available.
 
-Consumer packs for projecting the same OACS-backed repository workflow into
-Codex, Claude, and Cursor local instruction surfaces are documented in
-`docs/CONSUMER_PACKS.md`.
+Local setup uses development bootstrap permissions. Use
+`OACS_POLICY_MODE=strict` with explicit grants when bootstrap access is not
+appropriate. Read [Security](docs/SECURITY.md) and the
+[external vault boundary](docs/VAULT.md) before handling sensitive data.
 
-### LM Studio
-
-Start LM Studio with an OpenAI-compatible server at `http://localhost:1234/v1`.
-The model name is configurable:
-
-```bash
-export OACS_LMSTUDIO_BASE_URL=http://localhost:1234/v1
-export OACS_LMSTUDIO_MODEL=gemma-4-e2b
-acs benchmark run --mode oacs_memory_call_loop --provider lmstudio --model "$OACS_LMSTUDIO_MODEL" --json
-```
-
-Unit tests do not require LM Studio; integration tests skip when the server is
-unavailable.
-
-### Build Pipeline
-
-GitHub Actions runs lint, typecheck, tests, package build, wheel install, and
-CLI smoke checks. Public package publishing uses trusted publishing and the
-checklist in `docs/RELEASE.md`; see `docs/BUILD.md` for local build parity.
-
-### Security Model
-
-Memory and sensitive capsule payloads are encrypted before they are written to
-SQLite. For local repository development, the default provider is
-`local_unlocked`: `acs key init` creates ignored local key material and no
-passphrase handoff is required between agents sharing the same workspace. Use
-`acs key init --passphrase "$OACS_PASSPHRASE"` when you want passphrase-based
-wrapping. Existing passphrase-wrapped local stores can be converted with
-`acs key drop-passphrase --passphrase "$OACS_PASSPHRASE"`. OS keychain support is
-the intended external provider path for stronger local storage; until that
-adapter is present, use an external vault/keychain through `ProtectedRef` rather
-than storing secret plaintext in OACS. PQC is a key-wrapping integration point
-only; no fake post-quantum claims are made when optional PQ libraries are absent.
-
-OACS is not a vault. Protected values are represented as external `ProtectedRef`
-records; secret storage, rotation, revocation, and plaintext release belong to
-external vaults or runtime adapters. See `docs/VAULT.md`.
-
-Context permissions are operation-specific: read/explain access is distinct from
-export/import and mount/lock/reduce/expand. The reference runtime defaults to dev
-bootstrap behavior for local setup and supports `OACS_POLICY_MODE=strict` when
-`None`, empty actor, and `system` must use ordinary grants.
-
-### Limitations
-
-This is a local reference implementation, not a hosted multi-tenant system. MCP
-execution is modeled through typed bindings and imported tool metadata, with
-optional stdio execution guarded by `tool.call` capabilities. Retrieval is
-pluggable, but deterministic lexical/structured retrieval is the baseline.
-Embeddings are optional adapters, not a core requirement. Tiny tasks can show
-OACS overhead; medium and long memory tasks are the current strength.
+This is a local reference implementation, not a hosted multi-tenant service.
+Retrieval is deterministic and lexical by default; embeddings and model
+execution are optional adapters. Benchmark results describe specific fixtures
+and models, not a general performance guarantee. Post-quantum key wrapping is
+an optional integration, not a default security claim.
 
 ## RU
-OACS - open lower-layer standard contract для агентской памяти и контекста:
-`MemoryRecord`, `ContextCapsule`, `CapabilityGrant`, `EvidenceRef`, auditable
-`memory_calls` и adapter boundaries. Встроенный CLI `acs` является reference
-local interface к этому contract.
 
-OACS не заменяет MCP. MCP описывает совместимость tools/server. OACS описывает,
-как агент собирает и контролирует контекст до вызова модели или MCP tool.
+OACS определяет, как агенты сохраняют память, находят подтверждающие данные и
+собирают контекст с явными разрешениями и журналом аудита. Репозиторий содержит
+**стандарт OACS v1.0** и **эталонную реализацию на Python**: пакет `oacs`, CLI
+`acs`, хранилище SQLite и интерфейс FastAPI.
 
-Также это не agent framework, model backend, vector database или benchmark
-harness. Такие системы могут находиться выше или рядом с OACS и вызывать его
-memory, context, capability и audit operations.
+OACS помогает сохранять знания о проекте между сессиями, объяснять состав
+контекста и связывать результаты инструментов с доказательствами. MCP отвечает
+за связь инструментов и серверов, OACS управляет памятью и контекстом вокруг
+этих вызовов. Это не агентский фреймворк, поставщик моделей или хранилище секретов.
 
-### Стандарт и reference implementation
+### Стандарт и эталонная реализация
 
-- **OACS v1.0 standard:** терминология, lifecycle, формат capsule, security
-  model и JSON contracts в `docs/` и `schemas/`.
-- **Python reference implementation:** локальный пакет `oacs`, CLI `acs`,
-  FastAPI API, SQLite backend, encryption layer, registries, memory loop и
-  validation adapters.
-  Storage идёт через тонкий `StorageBackend` protocol; SQLite является
-  bundled reference backend.
+| Уровень | Содержимое |
+| --- | --- |
+| Переносимый стандарт | Жизненный цикл памяти, капсулы контекста, разрешения, доказательства, семантика аудита и [схемы JSON](schemas/). |
+| Реализация на Python | CLI, HTTP API, SQLite, шифрование, лексический поиск и подготовка контекста для модели. |
+| Адаптеры и примеры | Инструменты, навыки, привязки MCP, работа с репозиторием и тестовые наборы. Они не расширяют стандарт. |
 
-Compatibility policy для v1.0 описана в `docs/COMPATIBILITY.md`.
+Для реализации OACS в другой среде начните со
+[спецификации](docs/SPEC.md) и [политики совместимости](docs/COMPATIBILITY.md).
+Версия стандарта и версия пакета Python различаются; изменения пакета указаны
+в [релизах](https://github.com/mussolene/open-agent-context/releases).
 
-### Core Contracts
+### Быстрый старт
 
-Core standard намеренно небольшой:
-
-- `MemoryRecord`: lifecycle, depth, scope, encrypted content и evidence.
-- `ContextCapsule`: переносимый управляемый контекст для одной задачи.
-- `CapabilityGrant`: actor-scoped permission record.
-- `EvidenceRef` и structured evidence items: поддержка memory/context decisions.
-- `ProtectedRef`: portable reference на external secrets и непубличные
-  infrastructure facts без хранения vault state или plaintext в OACS.
-- `MemoryOperation`, `ContextOperation`, `MemoryLoopRun` и `memory_call`:
-  auditable operation envelopes.
-
-Benchmarks, LM Studio, MCP execution, repo dogfood и task packs являются
-reference adapters. Они валидируют или упражняют contract, но не расширяют его.
-
-### Quickstart
-
-Этот путь даёт первый полезный результат OACS: записать memory, найти её и
-построить explainable Context Capsule.
-
-Публичный путь установки через PyPI описан в `docs/QUICKSTART_PYPI.md`.
+Нужен Python 3.11 или новее. Сервер модели и ключ API не требуются.
+Команды рассчитаны на POSIX shell. В Windows используйте синтаксис своей
+оболочки для активации окружения и переменных среды.
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -e ".[dev,crypto]"
+python -m pip install oacs
 
 export OACS_DB=./.oacs/oacs.db
-
 acs init --json
 acs key init --json
-acs actor create --type human --name "User" --json
 
 CANDIDATE_ID=$(acs memory propose --type procedure --depth 2 --scope project \
   --text "В проекте Alpha отчёты генерируются через make report-safe." --json \
-  | python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])')
-
+  | python -c 'import json,sys; print(json.load(sys.stdin)["id"])')
 acs memory commit "$CANDIDATE_ID" --json
 acs memory query --query "Alpha отчёты" --scope project --json
 acs context build --intent answer_project_question --query "Alpha отчёты" \
   --scope project --budget 4000 --json
 ```
 
-Ожидаемый результат: `memory query` возвращает committed procedure, а
-`context build` возвращает capsule `ctx_...` с этой memory внутри. В Python
-reference implementation `--intent` остаётся категориальным purpose capsule, а
-`--query` передаёт текст для retrieval.
+Запрос должен найти сохранённую процедуру, а капсула `ctx_...` включить ссылку
+на неё. `--intent` задаёт категорию задачи, `--query` передаёт текст поиска.
+Бюджет ограничивает выбранные строки памяти, а не весь будущий запрос к модели.
 
-### Validation adapters
+Установка конкретной версии описана в [руководстве PyPI](docs/QUICKSTART_PYPI.md).
+Установка из исходников и проверки: [участие в разработке](CONTRIBUTING.md).
 
-```bash
-acs benchmark generate --suite memory_critical --count 20 --json
-acs benchmark run --mode baseline_no_memory --json
-acs benchmark run --mode oacs_memory_call_loop --json
-acs benchmark compare --json
-```
+### Основные понятия
 
-Benchmarks - это validation fixtures для memory/context contract, а не цель
-OACS. `oacs_memory_call_loop` записывает deterministic OACS `memory_calls`,
-например `memory.query` и `memory.extract_evidence`; scoring остаётся в
-benchmark adapter. Import/download task packs валидируется по schema и
-checksum; downloads требуют явный `--allow-network`.
-`oacs_memory_call_loop` - preferred execution path для benchmark и product
-validation. `oacs_memory_loop` остаётся broad Context Capsule compatibility
-mode.
+- **MemoryRecord**: память с областью действия, жизненным циклом, глубиной,
+  зашифрованным содержимым и доказательствами. Для D0-D2 и гипотез D3-D5
+  действуют разные правила использования доказательств.
+- **ContextCapsule**: контекст задачи с разрешениями, ссылками на доказательства
+  и запрещёнными предположениями.
+- **CapabilityGrant**: разрешения участника по операциям, области действия,
+  пространству имён и глубине памяти.
+- **EvidenceRef**: происхождение наблюдений и решений. Результаты инструментов
+  попадают в доказательства капсулы через включённые записи памяти со ссылками
+  на эти результаты.
+- **ProtectedRef**: ссылка на внешний секрет или защищённое значение без
+  переноса открытого содержимого и состояния хранилища в OACS.
+- **memory_calls**: журнал операций с памятью, а не готовые ответы модели.
 
-Текущие technical reports:
+### Локальная демонстрация
 
-- `examples/benchmarks/memory_calls_gemma_e2b_2026-05-01.md`
-- `examples/benchmarks/full_context_gemma_e2b_2026-05-02.md`
-- `examples/benchmarks/community_memory_gemma_e2b_2026-05-02.md`
-
-### Killer Demo
-
-Локальное killer demo доказывает публичный product story без hosted service,
-network access, LM Studio или запущенной модели. Оно пишет одну scoped memory,
-строит и экспортирует Context Capsule, валидирует export envelope, записывает
-`memory_calls`, импортирует MCP metadata как adapter boundary, проверяет audit
-chain и ссылается на checked-in full-context benchmark comparison.
+После [установки из исходников](CONTRIBUTING.md):
 
 ```bash
-python3 examples/killer_demo/run_demo.py --out .oacs/killer-demo --force
+python examples/killer_demo/run_demo.py --out .oacs/killer-demo
 ```
 
-Raw artifacts пишутся в output directory; начинать стоит с `SUMMARY.md` и
-`summary.json`.
+Пример сохраняет память, собирает и экспортирует капсулу, проверяет экспорт,
+записывает операции памяти, импортирует метаданные MCP и проверяет цепочку
+аудита. Он работает без сети, LM Studio и модели. Результат находится в
+`SUMMARY.md` и `summary.json`; подробнее в [руководстве](examples/killer_demo/README.md).
 
-Tool onboarding описан в `docs/TOOL_BINDINGS.md`. Длинный agent workflow UX:
-`acs status`, `acs resume`, `acs checkpoint`, `acs run` и project deny-pattern
-policy helpers описаны в `docs/AGENT_WORKFLOW.md`.
-Prompt rendering guidance для передачи `ContextCapsule` модели без смешивания
-facts, hypotheses, evidence refs, tool observations, rules и forbidden
-assumptions в один narrative описан в `docs/CONTEXT_PROMPTING.md`; reference
-adapter path см. в `examples/context_prompting/` и
-`acs context build --render-prompt`.
+### Документация
 
-### Development dogfood
+| Задача | Руководство |
+| --- | --- |
+| Разобраться в памяти и контексте | [Модель памяти](docs/MEMORY_MODEL.md), [капсулы](docs/CONTEXT_CAPSULES.md), [цикл памяти](docs/MEMORY_LOOP.md) |
+| Передать контекст модели | [Подготовка контекста](docs/CONTEXT_PROMPTING.md) |
+| Подключить инструменты и сервисы | [API](docs/API.md), [инструменты](docs/TOOL_BINDINGS.md), [MCP](docs/MCP_BINDINGS.md), [навыки](docs/SKILLS.md) |
+| Применить OACS в репозитории | [Работа агента](docs/AGENT_WORKFLOW.md), [пакеты интеграции](docs/CONSUMER_PACKS.md), [проверка на собственном проекте](docs/DOGFOOD.md) |
+| Проверить реализацию | [Соответствие стандарту](conformance/README.md), [измерения](docs/BENCHMARK.md) |
+| Разрабатывать и выпускать версии | [Участие](CONTRIBUTING.md), [сборка](docs/BUILD.md), [релиз](docs/RELEASE.md), [планы](docs/ROADMAP.md) |
 
-Optional source-checkout dogfood живёт в отключаемом
-`codex_oacs_runtime` skill в `examples/skills/`. Это не часть standard
-surface и не minimal installed-package path:
+Полный список руководств: [оглавление документации](docs/README.md).
 
-```bash
-acs skill scan examples/skills --json
-acs skill run codex_oacs_runtime \
-  --payload '{"action":"capture","task":"tighten memory_calls","summary":"Removed benchmark-specific shortcuts and kept selector metadata typed.","cwd":"."}' --json
-acs skill run codex_oacs_runtime \
-  --payload '{"action":"context","task":"continue OACS development","cwd":"."}' --json
-```
+### Безопасность и ограничения
 
-Dogfood skill является source-checkout adapter. Auto mode коммитит только D1
-repo episodes; D2/D3 memory остаётся под явным review.
+Память и чувствительные данные капсул шифруются перед сохранением. Локальный
+поставщик ключей `local_unlocked` по умолчанию хранит ключ рядом с базой:
+шифрование не защищает от того, кто может прочитать оба файла. Не публикуйте
+`.oacs/` и ограничьте доступ к этому каталогу. Доступна защита ключа парольной
+фразой.
 
-Consumer packs для проекции того же OACS-backed repository workflow в локальные
-instruction surfaces Codex, Claude и Cursor описаны в `docs/CONSUMER_PACKS.md`.
+Локальный запуск использует начальные разрешения режима разработки. Если они
+не подходят, используйте `OACS_POLICY_MODE=strict` и явные разрешения.
+Перед работой с чувствительными данными прочитайте
+[модель безопасности](docs/SECURITY.md) и
+[границу внешнего хранилища секретов](docs/VAULT.md).
 
-### LM Studio
+Это локальная эталонная реализация, не сервис для нескольких клиентов.
+Поиск по умолчанию лексический и детерминированный; векторный поиск и вызовы
+моделей относятся к необязательным адаптерам. Результаты измерений относятся к
+конкретным наборам и моделям и не гарантируют общего ускорения. Постквантовая
+защита ключей доступна как необязательная интеграция, не как свойство по умолчанию.
 
-Запустите LM Studio с OpenAI-compatible server на `http://localhost:1234/v1`.
-Модель настраивается:
+## License / Лицензия
 
-```bash
-export OACS_LMSTUDIO_BASE_URL=http://localhost:1234/v1
-export OACS_LMSTUDIO_MODEL=gemma-4-e2b
-acs benchmark run --mode oacs_memory_call_loop --provider lmstudio --model "$OACS_LMSTUDIO_MODEL" --json
-```
-
-Unit tests не требуют LM Studio; integration tests пропускаются, если server
-недоступен.
-
-### Сборочная линия
-
-GitHub Actions запускает lint, typecheck, tests, package build, wheel install и
-CLI smoke checks. Публичные package публикации используют trusted publishing
-и checklist в `docs/RELEASE.md`; локальный build parity описан в
-`docs/BUILD.md`.
-
-### Security model
-
-Memory и sensitive capsule payloads шифруются до записи в SQLite. Для локальной
-repo development работы default provider — `local_unlocked`: `acs key init`
-создаёт ignored local key material, и passphrase не нужно передавать между
-агентами в одном workspace. Если нужно passphrase-based wrapping, используйте
-`acs key init --passphrase "$OACS_PASSPHRASE"`. Существующие локальные базы с
-passphrase можно перевести через `acs key drop-passphrase --passphrase
-"$OACS_PASSPHRASE"`. OS keychain — целевой путь external provider для более
-строгого локального хранения; пока adapter не реализован, используйте внешний
-vault/keychain через `ProtectedRef`, а не записывайте plaintext secrets в OACS.
-PQC - только integration point для key wrapping; если optional PQ libraries
-отсутствуют, проект не делает fake post-quantum claims.
-
-OACS не является vault. Protected values представлены как внешние
-`ProtectedRef` records; secret storage, rotation, revocation и plaintext release
-относятся к external vaults или runtime adapters. См. `docs/VAULT.md`.
-
-Context permissions разделены по операциям: read/explain access отдельно от
-export/import и mount/lock/reduce/expand. Reference runtime по умолчанию
-использует dev bootstrap behavior для local setup и поддерживает
-`OACS_POLICY_MODE=strict`, где `None`, empty actor и `system` используют обычные
-grants.
-
-### Ограничения
-
-Это локальная reference implementation, не hosted multi-tenant service. MCP
-execution представлен typed bindings и импортированной metadata, а optional
-stdio execution защищён `tool.call` capabilities. Retrieval расширяемый, но
-baseline - deterministic lexical/structured retrieval. Embeddings являются
-optional adapters, а не core requirement. Tiny tasks могут показывать OACS
-overhead; medium и long memory tasks сейчас являются сильной стороной.
+[Apache License 2.0](LICENSE).
