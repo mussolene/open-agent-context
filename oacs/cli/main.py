@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -12,6 +13,7 @@ from rich import print as rprint
 
 from oacs import __version__
 from oacs.app import OacsServices, services
+from oacs.benchmark.execution_state import ExecutionStateBenchmark
 from oacs.benchmark.external import AmaBenchImporter, MemoryArenaImporter
 from oacs.benchmark.generator import SyntheticTaskGenerator
 from oacs.benchmark.models import BenchmarkTask
@@ -27,9 +29,12 @@ from oacs.core.ids import new_id
 from oacs.core.json import hash_json
 from oacs.core.time import now_iso
 from oacs.crypto.hybrid_pqc import HybridPQCKeyProvider
+from oacs.loop.execution_state import ExecutionStateError
+from oacs.loop.traces import ExecutionStateTraceStore
 from oacs.rules.models import RuleManifest
 from oacs.skills.models import SkillManifest
 from oacs.skills.runner import run_skill
+from oacs.storage.sqlite import SQLiteStore
 from oacs.tools.models import ToolBinding
 
 app = typer.Typer(help="acs - Agent Context Shell")
@@ -49,6 +54,7 @@ server_app = typer.Typer()
 audit_app = typer.Typer()
 capability_app = typer.Typer()
 checkpoint_app = typer.Typer()
+state_app = typer.Typer(help="Experimental bounded execution state for repository tasks.")
 policy_app = typer.Typer()
 conformance_app = typer.Typer()
 
@@ -68,6 +74,7 @@ app.add_typer(benchmark_app, name="benchmark")
 app.add_typer(server_app, name="server")
 app.add_typer(audit_app, name="audit")
 app.add_typer(checkpoint_app, name="checkpoint")
+app.add_typer(state_app, name="state")
 app.add_typer(policy_app, name="policy")
 app.add_typer(conformance_app, name="conformance")
 
@@ -98,6 +105,37 @@ def emit(data: object, json_out: bool) -> None:
 
 def fail(message: str) -> None:
     raise typer.BadParameter(message)
+
+
+def _json_object_option(value: str, option: str) -> dict[str, object]:
+    try:
+        parsed = json.loads(value)
+    except json.JSONDecodeError as exc:
+        raise typer.BadParameter(
+            f"{option} must be valid JSON: {exc.msg} at line {exc.lineno} column {exc.colno}"
+        ) from None
+    if not isinstance(parsed, dict):
+        raise typer.BadParameter(f"{option} must be a JSON object")
+    return parsed
+
+
+def _validate_evidence_refs(svc: OacsServices, evidence_refs: list[str]) -> None:
+    for evidence_ref in evidence_refs:
+        if re.fullmatch(r"ev_[0-9a-f]{32}", evidence_ref) is None:
+            raise typer.BadParameter(
+                f"invalid evidence ref {evidence_ref!r}; expected ev_ followed by 32 hex characters"
+            )
+        try:
+            svc.evidence.get(evidence_ref)
+        except NotFound:
+            raise typer.BadParameter(f"evidence ref not found: {evidence_ref}") from None
+
+
+def _execution_state_store(db: str | None) -> ExecutionStateTraceStore:
+    svc = services(db, require_key=False)
+    if not isinstance(svc.store, SQLiteStore):
+        raise typer.BadParameter("experimental execution state requires SQLite storage")
+    return ExecutionStateTraceStore(svc.store, svc.audit)
 
 
 def _backup_sqlite_db(svc: OacsServices, label: str) -> str | None:
@@ -151,11 +189,7 @@ def _public_recent(row: dict[str, object]) -> dict[str, object]:
         "created_at",
         "updated_at",
     )
-    return {
-        key: row.get(key)
-        for key in keys
-        if key in row
-    }
+    return {key: row.get(key) for key in keys if key in row}
 
 
 def _policy_payload_text(data: object) -> str:
@@ -292,12 +326,10 @@ def resume(
                 for row in memory_rows
             ],
             "recent_context_capsules": [
-                _public_recent(row) | {"purpose": row.get("purpose")}
-                for row in capsule_rows
+                _public_recent(row) | {"purpose": row.get("purpose")} for row in capsule_rows
             ],
             "recent_audit": [
-                _public_recent(row) | {"metadata": row.get("metadata")}
-                for row in audit_rows
+                _public_recent(row) | {"metadata": row.get("metadata")} for row in audit_rows
             ],
         },
         json_out,
@@ -370,9 +402,7 @@ def run_command(
 
 
 @key_app.command("init")
-def key_init(
-    passphrase: PassOpt = None, db: DbOpt = None, json_out: JsonOpt = False
-) -> None:
+def key_init(passphrase: PassOpt = None, db: DbOpt = None, json_out: JsonOpt = False) -> None:
     """Initialize local key material; omit --passphrase for local_unlocked dev mode."""
     cfg = OacsConfig.from_values(db, passphrase)
     cfg.base_dir.mkdir(parents=True, exist_ok=True)
@@ -383,9 +413,7 @@ def key_init(
         {
             "status": "initialized",
             "public": {
-                k: metadata[k]
-                for k in ("provider", "algorithm_name", "kdf")
-                if k in metadata
+                k: metadata[k] for k in ("provider", "algorithm_name", "kdf") if k in metadata
             },
         },
         json_out,
@@ -1172,17 +1200,19 @@ def checkpoint_add(
     db: DbOpt = None,
     json_out: JsonOpt = False,
 ) -> None:
+    svc = services(db, require_key=False)
+    evidence_refs = evidence or []
+    _validate_evidence_refs(svc, evidence_refs)
     payload = {
         "kind": "checkpoint",
         "task": task,
         "summary": summary,
         "next": next_step,
-        "evidence_refs": evidence or [],
+        "evidence_refs": evidence_refs,
     }
     policy_warnings = _enforce_policy(
         db, "task.checkpoint", {"text": _policy_payload_text(payload)}, json_out
     )
-    svc = services(db, require_key=False)
     now = now_iso()
     record = {
         "id": new_id("trace"),
@@ -1200,7 +1230,7 @@ def checkpoint_add(
         "task.checkpoint",
         actor,
         str(record["id"]),
-        {"task_hash": hash_json(task), "evidence_refs": evidence or []},
+        {"task_hash": hash_json(task), "evidence_refs": evidence_refs},
     )
     emit(record | {"policy_warnings": policy_warnings}, json_out)
 
@@ -1252,6 +1282,111 @@ def checkpoint_list(
         and (task is None or row["payload"].get("task") == task)
     ][:limit]
     emit(checkpoints, json_out)
+
+
+@state_app.command("init")
+def state_init(
+    task: Annotated[str, typer.Option("--task")],
+    goal: Annotated[str | None, typer.Option("--goal")] = None,
+    profile: Annotated[str, typer.Option("--profile")] = "repo_development",
+    max_bytes: Annotated[int, typer.Option("--max-bytes", min=256)] = 16_384,
+    evidence: Annotated[list[str] | None, typer.Option("--evidence")] = None,
+    actor: ActorOpt = None,
+    scope: ScopeOpt = None,
+    namespace: Annotated[str, typer.Option("--namespace")] = "default",
+    db: DbOpt = None,
+    json_out: JsonOpt = False,
+) -> None:
+    if profile != "repo_development":
+        raise typer.BadParameter("only the experimental repo_development profile is supported")
+    svc = services(db, require_key=False)
+    evidence_refs = evidence or []
+    _validate_evidence_refs(svc, evidence_refs)
+    try:
+        record = _execution_state_store(db).initialize(
+            task,
+            goal=goal,
+            actor_id=actor,
+            scope=scope,
+            namespace=namespace,
+            max_bytes=max_bytes,
+            evidence_refs=evidence_refs,
+        )
+    except ExecutionStateError as exc:
+        raise typer.BadParameter(str(exc)) from None
+    emit(record, json_out)
+
+
+@state_app.command("show")
+def state_show(
+    task: Annotated[str, typer.Option("--task")],
+    db: DbOpt = None,
+    json_out: JsonOpt = False,
+) -> None:
+    try:
+        record = _execution_state_store(db).get(task)
+    except NotFound as exc:
+        raise typer.BadParameter(str(exc)) from None
+    emit(record, json_out)
+
+
+@state_app.command("list")
+def state_list(db: DbOpt = None, json_out: JsonOpt = False) -> None:
+    emit(_execution_state_store(db).list(), json_out)
+
+
+@state_app.command("patch")
+def state_patch(
+    task: Annotated[str, typer.Option("--task")],
+    expected_revision: Annotated[int, typer.Option("--expected-revision", min=0)],
+    patch_payload: Annotated[str, typer.Option("--patch")],
+    observation_payload: Annotated[str, typer.Option("--observation")],
+    quality: Annotated[str, typer.Option("--quality")] = "unknown",
+    evidence: Annotated[list[str] | None, typer.Option("--evidence")] = None,
+    actor: ActorOpt = None,
+    db: DbOpt = None,
+    json_out: JsonOpt = False,
+) -> None:
+    patch = _json_object_option(patch_payload, "--patch")
+    observation = _json_object_option(observation_payload, "--observation")
+    svc = services(db, require_key=False)
+    evidence_refs = evidence or []
+    _validate_evidence_refs(svc, evidence_refs)
+    try:
+        record = _execution_state_store(db).patch(
+            task,
+            patch,
+            observation,
+            expected_revision=expected_revision,
+            quality=quality,
+            actor_id=actor,
+            evidence_refs=evidence_refs,
+        )
+    except (ExecutionStateError, NotFound) as exc:
+        raise typer.BadParameter(str(exc)) from None
+    emit(record, json_out)
+
+
+@state_app.command("metrics")
+def state_metrics(db: DbOpt = None, json_out: JsonOpt = False) -> None:
+    emit(_execution_state_store(db).metrics(), json_out)
+
+
+@state_app.command("remove")
+def state_remove(
+    task: Annotated[str, typer.Option("--task")],
+    confirm: Annotated[bool, typer.Option("--confirm")] = False,
+    actor: ActorOpt = None,
+    db: DbOpt = None,
+    json_out: JsonOpt = False,
+) -> None:
+    if not confirm:
+        raise typer.BadParameter("--confirm is required to remove execution state")
+    try:
+        result = _execution_state_store(db).remove(task, actor)
+    except NotFound as exc:
+        raise typer.BadParameter(str(exc)) from None
+    emit(result, json_out)
 
 
 @rule_app.command("list")
@@ -1436,12 +1571,8 @@ def tool_ingest_result(
     json_out: JsonOpt = False,
 ) -> None:
     svc = services(db, require_key=False)
-    parsed_input = json.loads(input_payload)
-    parsed_output = json.loads(output)
-    if not isinstance(parsed_input, dict):
-        raise typer.BadParameter("--input must be a JSON object")
-    if not isinstance(parsed_output, dict):
-        raise typer.BadParameter("--output must be a JSON object")
+    parsed_input = _json_object_option(input_payload, "--input")
+    parsed_output = _json_object_option(output, "--output")
     policy_warnings = _enforce_policy(
         db,
         "evidence.ingest",
@@ -1540,9 +1671,7 @@ def loop_run(
     agent: AgentOpt = None,
     scope: ScopeOpt = None,
     budget: Annotated[int, typer.Option("--budget")] = 4000,
-    memory_calls: Annotated[
-        bool | None, typer.Option("--memory-calls/--no-memory-calls")
-    ] = None,
+    memory_calls: Annotated[bool | None, typer.Option("--memory-calls/--no-memory-calls")] = None,
     allow_deepening: Annotated[bool, typer.Option("--deepening/--no-deepening")] = True,
     context_policy: Annotated[str, typer.Option("--context-policy")] = "auto",
     db: DbOpt = None,
@@ -1599,6 +1728,34 @@ def benchmark_generate(
     tasks = SyntheticTaskGenerator().generate(suite, count)
     _store_benchmark_tasks(svc, tasks)
     emit([t.model_dump() for t in tasks], json_out)
+
+
+@benchmark_app.command("execution-state")
+def benchmark_execution_state(
+    latency_iterations: Annotated[int, typer.Option("--latency-iterations", min=1)] = 2000,
+    db: DbOpt = None,
+    json_out: JsonOpt = False,
+) -> None:
+    svc = services(db, require_key=False)
+    rows = svc.store.list(
+        "task_traces",
+        order_by=[("created_at", "asc"), ("id", "asc")],
+        limit=None,
+    )
+    grouped: dict[str, list[dict[str, object]]] = {}
+    for row in rows:
+        payload = row.get("payload")
+        if not isinstance(payload, dict) or payload.get("kind") != "checkpoint":
+            continue
+        task = payload.get("task")
+        if isinstance(task, str):
+            grouped.setdefault(task, []).append(payload)
+    if not grouped:
+        raise typer.BadParameter("execution-state replay requires at least one checkpoint")
+    result = ExecutionStateBenchmark().run_decision_suite(
+        list(grouped.values()), latency_iterations=latency_iterations
+    )
+    emit(result, json_out)
 
 
 @benchmark_app.command("import-memoryarena")

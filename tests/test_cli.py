@@ -12,7 +12,7 @@ from oacs.context.capsule import ContextCapsule
 def test_cli_version():
     result = CliRunner().invoke(app, ["--version"])
     assert result.exit_code == 0
-    assert result.output.strip() == "acs 1.0.21"
+    assert result.output.strip() == "acs 1.1.0a1"
 
 
 def test_cli_context_decision_command_is_not_exposed():
@@ -365,6 +365,74 @@ def test_cli_checkpoint_resume_and_run(tmp_path):
     resume_payload = json.loads(resume.output)
     assert resume_payload["latest_checkpoint"]["summary"] == "status implemented"
     assert resume_payload["recent_tool_results"][0]["payload"]["output"]["label"] == "python smoke"
+
+
+def test_cli_checkpoint_validates_evidence_refs(tmp_path):
+    db = tmp_path / "oacs.db"
+    runner = CliRunner()
+    assert runner.invoke(app, ["init", "--db", str(db), "--json"]).exit_code == 0
+
+    ingest = runner.invoke(
+        app,
+        [
+            "tool",
+            "ingest-result",
+            "--db",
+            str(db),
+            "--tool-id",
+            "verification",
+            "--output",
+            '{"result":"PASS"}',
+            "--json",
+        ],
+    )
+    assert ingest.exit_code == 0, ingest.output
+    evidence_ref = json.loads(ingest.output)["evidence_ref"]
+
+    accepted = runner.invoke(
+        app,
+        [
+            "checkpoint",
+            "add",
+            "--db",
+            str(db),
+            "--task",
+            "validated evidence",
+            "--summary",
+            "complete",
+            "--evidence",
+            evidence_ref,
+            "--json",
+        ],
+    )
+    assert accepted.exit_code == 0, accepted.output
+    assert json.loads(accepted.output)["payload"]["evidence_refs"] == [evidence_ref]
+
+    for invalid_ref, expected_message in (
+        ("ev_PLACEHOLDER", "invalid evidence ref"),
+        ("free-text-result", "invalid evidence ref"),
+        ("ev_00000000000000000000000000000000", "evidence ref not found"),
+    ):
+        rejected = runner.invoke(
+            app,
+            [
+                "checkpoint",
+                "add",
+                "--db",
+                str(db),
+                "--task",
+                "invalid evidence",
+                "--summary",
+                "must fail",
+                "--evidence",
+                invalid_ref,
+            ],
+            env={"COLUMNS": "200", "NO_COLOR": "1"},
+            color=False,
+        )
+        assert rejected.exit_code != 0
+        assert expected_message in rejected.output
+        assert "Traceback" not in rejected.output
 
 
 def test_cli_policy_deny_pattern_blocks_memory_and_ingest(tmp_path):

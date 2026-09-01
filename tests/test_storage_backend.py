@@ -90,3 +90,32 @@ def test_sqlite_store_implements_storage_backend_protocol(tmp_path) -> None:
 
     repo.delete("trace_1")
     assert backend.get("task_traces", "trace_1") is None
+
+
+def test_sqlite_compare_and_swap_rejects_stale_record(tmp_path) -> None:
+    backend = SQLiteStore(tmp_path / "oacs.db")
+    initialize_backend(backend)
+    original = {
+        "id": "state_1",
+        "payload": {"revision": 0},
+        "created_at": "2026-05-01T00:00:00Z",
+        "updated_at": "2026-05-01T00:00:00Z",
+        "status": "active",
+        "namespace": "default",
+        "scope": ["project"],
+        "owner_actor_id": None,
+        "content_hash": "hash-0",
+    }
+    first_update = original | {
+        "payload": {"revision": 1},
+        "content_hash": "hash-1",
+    }
+    stale_update = original | {
+        "payload": {"revision": 2},
+        "content_hash": "hash-2",
+    }
+
+    assert backend.compare_and_swap_json("task_traces", original, None) is True
+    assert backend.compare_and_swap_json("task_traces", first_update, "hash-0") is True
+    assert backend.compare_and_swap_json("task_traces", stale_update, "hash-0") is False
+    assert backend.get("task_traces", "state_1")["payload"] == {"revision": 1}

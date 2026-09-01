@@ -2,7 +2,25 @@
 
 ## Unreleased
 
+## 1.1.0a1 - 2026-09-01
+
+### Added
+
+- Added an experimental bounded `ExecutionState` runtime with schema-validated
+  merge patches, optimistic revisions, and prompt-growth benchmarks.
+- Added SQLite-backed `acs state init`, `show`, `list`, `patch`, `metrics`, and
+  `remove` commands using the existing `task_traces` storage boundary.
+- Added per-task telemetry and explicit KEEP, REJECT, and INSUFFICIENT_DATA
+  decisions for the one-week repository trial.
+
 ### Changed
+
+- Added atomic compare-and-swap writes for SQLite JSON records used by the
+  experimental state runtime.
+- Strengthened checkpoint evidence reference validation and JSON CLI error
+  handling.
+- Updated dependency locks and editable-install packaging behavior without
+  changing the portable OACS v1 schema or conformance contract.
 
 - Reorganized the bilingual README and contributor guide around installation,
   standard boundaries, repository structure, and verification.

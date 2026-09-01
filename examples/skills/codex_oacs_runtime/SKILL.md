@@ -109,6 +109,41 @@ acs checkpoint add \
 7. Only sharpen durable memory from evidence-backed facts. Do not turn hunches,
    chat summaries, or unverified conclusions into D2+ memory.
 
+## Experimental Execution State
+
+Use the bounded state experiment only for substantial repository tasks likely
+to require at least ten turns. Tiny tasks continue to use ordinary context and
+checkpoints. The experiment does not launch or manage a model.
+
+Initialize one state with a stable task id, then read its current revision
+before every patch:
+
+```bash
+acs state init --task "<task-id>" --goal "<goal>" --scope project --json
+acs state show --task "<task-id>" --json
+acs state patch \
+  --task "<task-id>" \
+  --expected-revision <revision> \
+  --patch '{"phase":"verification","next_steps":["run tests"]}' \
+  --observation '{"command":"pytest -q","status":"PASS"}' \
+  --quality pass \
+  --json
+```
+
+Patch only compact working state. Keep raw command output in evidence and keep
+completed iteration summaries in checkpoints. A revision conflict requires a
+fresh `state show`; never overwrite another writer blindly.
+
+Review trial metrics with `acs state metrics --json`. KEEP requires at least
+three tasks with ten turns each, zero reported quality failures, no more than a
+five percent combined rejection and conflict rate, and at least a two-times
+cumulative byte reduction. Otherwise the result is REJECT or
+INSUFFICIENT_DATA. Remove state only after the evaluation decision:
+
+```bash
+acs state remove --task "<task-id>" --confirm --json
+```
+
 ## Context Assembly Rules
 
 Build a new task capsule when intent changes materially. Keep the prompt-facing

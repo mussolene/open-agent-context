@@ -9,7 +9,7 @@ def test_wheel_includes_top_level_schemas():
     build = pyproject["tool"]["hatch"]["build"]
     wheel = pyproject["tool"]["hatch"]["build"]["targets"]["wheel"]
     sdist = pyproject["tool"]["hatch"]["build"]["targets"]["sdist"]
-    assert build["dev-mode-exact"] is True
+    assert build.get("dev-mode-exact", False) is False
     assert wheel["force-include"]["schemas"] == "schemas"
     assert sdist["force-include"]["schemas"] == "schemas"
     assert wheel["force-include"]["conformance"] == "conformance"
@@ -23,12 +23,12 @@ def test_public_package_metadata_is_release_ready():
     urls = project["urls"]
 
     assert project["name"] == "oacs"
-    assert project["version"] == "1.0.21"
+    assert project["version"] == "1.1.0a1"
     assert "Open Agent Context Standard" in project["description"]
     assert "Development Status :: 5 - Production/Stable" in project["classifiers"]
     assert "License :: OSI Approved :: Apache Software License" in project["classifiers"]
     assert "release" in optional
-    assert "twine>=5" in optional["release"]
+    assert "twine>=7" in optional["release"]
     assert urls["Repository"].endswith("/open-agent-context")
     assert urls["Changelog"].endswith("/CHANGELOG.md")
 

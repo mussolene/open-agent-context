@@ -4,13 +4,15 @@
 
 ## EN
 
-Install the current Python reference release of OACS v1.0. Requires Python
-3.11 or later; no model server or API key is needed. Commands use a POSIX shell.
+Install the current experimental Python reference release of OACS v1.0.
+Requires Python 3.11 or later; no model server or API key is needed. The alpha
+package is published through TestPyPI, while dependencies still resolve from
+PyPI. Commands use a POSIX shell.
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install oacs==1.0.21
+python -m pip install oacs==1.1.0a1 --extra-index-url https://test.pypi.org/simple/
 
 export OACS_DB=./.oacs/oacs.db
 
@@ -49,14 +51,15 @@ python examples/killer_demo/run_demo.py --out .oacs/killer-demo
 
 ## RU
 
-Установка текущего релиза эталонной реализации OACS v1.0 на Python. Нужен
-Python 3.11 или новее; сервер модели и ключ API не требуются. Команды
+Установка текущего экспериментального релиза эталонной реализации OACS v1.0
+на Python. Нужен Python 3.11 или новее; сервер модели и ключ API не требуются.
+Альфа-версия публикуется через TestPyPI, зависимости остаются в PyPI. Команды
 рассчитаны на POSIX shell.
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install oacs==1.0.21
+python -m pip install oacs==1.1.0a1 --extra-index-url https://test.pypi.org/simple/
 
 export OACS_DB=./.oacs/oacs.db
 

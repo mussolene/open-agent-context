@@ -524,6 +524,28 @@ def test_cli_ingests_external_tool_result(tmp_path) -> None:
     assert [record["id"] for record in evidence_refs] == [body["evidence_ref"]]
 
 
+def test_cli_ingest_result_reports_invalid_json_without_traceback(tmp_path) -> None:
+    result = CliRunner().invoke(
+        app,
+        [
+            "tool",
+            "ingest-result",
+            "--db",
+            str(tmp_path / "oacs.db"),
+            "--tool-id",
+            "external_cli",
+            "--output",
+            "{invalid",
+        ],
+        env={"COLUMNS": "200", "NO_COLOR": "1"},
+        color=False,
+    )
+
+    assert result.exit_code != 0
+    assert "--output must be valid JSON" in result.output
+    assert "Traceback" not in result.output
+
+
 def test_cli_grant_evidence_helper_allows_tool_result_ingest(tmp_path) -> None:
     db = tmp_path / "oacs.db"
     runner = CliRunner()

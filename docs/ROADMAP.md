@@ -5,9 +5,9 @@ This roadmap keeps the OACS v1.0 standard small. Core work must define
 memory, context, permissions, audit, and deterministic operation contracts.
 Reference adapters prove integration, but they do not expand the standard.
 
-### Current Position: v1.0.21 Released / Post-1.0 Hardening
+### Current Position: v1.1.0a1 Released / Post-1.0 Hardening
 
-OACS is currently at `v1.0.21`. The portable v1.0 standard surface is still the
+OACS is currently testing `v1.1.0a1`. The portable v1.0 standard surface is still the
 stable JSON records, lifecycle, capability, audit, evidence, context, and
 conformance contract. Post-1.0 work is hardening reference adapters and consumer
 packs around that contract without adding local workflow protocols to the
@@ -49,6 +49,14 @@ Core contract:
 
 Reference adapters:
 
+- Experimental: a bounded `ExecutionState` adapter validates atomic merge
+  patches, optimistic revisions, caller-provided JSON Schema, and size limits.
+  Its deterministic benchmark compares prompt growth with append-only history;
+  an in-process `StatefulMemoryLoopAdapter` prepares typed task, governed
+  context, state, observation, and output-contract sections. SQLite-backed
+  `acs state` commands persist this adapter in existing task traces and collect
+  one-week KEEP/REJECT telemetry. None of this is part of the OACS v1 portable
+  or persistence contract.
 - Done: CLI/API, SQLite storage, retrieval providers, tools/skills/MCP bindings,
   validation fixtures, LM Studio reporting, and CI build checks exercise the
   contract without expanding conformance.
@@ -252,9 +260,9 @@ Reference adapters:
 определять memory, context, permissions, audit и deterministic operation
 contracts. Reference adapters доказывают интеграцию, но не расширяют стандарт.
 
-### Текущая позиция: v1.0.21 Released / Post-1.0 hardening
+### Текущая позиция: v1.1.0a1 Experimental / Post-1.0 hardening
 
-OACS сейчас находится на `v1.0.21`. Portable v1.0 standard surface всё ещё
+OACS сейчас тестирует `v1.1.0a1`. Portable v1.0 standard surface всё ещё
 состоит из stable JSON records, lifecycle, capability, audit, evidence, context
 и conformance contract. Post-1.0 работа усиливает reference adapters и consumer
 packs вокруг этого contract, не добавляя локальные workflow protocols в
@@ -294,6 +302,14 @@ Core contract:
 
 Reference adapters:
 
+- Эксперимент: ограниченный адаптер `ExecutionState` проверяет атомарные merge
+  patches, оптимистические ревизии, переданную вызывающей стороной JSON Schema и
+  ограничение размера. Детерминированный benchmark сравнивает рост prompt с
+  append-only history; внутрипроцессный `StatefulMemoryLoopAdapter` подготавливает
+  типизированные секции задачи, governed context, состояния, наблюдения и output
+  contract. Команды `acs state` сохраняют адаптер в существующих task traces и
+  собирают недельную KEEP/REJECT telemetry. Этот механизм не входит в portable
+  или persistence contract OACS v1.
 - Готово: CLI/API, SQLite storage, retrieval providers, tools/skills/MCP
   bindings, validation fixtures, LM Studio reporting и CI build checks
   упражняют contract, не расширяя conformance.
