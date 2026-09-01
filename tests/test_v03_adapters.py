@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import pytest
+from click import unstyle
 from fastapi.testclient import TestClient
 from typer.testing import CliRunner
 
@@ -542,8 +543,9 @@ def test_cli_ingest_result_reports_invalid_json_without_traceback(tmp_path) -> N
     )
 
     assert result.exit_code != 0
-    assert "--output must be valid JSON" in result.output
-    assert "Traceback" not in result.output
+    plain_output = unstyle(result.output)
+    assert "--output must be valid JSON" in plain_output
+    assert "Traceback" not in plain_output
 
 
 def test_cli_grant_evidence_helper_allows_tool_result_ingest(tmp_path) -> None:

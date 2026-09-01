@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 1.1.0a2 - 2026-09-01
+
+### Fixed
+
+- Made the invalid-JSON CLI regression test independent of terminal styling so
+  it passes with current Typer releases on both supported Python versions.
+
 ## 1.1.0a1 - 2026-09-01
 
 ### Added

@@ -12,7 +12,7 @@ PyPI. Commands use a POSIX shell.
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install oacs==1.1.0a1 --extra-index-url https://test.pypi.org/simple/
+python -m pip install oacs==1.1.0a2 --extra-index-url https://test.pypi.org/simple/
 
 export OACS_DB=./.oacs/oacs.db
 
@@ -59,7 +59,7 @@ python examples/killer_demo/run_demo.py --out .oacs/killer-demo
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install oacs==1.1.0a1 --extra-index-url https://test.pypi.org/simple/
+python -m pip install oacs==1.1.0a2 --extra-index-url https://test.pypi.org/simple/
 
 export OACS_DB=./.oacs/oacs.db
 

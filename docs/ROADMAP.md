@@ -5,9 +5,9 @@ This roadmap keeps the OACS v1.0 standard small. Core work must define
 memory, context, permissions, audit, and deterministic operation contracts.
 Reference adapters prove integration, but they do not expand the standard.
 
-### Current Position: v1.1.0a1 Released / Post-1.0 Hardening
+### Current Position: v1.1.0a2 Released / Post-1.0 Hardening
 
-OACS is currently testing `v1.1.0a1`. The portable v1.0 standard surface is still the
+OACS is currently testing `v1.1.0a2`. The portable v1.0 standard surface is still the
 stable JSON records, lifecycle, capability, audit, evidence, context, and
 conformance contract. Post-1.0 work is hardening reference adapters and consumer
 packs around that contract without adding local workflow protocols to the
@@ -260,9 +260,9 @@ Reference adapters:
 определять memory, context, permissions, audit и deterministic operation
 contracts. Reference adapters доказывают интеграцию, но не расширяют стандарт.
 
-### Текущая позиция: v1.1.0a1 Experimental / Post-1.0 hardening
+### Текущая позиция: v1.1.0a2 Experimental / Post-1.0 hardening
 
-OACS сейчас тестирует `v1.1.0a1`. Portable v1.0 standard surface всё ещё
+OACS сейчас тестирует `v1.1.0a2`. Portable v1.0 standard surface всё ещё
 состоит из stable JSON records, lifecycle, capability, audit, evidence, context
 и conformance contract. Post-1.0 работа усиливает reference adapters и consumer
 packs вокруг этого contract, не добавляя локальные workflow protocols в
