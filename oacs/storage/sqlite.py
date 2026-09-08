@@ -66,28 +66,6 @@ class SQLiteStore:
             conn.execute(sql, values)
             conn.commit()
 
-    def compare_and_swap_json(
-        self,
-        table: str,
-        record: dict[str, Any],
-        expected_content_hash: str | None,
-    ) -> bool:
-        """Atomically insert or replace a record when its hash matches expectation."""
-        _validate_identifier(table, _ALLOWED_TABLES, "table")
-        record_id = str(record["id"])
-        with closing(self.connect()) as conn:
-            conn.execute("BEGIN IMMEDIATE")
-            current = conn.execute(
-                f"SELECT content_hash FROM {table} WHERE id=?", (record_id,)
-            ).fetchone()
-            current_hash = str(current["content_hash"]) if current else None
-            if current_hash != expected_content_hash:
-                conn.rollback()
-                return False
-            _insert_json(conn, table, record)
-            conn.commit()
-        return True
-
     def get(self, table: str, record_id: str) -> dict[str, Any] | None:
         _validate_identifier(table, _ALLOWED_TABLES, "table")
         with closing(self.connect()) as conn:

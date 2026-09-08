@@ -2,6 +2,26 @@
 
 ## Unreleased
 
+## 1.0.22 - 2026-09-08
+
+### Removed
+
+- Removed the experimental `ExecutionState` runtime, CLI commands, benchmark,
+  and activation instructions after the trial did not meet its retention gates.
+  Existing experimental database records are left untouched for audit purposes.
+
+### Fixed
+
+- Kept stricter checkpoint evidence validation and clearer invalid-JSON CLI
+  errors introduced during the experimental cycle.
+
+### Changed
+
+- Returned the reference package to the stable 1.0 release line without
+  changing the portable OACS v1 schema or conformance contract.
+- Kept dependency-lock and editable-install packaging corrections from the
+  prerelease builds.
+
 ## 1.1.0a2 - 2026-09-01
 
 ### Fixed

@@ -902,7 +902,7 @@ wheels = [
 
 [[package]]
 name = "oacs"
-version = "1.1.0a2"
+version = "1.0.22"
 source = { editable = "." }
 dependencies = [
     { name = "cryptography" },
