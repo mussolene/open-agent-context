@@ -254,7 +254,7 @@ def test_codex_integration_is_supported_and_not_an_example_skill() -> None:
     roadmap = (ROOT / "docs" / "ROADMAP.md").read_text(encoding="utf-8")
 
     assert "not an example Skill" in dogfood
-    assert "oacs/integrations/codex" in dogfood
+    assert "oacs/integrations/shared_assets" in dogfood
     assert "acs integrations codex install" in roadmap
     assert not (ROOT / "examples" / "skills" / "codex_oacs_runtime").exists()
 

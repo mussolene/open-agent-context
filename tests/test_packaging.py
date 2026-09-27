@@ -16,12 +16,12 @@ def test_wheel_includes_top_level_schemas():
     assert sdist["force-include"]["conformance"] == "conformance"
 
 
-def test_codex_integration_assets_are_packaged_under_oacs() -> None:
+def test_shared_integration_assets_are_packaged_under_oacs() -> None:
     root = Path(__file__).resolve().parents[1]
-    assets = root / "oacs" / "integrations" / "codex" / "assets"
+    assets = root / "oacs" / "integrations" / "shared_assets"
 
     for relative in (
-        "global_agents.md",
+        "global_policy.md",
         "oacs/SKILL.md",
         "oacs/references/protocol.md",
         "oacs/scripts/oacs_hook.py",
@@ -39,7 +39,7 @@ def test_public_package_metadata_is_release_ready():
     urls = project["urls"]
 
     assert project["name"] == "oacs"
-    assert project["version"] == "1.0.24"
+    assert project["version"] == "1.0.25"
     assert "Open Agent Context Standard" in project["description"]
     assert "Development Status :: 5 - Production/Stable" in project["classifiers"]
     assert "License :: OSI Approved :: Apache Software License" in project["classifiers"]

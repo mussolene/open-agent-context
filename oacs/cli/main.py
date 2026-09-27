@@ -28,6 +28,18 @@ from oacs.core.ids import new_id
 from oacs.core.json import hash_json
 from oacs.core.time import now_iso
 from oacs.crypto.hybrid_pqc import HybridPQCKeyProvider
+from oacs.integrations.claude.installer import (
+    doctor as claude_integration_doctor,
+)
+from oacs.integrations.claude.installer import (
+    install as claude_integration_install,
+)
+from oacs.integrations.claude.installer import (
+    status as claude_integration_status,
+)
+from oacs.integrations.claude.installer import (
+    uninstall as claude_integration_uninstall,
+)
 from oacs.integrations.codex.installer import (
     doctor as codex_integration_doctor,
 )
@@ -41,6 +53,19 @@ from oacs.integrations.codex.installer import (
     uninstall as codex_integration_uninstall,
 )
 from oacs.integrations.codex.runtime import build_codex_context, run_hook
+from oacs.integrations.cursor.installer import (
+    doctor as cursor_integration_doctor,
+)
+from oacs.integrations.cursor.installer import (
+    install as cursor_integration_install,
+)
+from oacs.integrations.cursor.installer import (
+    status as cursor_integration_status,
+)
+from oacs.integrations.cursor.installer import (
+    uninstall as cursor_integration_uninstall,
+)
+from oacs.integrations.runtime import build_agent_context, run_cursor_hook
 from oacs.rules.models import RuleManifest
 from oacs.skills.models import SkillManifest
 from oacs.skills.runner import run_skill
@@ -67,6 +92,8 @@ policy_app = typer.Typer()
 conformance_app = typer.Typer()
 integrations_app = typer.Typer(help="Install and inspect client integrations.")
 codex_integration_app = typer.Typer(help="Manage the Codex integration.")
+claude_integration_app = typer.Typer(help="Manage the Claude Code integration.")
+cursor_integration_app = typer.Typer(help="Manage the Cursor integration.")
 
 app.add_typer(actor_app, name="actor")
 app.add_typer(capability_app, name="capability")
@@ -88,6 +115,8 @@ app.add_typer(policy_app, name="policy")
 app.add_typer(conformance_app, name="conformance")
 app.add_typer(integrations_app, name="integrations")
 integrations_app.add_typer(codex_integration_app, name="codex")
+integrations_app.add_typer(claude_integration_app, name="claude")
+integrations_app.add_typer(cursor_integration_app, name="cursor")
 
 
 DbOpt = Annotated[str | None, typer.Option("--db")]
@@ -338,6 +367,106 @@ def integrations_codex_context(
 def integrations_codex_hook() -> None:
     payload = json.loads(typer.get_text_stream("stdin").read() or "{}")
     result = run_hook(payload)
+    if result is not None:
+        typer.echo(json.dumps(result, ensure_ascii=False))
+
+
+@integrations_app.command("context")
+def integrations_context(
+    query: Annotated[str, typer.Option("--query")],
+    intent: Annotated[str, typer.Option("--intent")] = "repo_development",
+    budget: Annotated[int, typer.Option("--budget", min=1)] = 4000,
+    cwd: Annotated[Path | None, typer.Option("--cwd")] = None,
+    json_out: JsonOpt = False,
+) -> None:
+    emit(
+        build_agent_context(
+            query=query,
+            intent=intent,
+            cwd=cwd,
+            budget=budget,
+            current_user_prompt=query,
+        ),
+        json_out,
+    )
+
+
+@claude_integration_app.command("install")
+def integrations_claude_install(
+    home: Annotated[Path | None, typer.Option("--home")] = None,
+    json_out: JsonOpt = False,
+) -> None:
+    emit(claude_integration_install(home), json_out)
+
+
+@claude_integration_app.command("status")
+def integrations_claude_status(
+    home: Annotated[Path | None, typer.Option("--home")] = None,
+    json_out: JsonOpt = False,
+) -> None:
+    emit(claude_integration_status(home), json_out)
+
+
+@claude_integration_app.command("doctor")
+def integrations_claude_doctor(
+    home: Annotated[Path | None, typer.Option("--home")] = None,
+    query: Annotated[str, typer.Option("--query")] = "OACS Claude integration",
+    json_out: JsonOpt = False,
+) -> None:
+    result = claude_integration_doctor(home, query)
+    emit(result, json_out)
+    if result["status"] != "PASS":
+        raise typer.Exit(1)
+
+
+@claude_integration_app.command("uninstall")
+def integrations_claude_uninstall(
+    home: Annotated[Path | None, typer.Option("--home")] = None,
+    json_out: JsonOpt = False,
+) -> None:
+    emit(claude_integration_uninstall(home), json_out)
+
+
+@cursor_integration_app.command("install")
+def integrations_cursor_install(
+    home: Annotated[Path | None, typer.Option("--home")] = None,
+    json_out: JsonOpt = False,
+) -> None:
+    emit(cursor_integration_install(home), json_out)
+
+
+@cursor_integration_app.command("status")
+def integrations_cursor_status(
+    home: Annotated[Path | None, typer.Option("--home")] = None,
+    json_out: JsonOpt = False,
+) -> None:
+    emit(cursor_integration_status(home), json_out)
+
+
+@cursor_integration_app.command("doctor")
+def integrations_cursor_doctor(
+    home: Annotated[Path | None, typer.Option("--home")] = None,
+    query: Annotated[str, typer.Option("--query")] = "OACS Cursor integration",
+    json_out: JsonOpt = False,
+) -> None:
+    result = cursor_integration_doctor(home, query)
+    emit(result, json_out)
+    if result["status"] != "PASS":
+        raise typer.Exit(1)
+
+
+@cursor_integration_app.command("uninstall")
+def integrations_cursor_uninstall(
+    home: Annotated[Path | None, typer.Option("--home")] = None,
+    json_out: JsonOpt = False,
+) -> None:
+    emit(cursor_integration_uninstall(home), json_out)
+
+
+@cursor_integration_app.command("hook", hidden=True)
+def integrations_cursor_hook() -> None:
+    payload = json.loads(typer.get_text_stream("stdin").read() or "{}")
+    result = run_cursor_hook(payload)
     if result is not None:
         typer.echo(json.dumps(result, ensure_ascii=False))
 

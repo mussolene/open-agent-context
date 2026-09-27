@@ -370,7 +370,7 @@ def test_install_preflight_does_not_partially_replace_skills(tmp_path: Path) -> 
 
 def test_packaged_proof_loop_uses_oacs_without_parallel_task_tree() -> None:
     root = Path(__file__).resolve().parents[1]
-    skill_root = root / "oacs" / "integrations" / "codex" / "assets" / "proof-loop"
+    skill_root = root / "oacs" / "integrations" / "shared_assets" / "proof-loop"
     skill = (skill_root / "SKILL.md").read_text(encoding="utf-8")
     protocol = (skill_root / "references" / "protocol.md").read_text(encoding="utf-8")
 

@@ -3,7 +3,7 @@ name: oacs
 description: Use OACS persistent project and global context for substantial repository work, recovery after resume or compaction, evidence, checkpoints, or OACS integration diagnostics.
 ---
 
-# OACS for Codex
+# OACS for Repository Agents
 
 Use this Skill for substantial implementation, investigation, refactoring, release work, and continuation after resume or compaction in an OACS-enabled repository. Skip it for trivial edits when prior project context cannot affect the result.
 
@@ -12,7 +12,7 @@ Repository identity and physical database paths are resolved by OACS. Do not cho
 For a new or materially changed task, build model-facing context with the actual task as the retrieval query:
 
 ```bash
-acs integrations codex context \
+acs integrations context \
   --intent repo_development \
   --query "<actual user task>" \
   --json

@@ -5,9 +5,9 @@ This roadmap keeps the OACS v1.0 standard small. Core work must define
 memory, context, permissions, audit, and deterministic operation contracts.
 Reference adapters prove integration, but they do not expand the standard.
 
-### Current Position: v1.0.24 Released / Post-1.0 Hardening
+### Current Position: v1.0.25 Released / Post-1.0 Hardening
 
-OACS is currently at `v1.0.24`. The portable v1.0 standard surface is still the
+OACS is currently at `v1.0.25`. The portable v1.0 standard surface is still the
 stable JSON records, lifecycle, capability, audit, evidence, context, and
 conformance contract. Post-1.0 work is hardening reference adapters and consumer
 packs around that contract without adding local workflow protocols to the
@@ -65,9 +65,12 @@ Reference adapters:
   no-network-by-default download/import commands.
 - Done: benchmark comparisons report provider/model/task-pack compatibility and
   LM Studio usage metadata when the server returns it.
-- Done: Codex integration is a supported Python reference adapter under
-  `oacs/integrations/codex`, installed with `acs integrations codex install`.
-  It remains outside the portable standard and conformance surface.
+- Done: Codex, Claude Code, and Cursor have supported Python adapters under
+  `oacs/integrations`, backed by shared packaged Skills and installed through
+  `acs integrations <client> install`. They remain outside the portable
+  standard and conformance surface.
+  Concrete commands are `acs integrations codex install`,
+  `acs integrations claude install`, and `acs integrations cursor install`.
 - Done: the Codex integration installs a generic OACS-backed `proof-loop` Skill
   for acceptance criteria, current evidence, fresh verification, and bounded
   correction without a parallel repository task store.
@@ -255,9 +258,9 @@ Reference adapters:
 определять memory, context, permissions, audit и deterministic operation
 contracts. Reference adapters доказывают интеграцию, но не расширяют стандарт.
 
-### Текущая позиция: v1.0.24 Released / Post-1.0 hardening
+### Текущая позиция: v1.0.25 Released / Post-1.0 hardening
 
-OACS сейчас находится на версии `v1.0.24`. Portable v1.0 standard surface всё ещё
+OACS сейчас находится на версии `v1.0.25`. Portable v1.0 standard surface всё ещё
 состоит из stable JSON records, lifecycle, capability, audit, evidence, context
 и conformance contract. Post-1.0 работа усиливает reference adapters и consumer
 packs вокруг этого contract, не добавляя локальные workflow protocols в
@@ -312,9 +315,9 @@ Reference adapters:
   no-network-by-default download/import commands.
 - Готово: benchmark comparisons показывают provider/model/task-pack
   compatibility и LM Studio usage metadata, когда сервер её возвращает.
-- Готово: интеграция Codex является поддерживаемым reference adapter Python в
-  `oacs/integrations/codex` и устанавливается командой
-  `acs integrations codex install`. Она не входит в portable standard или
+- Готово: Codex, Claude Code и Cursor имеют поддерживаемые Python adapters в
+  `oacs/integrations`, используют общие пакетные Skills и устанавливаются через
+  `acs integrations <client> install`. Они не входят в portable standard или
   conformance surface.
 - Готово: интеграция Codex устанавливает общий OACS-backed Skill `proof-loop`
   для критериев приемки, актуальных доказательств, свежей проверки и

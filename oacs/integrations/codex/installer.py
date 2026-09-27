@@ -6,14 +6,20 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from oacs.app import services
 from oacs.core.config import global_db_path
 from oacs.integrations.codex.runtime import build_codex_context, resolve_project
+from oacs.integrations.common import (
+    ASSET_ROOT,
+    SKILL_MARKER,
+    ensure_global_storage,
+    install_skills,
+    merge_marked_block,
+    remove_marked_block,
+    remove_skills,
+)
 
 BLOCK_START = "<!-- OACS CODEX INTEGRATION START -->"
 BLOCK_END = "<!-- OACS CODEX INTEGRATION END -->"
-ASSET_ROOT = Path(__file__).resolve().parent / "assets"
-SKILL_MARKER = ".managed-by-oacs"
 
 
 def integration_paths(home: Path | None = None) -> dict[str, Path]:
@@ -34,29 +40,18 @@ def integration_paths(home: Path | None = None) -> dict[str, Path]:
 
 def install(home: Path | None = None) -> dict[str, object]:
     paths = integration_paths(home)
-    skill_dirs = {
-        "oacs": paths["skill_dir"],
-        "proof-loop": paths["proof_loop_skill_dir"],
-    }
-    for skill_dir in skill_dirs.values():
-        if skill_dir.exists() and not (skill_dir / SKILL_MARKER).is_file():
-            raise ValueError(
-                f"refusing to replace unmanaged Codex Skill directory: {skill_dir}"
-            )
-    for skill_name, skill_dir in skill_dirs.items():
-        skill_dir.parent.mkdir(parents=True, exist_ok=True)
-        if skill_dir.exists():
-            shutil.rmtree(skill_dir)
-        shutil.copytree(ASSET_ROOT / skill_name, skill_dir)
-        (skill_dir / SKILL_MARKER).write_text(
-            "managed by acs integrations codex\n", encoding="utf-8"
-        )
+    install_skills(paths["skill_dir"].parent, "Codex")
 
     agents_file = paths["agents_file"]
     agents_file.parent.mkdir(parents=True, exist_ok=True)
     existing_agents = agents_file.read_text(encoding="utf-8") if agents_file.exists() else ""
     agents_file.write_text(
-        _merge_marked_block(existing_agents, (ASSET_ROOT / "global_agents.md").read_text()),
+        merge_marked_block(
+            existing_agents,
+            (ASSET_ROOT / "global_policy.md").read_text(),
+            BLOCK_START,
+            BLOCK_END,
+        ),
         encoding="utf-8",
     )
 
@@ -69,11 +64,7 @@ def install(home: Path | None = None) -> dict[str, object]:
     _add_hook(hooks, "UserPromptSubmit", command)
     hooks_file.write_text(json.dumps(hooks, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
-    global_path = global_db_path()
-    global_service = services(str(global_path), require_key=False)
-    if not global_service.key_provider.status().available:
-        metadata = global_service.key_provider.generate()
-        global_service.store.set_metadata("encryption_mode", str(metadata["provider"]))
+    ensure_global_storage()
 
     return status(home)
 
@@ -155,7 +146,7 @@ def doctor(home: Path | None = None, query: str = "OACS Codex integration") -> d
         store = context.get(store_name)
         if isinstance(store, dict):
             selected += int(store.get("memory_count", 0))
-    rendered_ok = "# OACS Codex Context" in prompt and (
+    rendered_ok = "# OACS Agent Context" in prompt and (
         selected == 0 or any(
             memory_id in prompt
             for store_name in ("project", "global")
@@ -185,12 +176,12 @@ def doctor(home: Path | None = None, query: str = "OACS Codex integration") -> d
 
 def uninstall(home: Path | None = None) -> dict[str, object]:
     paths = integration_paths(home)
-    for skill_dir in (paths["skill_dir"], paths["proof_loop_skill_dir"]):
-        if (skill_dir / SKILL_MARKER).is_file():
-            shutil.rmtree(skill_dir)
+    remove_skills(paths["skill_dir"].parent)
     if paths["agents_file"].exists():
         text = paths["agents_file"].read_text(encoding="utf-8")
-        paths["agents_file"].write_text(_remove_marked_block(text), encoding="utf-8")
+        paths["agents_file"].write_text(
+            remove_marked_block(text, BLOCK_START, BLOCK_END), encoding="utf-8"
+        )
     if paths["hooks_file"].exists():
         hooks = _load_hooks(paths["hooks_file"])
         _remove_oacs_hooks(hooks)
@@ -201,20 +192,6 @@ def uninstall(home: Path | None = None) -> dict[str, object]:
     result = status(home)
     result["persistent_memory_preserved"] = True
     return result
-
-
-def _merge_marked_block(existing: str, block: str) -> str:
-    without = _remove_marked_block(existing).rstrip()
-    managed = f"{BLOCK_START}\n{block.strip()}\n{BLOCK_END}"
-    return f"{without}\n\n{managed}\n" if without else f"{managed}\n"
-
-
-def _remove_marked_block(text: str) -> str:
-    start = text.find(BLOCK_START)
-    end = text.find(BLOCK_END)
-    if start == -1 or end == -1 or end < start:
-        return text
-    return (text[:start].rstrip() + "\n\n" + text[end + len(BLOCK_END) :].lstrip()).strip() + "\n"
 
 
 def _load_hooks(path: Path) -> dict[str, Any]:

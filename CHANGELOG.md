@@ -2,6 +2,29 @@
 
 ## Unreleased
 
+## 1.0.25 - 2026-09-27
+
+### Added
+
+- Added supported `install`, `status`, `doctor`, and `uninstall` commands for
+  Claude Code and Cursor.
+- Added Claude Code lifecycle recovery through `SessionStart`,
+  `UserPromptSubmit`, and `PostCompact`.
+- Added native Cursor personal Skill installation and local `sessionStart`
+  checkpoint recovery.
+
+### Changed
+
+- Moved the OACS and proof-loop Skill assets and context runtime into shared
+  client-neutral integration modules.
+- Added `acs integrations context` as the common rendered project plus global
+  retrieval command while preserving the Codex command for compatibility.
+- Reduced the repository-local Claude and Cursor compatibility pack to a
+  migration shim. The packaged global Skills are now the protocol source of
+  truth.
+- Documented Cursor hook limitations instead of claiming unsupported prompt or
+  post-compaction context injection.
+
 ## 1.0.24 - 2026-09-27
 
 ### Added

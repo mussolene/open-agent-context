@@ -1,8 +1,8 @@
-# OACS Codex Protocol
+# OACS Agent Protocol
 
 ## Retrieval
 
-Use a categorical `--intent` and the actual task text in `--query`. The Codex adapter resolves the repository, queries the project store with `scope=project`, queries the external user store with `scope=global`, gives project context the larger budget, and returns a rendered model-facing prompt. Do not pass the full memory corpus to the model.
+Use a categorical `--intent` and the actual task text in `--query`. The integration runtime resolves the repository, queries the project store with `scope=project`, queries the external user store with `scope=global`, gives project context the larger budget, and returns a rendered model-facing prompt. Do not pass the full memory corpus to the model.
 
 Project storage is discovered upward from the working directory at `.agent/oacs/oacs.db` or `.oacs/oacs.db`. Global storage uses the platform user-data convention and may be overridden by `OACS_GLOBAL_DB`. Persistent databases never live inside this Skill.
 
@@ -59,9 +59,9 @@ Checkpoints are current task continuity records. They are not reusable historica
 
 ## Resume And Compaction
 
-The installed `SessionStart` hook runs for `startup`, `resume`, and `compact`. Codex runs the `compact` source before the immediate continuation, so the hook injects a compact current task state with the latest checkpoint, changed files, and verification provenance before work continues. It does not repeat semantic historical retrieval during this lifecycle event.
+Installed lifecycle hooks restore compact current task state at the events supported by each client. Codex uses `SessionStart` for startup, resume, and compact continuation. Claude Code uses `SessionStart` and `PostCompact`. Cursor can inject context at local `sessionStart`, but its documented `beforeSubmitPrompt` and `preCompact` outputs cannot inject refreshed model context. In Cursor, invoke this Skill after compaction or a material scope change. Lifecycle recovery does not repeat semantic historical retrieval.
 
-The `UserPromptSubmit` hook ignores short conversational prompts. For a substantial prompt it uses that prompt as the retrieval query and injects refreshed project plus global context with a bounded hook budget. If the task changes materially during work, run `acs integrations codex context` explicitly with the new task text.
+Where supported, the `UserPromptSubmit` hook ignores short conversational prompts. For a substantial prompt it uses that prompt as the retrieval query and injects refreshed project plus global context with a bounded hook budget. If the task changes materially during work, run `acs integrations context` explicitly with the new task text.
 
 If a store is locked or unavailable, continue only with the available store and current repository evidence. Report the degraded store. Never silently create a fallback database for retrieval.
 

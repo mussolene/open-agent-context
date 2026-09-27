@@ -69,22 +69,26 @@ For an exact package version and more detail, use the
 [PyPI quickstart](docs/QUICKSTART_PYPI.md). For editable installation and checks,
 see [Contributing](CONTRIBUTING.md).
 
-### Supported Codex integration
+### Supported agent integrations
 
-OACS includes a supported Codex reference adapter. It is packaged with OACS,
-not maintained as an example Skill:
+OACS includes supported adapters for Codex, Claude Code, and Cursor. They are
+packaged with OACS and are not example Skills:
 
 ```bash
 acs integrations codex install
-acs integrations codex status
 acs integrations codex doctor
+acs integrations claude install
+acs integrations claude doctor
+acs integrations cursor install
+acs integrations cursor doctor
 ```
 
-The installer manages the user-scoped `oacs` and `proof-loop` Skills, a small
-global policy block, and lifecycle hooks without storing persistent memory
-inside either Skill. The proof loop adds acceptance criteria, evidence-backed
-delivery, and fresh verification without creating a parallel task store. See
-[Codex integration and consumer packs](docs/CONSUMER_PACKS.md).
+Each installer manages the user-scoped `oacs` and `proof-loop` Skills and the
+lifecycle surfaces supported by that client without storing persistent memory
+inside either Skill. Codex and Claude Code also receive a small merge-safe
+global policy block. Cursor receives native personal Skills plus local session
+recovery; its documented hooks cannot inject prompt-specific or
+post-compaction context. See [agent integrations](docs/CONSUMER_PACKS.md).
 
 ### Core concepts
 

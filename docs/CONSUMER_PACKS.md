@@ -1,120 +1,138 @@
-# Supported Codex Integration And Consumer Packs / Интеграция Codex и consumer packs
+# Supported Agent Integrations / Поддерживаемые интеграции агентов
 
 ## EN
 
-OACS client adapters are not part of the OACS v1.0 standard surface. The
+Client integrations are not part of the OACS v1.0 standard surface. The
 portable records, lifecycle, capabilities, evidence, context capsules, and
-conformance fixtures remain the standard. An adapter teaches a client how to
-use those primitives consistently.
+conformance fixtures remain the standard. The packaged adapters teach clients
+how to use those primitives consistently.
 
-Codex uses two user-scoped Skills and one lifecycle integration:
+Install one or more integrations:
 
 ```bash
 acs integrations codex install
-acs integrations codex status
-acs integrations codex doctor
-acs integrations codex uninstall
+acs integrations claude install
+acs integrations cursor install
 ```
 
-The installer places `oacs` and `proof-loop` in `$HOME/.agents/skills`, merges
-a small managed policy block into `$HOME/.codex/AGENTS.md`, and merges OACS
-entries into `$HOME/.codex/hooks.json`. It preserves existing user content.
-Uninstall removes only managed integration surfaces and never removes
-persistent databases.
+Every client also provides `status`, `doctor`, and `uninstall`. Use the common
+rendered retrieval command from any client:
 
-The Codex adapter keeps these boundaries:
+```bash
+acs integrations context \
+  --intent repo_development \
+  --query "<actual task>" \
+  --json
+```
 
-- OACS is the governed memory, context, and evidence layer, not the tool
-  scheduler.
-- The generic proof loop owns acceptance criteria, smallest-safe-change
-  discipline, current evidence, fresh verification, and bounded correction.
-  It uses OACS for durable state and does not create `.agent/tasks/`.
-- Intent is a task classification. Retrieval uses the actual task as `--query`
-  and returns rendered model-facing content, not capsule identifiers alone.
-- Project memory is retrieved from the current repository. Relevant global
-  memory is retrieved from a separate user-data store. Project memory receives
-  the larger budget and Project A storage is never queried from Project B.
-- Checkpoints provide compact current task state. Historical memory is
-  evidence and context, not authorization. A newer user instruction wins.
-- `SessionStart` handles startup, resume, and compact continuation.
-  `UserPromptSubmit` refreshes semantic context only for substantial prompts.
-- Command output, CI, retrieval, publication, and verification can become
-  `EvidenceRef` records through `acs tool ingest-result`.
-- Standalone evidence enters a future context capsule only through reviewed
-  memory that references it.
-- Local keys, passphrases, databases, and private agent state must not be
-  printed or committed.
+Intent is a task classification. Retrieval uses the actual task as `--query`
+and returns rendered model-facing content, not capsule identifiers alone.
+Project memory is selected from the current repository and receives the larger
+budget. Relevant global memory comes from a separate user-data store. Project A
+storage is never queried while working in Project B.
 
-Project storage is discovered at `.agent/oacs/oacs.db` or `.oacs/oacs.db`.
-Global storage follows the operating system user-data convention and stays
-outside the Skill directory.
+All clients install the same source Skills from
+`oacs/integrations/shared_assets`:
 
-Repository `AGENTS.md` files should keep only project-specific policy and a
-small OACS opt-in statement. They should not copy the full Codex protocol.
+- `oacs` owns retrieval, evidence, checkpoint, and recovery guidance;
+- `proof-loop` owns acceptance criteria, smallest-safe-change discipline,
+  current evidence, fresh verification, and bounded correction.
 
-The compatibility pack in `examples/consumer_packs/oacs_repo_development`
-remains for Claude, Cursor, and migration support. It contains:
+Persistent databases never live inside a Skill directory. Project storage is
+discovered at `.agent/oacs/oacs.db` or `.oacs/oacs.db`. Global storage follows
+the operating system user-data convention and can be overridden with
+`OACS_GLOBAL_DB`.
 
-- `AGENTS.fragment.md`: minimal Codex project opt-in policy.
-- `CLAUDE.fragment.md`: repository-local Claude workflow.
-- `cursor/rules/oacs-repo-memory.mdc`: always-on Cursor workflow.
-- `cursor/skills/oacs-repo-memory/SKILL.md`: Cursor execution workflow.
-- `scripts/install.py`: repository-local surface installer.
+### Codex
+
+Codex installs Skills in `$HOME/.agents/skills`, merges a small policy block
+into `$HOME/.codex/AGENTS.md`, and merges OACS hooks into
+`$HOME/.codex/hooks.json`. Session start restores checkpoint state, including
+compact continuation, and substantial user prompts trigger bounded semantic
+retrieval.
+
+### Claude Code
+
+Claude Code installs Skills in `$HOME/.claude/skills`, merges the same minimal
+policy into `$HOME/.claude/CLAUDE.md`, and merges hooks into
+`$HOME/.claude/settings.json`. `SessionStart` restores startup and resumed
+state, `UserPromptSubmit` refreshes substantial task context, and `PostCompact`
+restores current checkpoint state after compaction.
+
+### Cursor
+
+Cursor installs Skills in `$HOME/.cursor/skills` so they use Cursor's native
+personal Skill location and can participate in Cursor Skill sync when the user
+enables it. A user hook in `$HOME/.cursor/hooks.json` restores checkpoint state
+at local `sessionStart`.
+
+Cursor's documented `beforeSubmitPrompt` output can allow or block submission
+but cannot inject additional context. Its `preCompact` hook is observational
+and cannot inject post-compaction context. Therefore task-specific retrieval
+and post-compaction recovery remain Skill-driven in Cursor. User-level hooks
+also do not run in Cursor Cloud Agents. The installer and doctor report these
+limits rather than claiming parity that the client contract cannot provide.
+
+Uninstall removes only managed Skills, policy blocks, and hook entries. It does
+not remove project or global databases. Existing user instructions and hooks
+are preserved. Repeated install is safe.
+
+The old `examples/consumer_packs/oacs_repo_development` pack is deprecated. It
+contains only repository-local opt-in shims for migrations. New repositories
+should use the packaged global integration and keep only project-specific rules
+in repository instruction files.
 
 ## RU
 
-Клиентские адаптеры OACS не входят в стандарт OACS v1.0. Стандартом остаются
-переносимые записи, жизненный цикл, полномочия, доказательства, context capsules
-и conformance fixtures. Адаптер учит конкретный клиент последовательно
+Клиентские интеграции не входят в переносимую поверхность стандарта OACS v1.0.
+Стандартом остаются записи, жизненный цикл, полномочия, доказательства, context
+capsules и conformance fixtures. Пакетные адаптеры учат клиентов единообразно
 использовать эти примитивы.
 
-Codex использует два пользовательских Skills и одну lifecycle integration:
+Установка:
 
 ```bash
 acs integrations codex install
-acs integrations codex status
-acs integrations codex doctor
-acs integrations codex uninstall
+acs integrations claude install
+acs integrations cursor install
 ```
 
-Установщик помещает `oacs` и `proof-loop` в `$HOME/.agents/skills`, добавляет
-небольшой управляемый блок в `$HOME/.codex/AGENTS.md` и добавляет OACS hooks в
-`$HOME/.codex/hooks.json`. Существующее содержимое сохраняется. Uninstall
-удаляет только управляемые поверхности интеграции и никогда не удаляет базы.
+Для каждого клиента доступны `status`, `doctor` и `uninstall`. Общая команда
+retrieval принимает фактическую задачу как `--query` и возвращает rendered
+model-facing context:
 
-Адаптер Codex сохраняет следующие границы:
+```bash
+acs integrations context \
+  --intent repo_development \
+  --query "<actual task>" \
+  --json
+```
 
-- OACS является управляемым слоем памяти, контекста и доказательств, а не
-  планировщиком tools.
-- Общий proof loop отвечает за критерии приемки, минимальное безопасное
-  изменение, актуальные доказательства, свежую проверку и ограниченный цикл
-  исправлений. Он использует OACS для долговечного состояния и не создает
-  `.agent/tasks/`.
-- Intent классифицирует задачу. Retrieval использует текущую задачу как
-  `--query` и возвращает текст для модели, а не только identifiers capsule.
-- Project memory выбирается из текущего репозитория. Релевантная global memory
-  выбирается из отдельного пользовательского хранилища. Project memory получает
-  больший бюджет, а хранилище Project A не запрашивается из Project B.
-- Checkpoint содержит компактное состояние текущей задачи. Historical memory
-  является контекстом и доказательством, а не разрешением. Более новая
-  инструкция пользователя имеет приоритет.
-- `SessionStart` обслуживает startup, resume и продолжение после compact.
-  `UserPromptSubmit` обновляет semantic context только для существенных prompts.
-- Результаты commands, CI, retrieval, публикации и verification можно сохранять
-  как `EvidenceRef` через `acs tool ingest-result`.
-- Отдельное evidence попадает в будущий context capsule только через
-  проверенную memory, которая ссылается на него.
-- Локальные ключи, passphrases, базы и private agent state нельзя печатать или
-  коммитить.
+Все клиенты получают одинаковые Skills `oacs` и `proof-loop` из
+`oacs/integrations/shared_assets`. Persistent databases не находятся внутри
+Skills. Project storage определяется в `.agent/oacs/oacs.db` или
+`.oacs/oacs.db`, а global storage использует системный каталог пользовательских
+данных.
 
-В project `AGENTS.md` следует оставлять только специфические правила проекта и
-короткое включение OACS. Полный протокол Codex там дублировать не следует.
+Codex получает Skills в `$HOME/.agents/skills`, минимальный блок политики в
+`$HOME/.codex/AGENTS.md` и lifecycle hooks. Claude Code получает Skills в
+`$HOME/.claude/skills`, минимальный блок в `$HOME/.claude/CLAUDE.md`, а также
+`SessionStart`, `UserPromptSubmit` и `PostCompact` в
+`$HOME/.claude/settings.json`.
 
-Compatibility pack в `examples/consumer_packs/oacs_repo_development` сохранён
-для Claude, Cursor и миграции. Он содержит:
+Cursor получает нативные personal Skills в `$HOME/.cursor/skills` и локальное
+восстановление checkpoint на `sessionStart`. Документированный контракт Cursor
+не позволяет `beforeSubmitPrompt` внедрять дополнительный контекст, а
+`preCompact` не может восстановить контекст после compaction. Поэтому retrieval
+по новой задаче и восстановление после compaction в Cursor остаются частью
+Skill protocol. Пользовательские hooks Cursor также не работают в Cloud
+Agents. Эти ограничения явно показываются в doctor.
 
-- `AGENTS.fragment.md`: минимальный project policy Codex.
-- `CLAUDE.fragment.md`: локальный workflow Claude.
-- `cursor/rules/oacs-repo-memory.mdc`: постоянное правило Cursor.
-- `cursor/skills/oacs-repo-memory/SKILL.md`: workflow выполнения Cursor.
-- `scripts/install.py`: установщик локальных поверхностей репозитория.
+Uninstall удаляет только управляемые Skills, блоки политики и записи hooks. Он
+не удаляет project или global databases и сохраняет пользовательские настройки.
+Повторная установка безопасна.
+
+Старый pack `examples/consumer_packs/oacs_repo_development` объявлен
+устаревшим и оставлен как repository-local migration shim. Новые репозитории
+должны использовать пакетную глобальную интеграцию, а в локальных instruction
+files хранить только project-specific правила.

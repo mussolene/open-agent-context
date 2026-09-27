@@ -54,7 +54,8 @@ Run current verification and a leak or secret scan before completion, then
 record both results as evidence. Historical memory and recovered checkpoints
 are context only. A current explicit user instruction always has priority.
 
-The implementation source of truth is `oacs/integrations/codex`. Do not copy
+The implementation source of truth is `oacs/integrations/shared_assets` and
+the client adapters under `oacs/integrations`. Do not copy
 the installed Skill into repository `examples/` or duplicate its operating
 protocol in project `AGENTS.md` files.
 
@@ -113,6 +114,7 @@ acs checkpoint add --db @project \
 восстановленный checkpoint являются только контекстом. Текущая явная инструкция
 пользователя всегда имеет приоритет.
 
-Единственный источник реализации находится в `oacs/integrations/codex`.
+Единственный источник Skills находится в `oacs/integrations/shared_assets`, а
+клиентские адаптеры находятся в `oacs/integrations`.
 Установленный Skill не следует копировать в `examples/`, а его полный протокол
 не следует дублировать в project `AGENTS.md`.
