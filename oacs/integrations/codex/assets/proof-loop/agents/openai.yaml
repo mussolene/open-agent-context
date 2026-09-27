@@ -1,0 +1,6 @@
+interface:
+  display_name: "Proof Loop"
+  short_description: "Prove repository changes against explicit criteria."
+  default_prompt: "Use $proof-loop to freeze acceptance criteria, implement the smallest safe change, collect current evidence, and run fresh verification."
+policy:
+  allow_implicit_invocation: true

@@ -80,8 +80,10 @@ acs integrations codex status
 acs integrations codex doctor
 ```
 
-The installer manages one user-scoped Skill, a small global policy block, and
-lifecycle hooks without storing persistent memory inside the Skill. See
+The installer manages the user-scoped `oacs` and `proof-loop` Skills, a small
+global policy block, and lifecycle hooks without storing persistent memory
+inside either Skill. The proof loop adds acceptance criteria, evidence-backed
+delivery, and fresh verification without creating a parallel task store. See
 [Codex integration and consumer packs](docs/CONSUMER_PACKS.md).
 
 ### Core concepts
@@ -210,8 +212,10 @@ acs integrations codex status
 acs integrations codex doctor
 ```
 
-Установщик управляет одним пользовательским Skill, небольшим global policy
-block и lifecycle hooks, не помещая persistent memory внутрь Skill. Подробнее:
+Установщик управляет пользовательскими Skills `oacs` и `proof-loop`, небольшим
+global policy block и lifecycle hooks, не помещая persistent memory внутрь
+Skills. Proof loop добавляет критерии приемки, доказательное выполнение и
+свежую проверку без параллельного хранилища задач. Подробнее:
 [интеграция Codex и consumer packs](docs/CONSUMER_PACKS.md).
 
 ### Основные понятия

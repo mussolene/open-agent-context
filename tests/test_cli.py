@@ -5,6 +5,7 @@ import sys
 
 from typer.testing import CliRunner
 
+from oacs import __version__
 from oacs.cli.main import app
 from oacs.context.capsule import ContextCapsule
 
@@ -12,7 +13,7 @@ from oacs.context.capsule import ContextCapsule
 def test_cli_version():
     result = CliRunner().invoke(app, ["--version"])
     assert result.exit_code == 0
-    assert result.output.strip() == "acs 1.0.23"
+    assert result.output.strip() == f"acs {__version__}"
 
 
 def test_cli_context_decision_command_is_not_exposed():

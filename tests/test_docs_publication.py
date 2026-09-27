@@ -281,7 +281,8 @@ def test_agent_instructions_delegate_general_protocol_to_global_skill() -> None:
 
     assert "OACS Project Policy" in text
     assert "globally installed `oacs` Skill" in text
-    assert "installed Skill owns the general OACS" in text
+    assert "`proof-loop` Skill" in text
+    assert "installed Skills own the general OACS" in text
     assert "acs context build" not in text
     assert ".agent/tasks" not in text
 

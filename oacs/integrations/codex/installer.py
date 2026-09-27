@@ -19,10 +19,13 @@ SKILL_MARKER = ".managed-by-oacs"
 def integration_paths(home: Path | None = None) -> dict[str, Path]:
     user_home = (home or Path.home()).expanduser().resolve()
     skill_dir = user_home / ".agents" / "skills" / "oacs"
+    proof_loop_skill_dir = user_home / ".agents" / "skills" / "proof-loop"
     return {
         "home": user_home,
         "skill_dir": skill_dir,
         "skill_file": skill_dir / "SKILL.md",
+        "proof_loop_skill_dir": proof_loop_skill_dir,
+        "proof_loop_skill_file": proof_loop_skill_dir / "SKILL.md",
         "agents_file": user_home / ".codex" / "AGENTS.md",
         "hooks_file": user_home / ".codex" / "hooks.json",
         "hook_script": skill_dir / "scripts" / "oacs_hook.py",
@@ -31,16 +34,23 @@ def integration_paths(home: Path | None = None) -> dict[str, Path]:
 
 def install(home: Path | None = None) -> dict[str, object]:
     paths = integration_paths(home)
-    skill_dir = paths["skill_dir"]
-    skill_dir.parent.mkdir(parents=True, exist_ok=True)
-    if skill_dir.exists():
-        if not (skill_dir / SKILL_MARKER).is_file():
+    skill_dirs = {
+        "oacs": paths["skill_dir"],
+        "proof-loop": paths["proof_loop_skill_dir"],
+    }
+    for skill_dir in skill_dirs.values():
+        if skill_dir.exists() and not (skill_dir / SKILL_MARKER).is_file():
             raise ValueError(
                 f"refusing to replace unmanaged Codex Skill directory: {skill_dir}"
             )
-        shutil.rmtree(skill_dir)
-    shutil.copytree(ASSET_ROOT / "oacs", skill_dir)
-    (skill_dir / SKILL_MARKER).write_text("managed by acs integrations codex\n", encoding="utf-8")
+    for skill_name, skill_dir in skill_dirs.items():
+        skill_dir.parent.mkdir(parents=True, exist_ok=True)
+        if skill_dir.exists():
+            shutil.rmtree(skill_dir)
+        shutil.copytree(ASSET_ROOT / skill_name, skill_dir)
+        (skill_dir / SKILL_MARKER).write_text(
+            "managed by acs integrations codex\n", encoding="utf-8"
+        )
 
     agents_file = paths["agents_file"]
     agents_file.parent.mkdir(parents=True, exist_ok=True)
@@ -80,6 +90,7 @@ def status(home: Path | None = None) -> dict[str, object]:
     return {
         "installed": (
             paths["skill_file"].is_file()
+            and paths["proof_loop_skill_file"].is_file()
             and BLOCK_START in agents_text
             and _has_oacs_hooks(hooks)
         ),
@@ -87,6 +98,11 @@ def status(home: Path | None = None) -> dict[str, object]:
             "path": str(paths["skill_file"]),
             "installed": paths["skill_file"].is_file(),
             "managed": (paths["skill_dir"] / SKILL_MARKER).is_file(),
+        },
+        "proof_loop_skill": {
+            "path": str(paths["proof_loop_skill_file"]),
+            "installed": paths["proof_loop_skill_file"].is_file(),
+            "managed": (paths["proof_loop_skill_dir"] / SKILL_MARKER).is_file(),
         },
         "agents": {
             "path": str(paths["agents_file"]),
@@ -116,6 +132,10 @@ def doctor(home: Path | None = None, query: str = "OACS Codex integration") -> d
     checks: list[dict[str, object]] = []
     for name, passed in (
         ("skill_discovered", bool(snapshot["skill"]["installed"])),  # type: ignore[index]
+        (
+            "proof_loop_skill_discovered",
+            bool(snapshot["proof_loop_skill"]["installed"]),  # type: ignore[index]
+        ),
         ("agents_contract", bool(snapshot["agents"]["installed"])),  # type: ignore[index]
         ("hooks_installed", bool(snapshot["hooks"]["installed"])),  # type: ignore[index]
         ("acs_cli_available", bool(snapshot["cli"]["available"])),  # type: ignore[index]
@@ -165,8 +185,9 @@ def doctor(home: Path | None = None, query: str = "OACS Codex integration") -> d
 
 def uninstall(home: Path | None = None) -> dict[str, object]:
     paths = integration_paths(home)
-    if (paths["skill_dir"] / SKILL_MARKER).is_file():
-        shutil.rmtree(paths["skill_dir"])
+    for skill_dir in (paths["skill_dir"], paths["proof_loop_skill_dir"]):
+        if (skill_dir / SKILL_MARKER).is_file():
+            shutil.rmtree(skill_dir)
     if paths["agents_file"].exists():
         text = paths["agents_file"].read_text(encoding="utf-8")
         paths["agents_file"].write_text(_remove_marked_block(text), encoding="utf-8")

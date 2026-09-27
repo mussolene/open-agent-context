@@ -5,9 +5,9 @@ This roadmap keeps the OACS v1.0 standard small. Core work must define
 memory, context, permissions, audit, and deterministic operation contracts.
 Reference adapters prove integration, but they do not expand the standard.
 
-### Current Position: v1.0.23 Released / Post-1.0 Hardening
+### Current Position: v1.0.24 Released / Post-1.0 Hardening
 
-OACS is currently at `v1.0.23`. The portable v1.0 standard surface is still the
+OACS is currently at `v1.0.24`. The portable v1.0 standard surface is still the
 stable JSON records, lifecycle, capability, audit, evidence, context, and
 conformance contract. Post-1.0 work is hardening reference adapters and consumer
 packs around that contract without adding local workflow protocols to the
@@ -68,6 +68,9 @@ Reference adapters:
 - Done: Codex integration is a supported Python reference adapter under
   `oacs/integrations/codex`, installed with `acs integrations codex install`.
   It remains outside the portable standard and conformance surface.
+- Done: the Codex integration installs a generic OACS-backed `proof-loop` Skill
+  for acceptance criteria, current evidence, fresh verification, and bounded
+  correction without a parallel repository task store.
 - Done: Agent Workflow UX added as reference CLI convenience:
   project-local discovery/status, resume aggregation, task checkpoints,
   governed command evidence, and deny-pattern policy helpers.
@@ -252,9 +255,9 @@ Reference adapters:
 определять memory, context, permissions, audit и deterministic operation
 contracts. Reference adapters доказывают интеграцию, но не расширяют стандарт.
 
-### Текущая позиция: v1.0.23 Released / Post-1.0 hardening
+### Текущая позиция: v1.0.24 Released / Post-1.0 hardening
 
-OACS сейчас находится на версии `v1.0.23`. Portable v1.0 standard surface всё ещё
+OACS сейчас находится на версии `v1.0.24`. Portable v1.0 standard surface всё ещё
 состоит из stable JSON records, lifecycle, capability, audit, evidence, context
 и conformance contract. Post-1.0 работа усиливает reference adapters и consumer
 packs вокруг этого contract, не добавляя локальные workflow protocols в
@@ -313,6 +316,9 @@ Reference adapters:
   `oacs/integrations/codex` и устанавливается командой
   `acs integrations codex install`. Она не входит в portable standard или
   conformance surface.
+- Готово: интеграция Codex устанавливает общий OACS-backed Skill `proof-loop`
+  для критериев приемки, актуальных доказательств, свежей проверки и
+  ограниченного исправления без параллельного project task store.
 - Готово: Agent Workflow UX добавлен как reference CLI convenience:
   project-local discovery/status, resume aggregation, task checkpoints,
   governed command evidence и deny-pattern policy helpers.

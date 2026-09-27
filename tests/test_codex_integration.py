@@ -272,6 +272,9 @@ def test_install_status_doctor_uninstall_and_idempotence(tmp_path, monkeypatch) 
     assert len(hooks["hooks"]["SessionStart"]) == 1
     assert len(hooks["hooks"]["UserPromptSubmit"]) == 1
     assert hooks["hooks"]["Stop"][0]["hooks"][0]["command"] == "python3 keep_user_hook.py"
+    proof_loop = home / ".agents" / "skills" / "proof-loop" / "SKILL.md"
+    assert proof_loop.is_file()
+    assert "Use OACS as the durable state" in proof_loop.read_text(encoding="utf-8")
     agents = (home / ".codex" / "AGENTS.md").read_text(encoding="utf-8")
     assert agents.count("OACS CODEX INTEGRATION START") == 1
     assert "User policy." in agents
@@ -284,6 +287,7 @@ def test_install_status_doctor_uninstall_and_idempotence(tmp_path, monkeypatch) 
     removed = uninstall(home)
     assert removed["installed"] is False
     assert removed["persistent_memory_preserved"] is True
+    assert not proof_loop.exists()
     assert global_db.exists()
     assert "User policy." in (home / ".codex" / "AGENTS.md").read_text(encoding="utf-8")
     hooks_after = json.loads((home / ".codex" / "hooks.json").read_text(encoding="utf-8"))
@@ -339,3 +343,41 @@ def test_install_does_not_overwrite_unmanaged_skill(tmp_path) -> None:
         raise AssertionError("install unexpectedly replaced an unmanaged skill")
 
     assert (skill / "SKILL.md").read_text(encoding="utf-8") == "user-owned skill\n"
+
+
+def test_install_preflight_does_not_partially_replace_skills(tmp_path: Path) -> None:
+    home = tmp_path / "home"
+    oacs_skill = home / ".agents" / "skills" / "oacs"
+    proof_loop_skill = home / ".agents" / "skills" / "proof-loop"
+    oacs_skill.mkdir(parents=True)
+    proof_loop_skill.mkdir(parents=True)
+    (oacs_skill / ".managed-by-oacs").write_text("managed\n", encoding="utf-8")
+    (oacs_skill / "SKILL.md").write_text("old managed copy\n", encoding="utf-8")
+    (proof_loop_skill / "SKILL.md").write_text("user-owned proof loop\n", encoding="utf-8")
+
+    try:
+        install(home)
+    except ValueError as exc:
+        assert "proof-loop" in str(exc)
+    else:
+        raise AssertionError("install unexpectedly replaced an unmanaged skill")
+
+    assert (oacs_skill / "SKILL.md").read_text(encoding="utf-8") == "old managed copy\n"
+    assert (proof_loop_skill / "SKILL.md").read_text(encoding="utf-8") == (
+        "user-owned proof loop\n"
+    )
+
+
+def test_packaged_proof_loop_uses_oacs_without_parallel_task_tree() -> None:
+    root = Path(__file__).resolve().parents[1]
+    skill_root = root / "oacs" / "integrations" / "codex" / "assets" / "proof-loop"
+    skill = (skill_root / "SKILL.md").read_text(encoding="utf-8")
+    protocol = (skill_root / "references" / "protocol.md").read_text(encoding="utf-8")
+
+    assert "name: proof-loop" in skill
+    assert "only durable task-state" in skill
+    assert "Do not create `.agent/tasks/`" in skill
+    assert "task-spec-freezer" in skill
+    assert (skill_root / "agents" / "openai.yaml").is_file()
+    assert "every acceptance criterion is `PASS`" in protocol
+    assert ".agent/tasks/<TASK_ID>" not in protocol

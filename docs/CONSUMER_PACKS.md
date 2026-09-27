@@ -7,7 +7,7 @@ portable records, lifecycle, capabilities, evidence, context capsules, and
 conformance fixtures remain the standard. An adapter teaches a client how to
 use those primitives consistently.
 
-Codex uses one user-scoped Skill and lifecycle integration:
+Codex uses two user-scoped Skills and one lifecycle integration:
 
 ```bash
 acs integrations codex install
@@ -16,15 +16,19 @@ acs integrations codex doctor
 acs integrations codex uninstall
 ```
 
-The installer places the Skill in `$HOME/.agents/skills/oacs`, merges a small
-managed policy block into `$HOME/.codex/AGENTS.md`, and merges OACS entries into
-`$HOME/.codex/hooks.json`. It preserves existing user content. Uninstall removes
-only managed integration surfaces and never removes persistent databases.
+The installer places `oacs` and `proof-loop` in `$HOME/.agents/skills`, merges
+a small managed policy block into `$HOME/.codex/AGENTS.md`, and merges OACS
+entries into `$HOME/.codex/hooks.json`. It preserves existing user content.
+Uninstall removes only managed integration surfaces and never removes
+persistent databases.
 
 The Codex adapter keeps these boundaries:
 
 - OACS is the governed memory, context, and evidence layer, not the tool
   scheduler.
+- The generic proof loop owns acceptance criteria, smallest-safe-change
+  discipline, current evidence, fresh verification, and bounded correction.
+  It uses OACS for durable state and does not create `.agent/tasks/`.
 - Intent is a task classification. Retrieval uses the actual task as `--query`
   and returns rendered model-facing content, not capsule identifiers alone.
 - Project memory is retrieved from the current repository. Relevant global
@@ -64,7 +68,7 @@ remains for Claude, Cursor, and migration support. It contains:
 и conformance fixtures. Адаптер учит конкретный клиент последовательно
 использовать эти примитивы.
 
-Codex использует один пользовательский Skill и lifecycle integration:
+Codex использует два пользовательских Skills и одну lifecycle integration:
 
 ```bash
 acs integrations codex install
@@ -73,8 +77,8 @@ acs integrations codex doctor
 acs integrations codex uninstall
 ```
 
-Установщик помещает Skill в `$HOME/.agents/skills/oacs`, добавляет небольшой
-управляемый блок в `$HOME/.codex/AGENTS.md` и добавляет OACS hooks в
+Установщик помещает `oacs` и `proof-loop` в `$HOME/.agents/skills`, добавляет
+небольшой управляемый блок в `$HOME/.codex/AGENTS.md` и добавляет OACS hooks в
 `$HOME/.codex/hooks.json`. Существующее содержимое сохраняется. Uninstall
 удаляет только управляемые поверхности интеграции и никогда не удаляет базы.
 
@@ -82,6 +86,10 @@ acs integrations codex uninstall
 
 - OACS является управляемым слоем памяти, контекста и доказательств, а не
   планировщиком tools.
+- Общий proof loop отвечает за критерии приемки, минимальное безопасное
+  изменение, актуальные доказательства, свежую проверку и ограниченный цикл
+  исправлений. Он использует OACS для долговечного состояния и не создает
+  `.agent/tasks/`.
 - Intent классифицирует задачу. Retrieval использует текущую задачу как
   `--query` и возвращает текст для модели, а не только identifiers capsule.
 - Project memory выбирается из текущего репозитория. Релевантная global memory

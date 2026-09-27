@@ -11,7 +11,7 @@ API key is needed. Commands use a POSIX shell.
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install oacs==1.0.23
+python -m pip install oacs==1.0.24
 
 export OACS_DB=./.oacs/oacs.db
 
@@ -57,7 +57,7 @@ python examples/killer_demo/run_demo.py --out .oacs/killer-demo
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install oacs==1.0.23
+python -m pip install oacs==1.0.24
 
 export OACS_DB=./.oacs/oacs.db
 

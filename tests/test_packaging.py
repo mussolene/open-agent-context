@@ -25,6 +25,9 @@ def test_codex_integration_assets_are_packaged_under_oacs() -> None:
         "oacs/SKILL.md",
         "oacs/references/protocol.md",
         "oacs/scripts/oacs_hook.py",
+        "proof-loop/SKILL.md",
+        "proof-loop/agents/openai.yaml",
+        "proof-loop/references/protocol.md",
     ):
         assert (assets / relative).is_file()
 
@@ -36,7 +39,7 @@ def test_public_package_metadata_is_release_ready():
     urls = project["urls"]
 
     assert project["name"] == "oacs"
-    assert project["version"] == "1.0.23"
+    assert project["version"] == "1.0.24"
     assert "Open Agent Context Standard" in project["description"]
     assert "Development Status :: 5 - Production/Stable" in project["classifiers"]
     assert "License :: OSI Approved :: Apache Software License" in project["classifiers"]

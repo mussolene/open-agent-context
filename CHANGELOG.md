@@ -2,6 +2,26 @@
 
 ## Unreleased
 
+## 1.0.24 - 2026-09-27
+
+### Added
+
+- Added the packaged global `proof-loop` Skill for explicit acceptance criteria,
+  current evidence, fresh verification, and bounded correction across repository
+  domains.
+- Added installation, status, doctor, uninstall, idempotence, collision-safety,
+  packaging, and protocol-boundary coverage for the second managed Skill.
+
+### Changed
+
+- Refactored the proven task freezer, builder, verifier, and fixer roles from
+  the 1C workflow into a domain-neutral protocol layered on OACS.
+- Made OACS the only durable task-state, evidence, and checkpoint surface for
+  the generic proof loop. The integration does not create `.agent/tasks/` or a
+  parallel memory architecture.
+- Updated the global policy and public integration documentation to distinguish
+  OACS persistence from proof-loop delivery verification.
+
 ## 1.0.23 - 2026-09-27
 
 ### Added

@@ -15,7 +15,7 @@ acs integrations codex doctor --query "current OACS development task" --json
 
 The installed integration provides:
 
-- one user-scoped Skill at `$HOME/.agents/skills/oacs`;
+- user-scoped `oacs` and `proof-loop` Skills under `$HOME/.agents/skills`;
 - a small managed policy block in `$HOME/.codex/AGENTS.md`;
 - `SessionStart` recovery for startup, resume, and compact continuation;
 - selective `UserPromptSubmit` retrieval for substantial tasks;
@@ -73,7 +73,7 @@ acs integrations codex doctor --query "текущая задача разраб�
 
 Интеграция устанавливает:
 
-- один пользовательский Skill в `$HOME/.agents/skills/oacs`;
+- пользовательские Skills `oacs` и `proof-loop` в `$HOME/.agents/skills`;
 - небольшой управляемый policy block в `$HOME/.codex/AGENTS.md`;
 - восстановление `SessionStart` при startup, resume и compact continuation;
 - выборочный retrieval `UserPromptSubmit` для существенных задач;
