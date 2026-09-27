@@ -27,7 +27,8 @@ uses around those calls. It is not an agent framework, model provider, or vault.
 | --- | --- |
 | Portable standard | Memory lifecycle, context capsules, capability grants, evidence, audit semantics, and [JSON schemas](schemas/). |
 | Python reference implementation | CLI, HTTP API, SQLite storage, encryption, lexical retrieval, and context prompt rendering. |
-| Adapters and examples | Tools, skills, MCP bindings, repository workflows, and benchmark fixtures. These do not expand the standard. |
+| Supported reference adapters | Codex integration, CLI/API, SQLite storage, context rendering, and lifecycle helpers. These do not expand the standard. |
+| Examples and validation | Tool, skill, MCP, repository-workflow, and benchmark fixtures. |
 
 Start with the [specification](docs/SPEC.md) and
 [compatibility policy](docs/COMPATIBILITY.md) when implementing OACS in another
@@ -67,6 +68,21 @@ lines, not the total tokens of a later model request.
 For an exact package version and more detail, use the
 [PyPI quickstart](docs/QUICKSTART_PYPI.md). For editable installation and checks,
 see [Contributing](CONTRIBUTING.md).
+
+### Supported Codex integration
+
+OACS includes a supported Codex reference adapter. It is packaged with OACS,
+not maintained as an example Skill:
+
+```bash
+acs integrations codex install
+acs integrations codex status
+acs integrations codex doctor
+```
+
+The installer manages one user-scoped Skill, a small global policy block, and
+lifecycle hooks without storing persistent memory inside the Skill. See
+[Codex integration and consumer packs](docs/CONSUMER_PACKS.md).
 
 ### Core concepts
 
@@ -144,7 +160,8 @@ OACS помогает сохранять знания о проекте межд
 | --- | --- |
 | Переносимый стандарт | Жизненный цикл памяти, капсулы контекста, разрешения, доказательства, семантика аудита и [схемы JSON](schemas/). |
 | Реализация на Python | CLI, HTTP API, SQLite, шифрование, лексический поиск и подготовка контекста для модели. |
-| Адаптеры и примеры | Инструменты, навыки, привязки MCP, работа с репозиторием и тестовые наборы. Они не расширяют стандарт. |
+| Поддерживаемые эталонные адаптеры | Интеграция Codex, CLI/API, SQLite, подготовка контекста и lifecycle helpers. Они не расширяют стандарт. |
+| Примеры и проверка | Fixtures инструментов, Skill, MCP, работы с репозиторием и измерений. |
 
 Для реализации OACS в другой среде начните со
 [спецификации](docs/SPEC.md) и [политики совместимости](docs/COMPATIBILITY.md).
@@ -181,6 +198,21 @@ acs context build --intent answer_project_question --query "Alpha отчёты" 
 
 Установка конкретной версии описана в [руководстве PyPI](docs/QUICKSTART_PYPI.md).
 Установка из исходников и проверки: [участие в разработке](CONTRIBUTING.md).
+
+### Поддерживаемая интеграция Codex
+
+OACS включает поддерживаемый reference adapter Codex. Он входит в пакет OACS и
+не поддерживается как пример Skill:
+
+```bash
+acs integrations codex install
+acs integrations codex status
+acs integrations codex doctor
+```
+
+Установщик управляет одним пользовательским Skill, небольшим global policy
+block и lifecycle hooks, не помещая persistent memory внутрь Skill. Подробнее:
+[интеграция Codex и consumer packs](docs/CONSUMER_PACKS.md).
 
 ### Основные понятия
 

@@ -21,7 +21,8 @@ def test_cursor_rule_is_always_on_and_preserves_oacs_boundaries() -> None:
 
     assert "alwaysApply: true" in text
     assert "OACS does not orchestrate tools" in text
-    assert "acs context build --intent repo_development --scope project --json" in text
+    assert '--query "<actual task>"' in text
+    assert "--render-prompt" in text
     assert "local heuristic" in text
     assert "Standalone tool-result evidence does not enter" in text
     assert "Preserve attribution" in text
@@ -36,15 +37,16 @@ def test_root_fragments_select_context_and_protect_private_oacs_state() -> None:
         ]
     )
 
-    assert "Build or inspect repository context through OACS" in combined
-    assert "acs context build --intent repo_development --scope project --json" in combined
+    assert "globally installed `oacs` Skill" in combined
+    assert '--query "<actual task>"' in combined
     assert "OACS context build was run for the iteration" in combined
     assert "acs context " + "gate" not in combined
     assert "decision=" + "skip" not in combined
-    assert "Do not read, print, or commit `.agent/oacs/key.json`" in combined
+    assert "`.agent/oacs/key.json`" in combined
+    assert "read,\n  printed, or committed" in combined
     assert ".agent/oacs/unlocked.key" in combined
-    assert "OACS is not the tool orchestrator" in combined
-    assert "acs checkpoint add" in combined
+    assert "it does not choose\nor run tools" in combined
+    assert "Add an OACS checkpoint" in combined
 
 
 def test_consumer_pack_requires_context_build_for_substantial_work() -> None:
@@ -58,7 +60,8 @@ def test_consumer_pack_requires_context_build_for_substantial_work() -> None:
 
     assert "acs context " + "gate" not in combined
     assert "decision=" + "skip" not in combined
-    assert "acs context build --intent repo_development --scope project --json" in combined
+    assert '--query "<actual task>"' in combined
+    assert "--render-prompt" in combined
     assert "substantial" in combined
     assert "local heuristic" in combined
 

@@ -1,7 +1,14 @@
 # OACS Repo Development Consumer Pack
 
-This pack projects one OACS-backed repository workflow into Codex, Claude, and
-Cursor surfaces. It is a local adapter pack, not part of the OACS standard.
+This compatibility pack projects OACS policy into repository-local Claude and Cursor
+surfaces. It is a local adapter pack, not part of the OACS standard. Codex now
+uses one user-scoped Skill and lifecycle integration:
+
+```bash
+acs integrations codex install
+acs integrations codex status
+acs integrations codex doctor
+```
 
 Install into a target repository:
 
@@ -32,7 +39,8 @@ passphrases, `.agent/oacs`, `.oacs`, or private agent state.
 
 ## Included Surfaces
 
-- `AGENTS.fragment.md`: append to or use as a root `AGENTS.md` section.
+- `AGENTS.fragment.md`: minimal project opt-in policy only. The Codex operating
+  protocol lives in the global `oacs` Skill.
 - `CLAUDE.fragment.md`: append to or use as a root `CLAUDE.md` section.
 - `.cursor/rules/oacs-repo-memory.mdc`: always-on Cursor rule.
 - `.cursor/skills/oacs-repo-memory/SKILL.md`: Cursor skill for substantial

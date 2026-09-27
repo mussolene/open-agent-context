@@ -13,7 +13,7 @@ the OACS standard.
 
 1. State task scope and acceptance criteria (`AC1`, `AC2`, ...).
 2. Build context through OACS:
-   `acs context build --intent repo_development --scope project --json`.
+   `acs context build --intent repo_development --query "<actual task>" --scope project --render-prompt --json`.
 3. Run tools normally. OACS does not orchestrate tools.
 4. Record canonical command output, CI, retrieval, deployment, package publish,
    and verification results:

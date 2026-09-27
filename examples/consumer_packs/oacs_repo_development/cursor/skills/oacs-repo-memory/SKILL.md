@@ -21,7 +21,11 @@ acs status --json
 3. Build context:
 
 ```bash
-acs context build --intent repo_development --scope project --json
+acs context build --intent repo_development \
+  --query "<actual task>" \
+  --scope project \
+  --render-prompt \
+  --json
 ```
 
 ## During Work

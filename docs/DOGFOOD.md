@@ -1,198 +1,118 @@
 # Development Dogfood / Использование OACS в этом репозитории
 
 ## EN
-This document is an internal validation note for the reference implementation.
-It is not part of the OACS v1.0 standard surface. It shows that ordinary
-OACS memory/context operations can record development iterations as encrypted
-repo-scoped memory.
 
-Agent workflow in this repository:
+This repository validates the supported Codex integration against the OACS
+Python reference implementation. The integration is not an example Skill and
+does not expand the OACS v1.0 portable standard or conformance contract.
 
-1. State task scope and acceptance criteria before implementation.
-2. Build OACS context when prior repo memory matters.
-3. Record canonical command outputs, external retrieval, CI, and release results
-   as evidence with `acs tool ingest-result`.
-4. Inspect proof with `acs evidence list` / `acs evidence inspect`.
-5. Attach durable evidence to project memory with `acs memory sharpen`.
-6. Close every iteration with an OACS checkpoint/commit that references the
-   relevant evidence refs and records next steps.
-7. Run verification and a leak/secret check against the current codebase before
-   claiming completion, then ingest both command results as evidence.
+Install or refresh it with:
 
 ```bash
-export OACS_DB=./.oacs/dogfood.db
-
-acs init --json
-acs key init --json
-acs skill scan examples/skills --json
-
-acs skill run codex_oacs_runtime \
-  --payload '{"action":"capture","task":"implement repo dogfood","summary":"Added repo dogfood skill for OACS self-development.","cwd":"."}' \
-  --json
-
-acs skill run codex_oacs_runtime \
-  --payload '{"action":"context","task":"continue OACS development","cwd":"."}' \
-  --json
+acs integrations codex install
+acs integrations codex doctor --query "current OACS development task" --json
 ```
 
-The removable `codex_oacs_runtime` skill writes committed D1 episodes and
-builds Context Capsules from repo scope so another local agent pass can start
-from explicit memory rather than conversation history alone.
+The installed integration provides:
 
-For controlled auto-memory during local development:
+- one user-scoped Skill at `$HOME/.agents/skills/oacs`;
+- a small managed policy block in `$HOME/.codex/AGENTS.md`;
+- `SessionStart` recovery for startup, resume, and compact continuation;
+- selective `UserPromptSubmit` retrieval for substantial tasks;
+- separate project and global memory retrieval with rendered model context.
 
-```bash
-acs skill run codex_oacs_runtime \
-  --payload '{"action":"auto_start","task":"implement next OACS slice","cwd":"."}' \
-  --json
-
-acs skill run codex_oacs_runtime \
-  --payload '{"action":"autorun","task":"verify next OACS slice","command":"pytest -q","cwd":"."}' \
-  --json
-
-acs skill run codex_oacs_runtime \
-  --payload '{"action":"auto_finish","task":"implement next OACS slice","summary":"Added and verified the next OACS slice.","outcome":"implemented","cwd":"."}' \
-  --json
-```
-
-`auto-start` only builds context and records audit metadata; it does not write
-memory. `auto-finish` and `autorun` commit only D1 repo episodes. D2 facts,
-procedures, rules, and D3-D5 patterns still require explicit OACS
-`memory propose` / `memory commit` review.
-
-When running dogfood in `OACS_POLICY_MODE=strict`, grant the active actor
-ordinary `memory.*`, `context.build`, `context.explain`, `evidence.ingest`, and
-`skill.run` capabilities first. Checkpoints and audit events are reference
-workflow records in this implementation, not separate v1 portable capability
-operations. The dogfood skill must not depend on bootstrap authority in strict
-mode.
-
-Canonical proof outputs should be ingested as evidence:
+Repository development still uses ordinary OACS primitives. State acceptance
+criteria, run tools directly, ingest canonical results as evidence, and close a
+verified iteration with a checkpoint:
 
 ```bash
-acs tool ingest-result \
+acs integrations codex context \
+  --intent repo_development \
+  --query "<actual task>" \
+  --json
+
+acs tool ingest-result --db @project \
   --tool-id repo_check \
   --tool-name "Repository check" \
-  --output '{"command":"pytest -q","status":"pass","summary":"102 passed"}' \
-  --source-uri "repo://checks/pytest" \
+  --tool-type external \
+  --status completed \
+  --scope project \
+  --input '{"commands":["pytest -q"]}' \
+  --output '{"status":"PASS","summary":"current checks passed"}' \
   --json
 
-acs evidence list --kind tool_result --json
-acs evidence inspect <ev_...> --json
-```
-
-Per-iteration closeout should leave both task state and leak/secret review in
-OACS:
-
-```bash
-acs run --label "secret scan" -- <project-secret-scanner-command>
-
-acs checkpoint add \
-  --task "implement next OACS slice" \
-  --summary "Iteration verified and secret scan passed." \
-  --next "Continue with the next roadmap slice." \
+acs checkpoint add --db @project \
+  --task "<stable task id>" \
+  --summary "Iteration verified." \
+  --next "<next step or Complete>" \
   --evidence ev_... \
+  --scope project \
   --json
 ```
 
-The secret scan can be `gitleaks`, a CI secret scanner, or a project-specific
-deny-pattern check. The important contract for this repository is that the
-result is captured as OACS evidence for every iteration.
+Run current verification and a leak or secret scan before completion, then
+record both results as evidence. Historical memory and recovered checkpoints
+are context only. A current explicit user instruction always has priority.
+
+The implementation source of truth is `oacs/integrations/codex`. Do not copy
+the installed Skill into repository `examples/` or duplicate its operating
+protocol in project `AGENTS.md` files.
 
 ## RU
-Этот документ - internal validation note для reference implementation. Он не
-является частью OACS v1.0 standard surface. Он показывает, что ordinary
-OACS memory/context operations могут записывать development iterations как
-encrypted repo-scoped memory.
 
-Agent workflow в этом репозитории:
+Этот репозиторий проверяет поддерживаемую интеграцию Codex на эталонной
+реализации OACS для Python. Интеграция не является примером Skill и не расширяет
+переносимый стандарт OACS v1.0 или conformance contract.
 
-1. Зафиксировать scope задачи и acceptance criteria до implementation.
-2. Собрать OACS context, если важна предыдущая repo memory.
-3. Записывать canonical command outputs, external retrieval, CI и release
-   results как evidence через `acs tool ingest-result`.
-4. Проверять proof через `acs evidence list` / `acs evidence inspect`.
-5. Привязывать durable evidence к project memory через `acs memory sharpen`.
-6. Закрывать каждую итерацию OACS checkpoint/commit с relevant evidence refs и
-   next steps.
-7. Запускать verification и leak/secret check по текущему codebase перед claim
-   completion, затем ingest оба результата как evidence.
+Установка или обновление:
 
 ```bash
-export OACS_DB=./.oacs/dogfood.db
-
-acs init --json
-acs key init --json
-acs skill scan examples/skills --json
-
-acs skill run codex_oacs_runtime \
-  --payload '{"action":"capture","task":"implement repo dogfood","summary":"Added repo dogfood skill for OACS self-development.","cwd":"."}' \
-  --json
-
-acs skill run codex_oacs_runtime \
-  --payload '{"action":"context","task":"continue OACS development","cwd":"."}' \
-  --json
+acs integrations codex install
+acs integrations codex doctor --query "текущая задача разработки OACS" --json
 ```
 
-Отключаемый `codex_oacs_runtime` skill пишет committed D1 episodes и
-строит Context Capsules из repo scope, чтобы другой local agent pass начинался
-с явной памяти, а не только с истории диалога.
+Интеграция устанавливает:
 
-Для controlled auto-memory во время локальной разработки:
+- один пользовательский Skill в `$HOME/.agents/skills/oacs`;
+- небольшой управляемый policy block в `$HOME/.codex/AGENTS.md`;
+- восстановление `SessionStart` при startup, resume и compact continuation;
+- выборочный retrieval `UserPromptSubmit` для существенных задач;
+- раздельную project и global memory с rendered context для модели.
 
-```bash
-acs skill run codex_oacs_runtime \
-  --payload '{"action":"auto_start","task":"implement next OACS slice","cwd":"."}' \
-  --json
-
-acs skill run codex_oacs_runtime \
-  --payload '{"action":"autorun","task":"verify next OACS slice","command":"pytest -q","cwd":"."}' \
-  --json
-
-acs skill run codex_oacs_runtime \
-  --payload '{"action":"auto_finish","task":"implement next OACS slice","summary":"Added and verified the next OACS slice.","outcome":"implemented","cwd":"."}' \
-  --json
-```
-
-`auto-start` только строит context и пишет audit metadata; memory он не
-записывает. `auto-finish` и `autorun` коммитят только D1 repo episodes. D2
-facts, procedures, rules и D3-D5 patterns по-прежнему требуют явного review
-через OACS `memory propose` / `memory commit`.
-
-При dogfood в `OACS_POLICY_MODE=strict` активному actor сначала нужны обычные
-capabilities `memory.*`, `context.build`, `context.explain`, `evidence.ingest`
-и `skill.run`. Checkpoints и audit events в этой implementation являются
-reference workflow records, а не отдельными v1 portable capability operations.
-Dogfood skill не должен зависеть от bootstrap authority в strict mode.
-
-Canonical proof outputs нужно ingest как evidence:
+Разработка репозитория использует обычные примитивы OACS. Нужно определить
+acceptance criteria, запускать инструменты напрямую, записывать канонические
+результаты как evidence и закрывать проверенную итерацию checkpoint:
 
 ```bash
-acs tool ingest-result \
+acs integrations codex context \
+  --intent repo_development \
+  --query "<фактическая задача>" \
+  --json
+
+acs tool ingest-result --db @project \
   --tool-id repo_check \
   --tool-name "Repository check" \
-  --output '{"command":"pytest -q","status":"pass","summary":"102 passed"}' \
-  --source-uri "repo://checks/pytest" \
+  --tool-type external \
+  --status completed \
+  --scope project \
+  --input '{"commands":["pytest -q"]}' \
+  --output '{"status":"PASS","summary":"текущие проверки прошли"}' \
   --json
 
-acs evidence list --kind tool_result --json
-acs evidence inspect <ev_...> --json
-```
-
-Per-iteration closeout должен оставлять в OACS и task state, и leak/secret
-review:
-
-```bash
-acs run --label "secret scan" -- <project-secret-scanner-command>
-
-acs checkpoint add \
-  --task "implement next OACS slice" \
-  --summary "Iteration verified and secret scan passed." \
-  --next "Continue with the next roadmap slice." \
+acs checkpoint add --db @project \
+  --task "<стабильный идентификатор задачи>" \
+  --summary "Итерация проверена." \
+  --next "<следующий шаг или Complete>" \
   --evidence ev_... \
+  --scope project \
   --json
 ```
 
-Secret scan может быть `gitleaks`, CI secret scanner или project-specific
-deny-pattern check. Важный contract для этого репозитория: результат должен
-быть записан как OACS evidence на каждой итерации.
+Перед завершением нужно выполнить актуальные проверки и поиск утечек или
+секретов, затем записать оба результата как evidence. Historical memory и
+восстановленный checkpoint являются только контекстом. Текущая явная инструкция
+пользователя всегда имеет приоритет.
+
+Единственный источник реализации находится в `oacs/integrations/codex`.
+Установленный Skill не следует копировать в `examples/`, а его полный протокол
+не следует дублировать в project `AGENTS.md`.

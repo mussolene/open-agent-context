@@ -44,11 +44,28 @@ recent memory metadata, recent Context Capsules, and recent audit events.
 Context build:
 
 ```bash
-acs context build --intent repo_development --scope project --json
+acs context build --intent repo_development \
+  --query "<actual task>" \
+  --scope project \
+  --render-prompt \
+  --json
 ```
 
 `acs context build` is the direct context entry point for substantial repository
-work. Consumer packs should call it directly before implementation.
+work. Intent classifies the task; retrieval uses the actual task query. The
+rendered prompt, rather than capsule identifiers alone, is the model-facing
+result.
+
+Codex users can install the user-scoped adapter:
+
+```bash
+acs integrations codex install
+acs integrations codex doctor
+acs integrations codex context --query "<actual task>" --json
+```
+
+The adapter resolves project storage, retrieves project and global memory with
+separate scopes, and restores current checkpoint state through lifecycle hooks.
 
 Governed command evidence:
 
@@ -132,11 +149,27 @@ acs resume --scope project --json
 Построение context:
 
 ```bash
-acs context build --intent repo_development --scope project --json
+acs context build --intent repo_development \
+  --query "<текущая задача>" \
+  --scope project \
+  --render-prompt \
+  --json
 ```
 
 `acs context build` является прямой точкой входа для substantial repository
-work. Consumer packs должны вызывать его напрямую перед implementation.
+work. Intent классифицирует задачу, а retrieval использует предметный запрос.
+Модель должна получать rendered prompt, а не только identifiers capsule.
+
+Пользователям Codex доступен пользовательский адаптер:
+
+```bash
+acs integrations codex install
+acs integrations codex doctor
+acs integrations codex context --query "<текущая задача>" --json
+```
+
+Адаптер определяет project storage, раздельно получает project и global memory,
+а также восстанавливает checkpoint через lifecycle hooks.
 
 Governed command evidence:
 

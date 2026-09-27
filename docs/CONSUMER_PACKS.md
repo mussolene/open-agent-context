@@ -1,90 +1,112 @@
-# OACS Consumer Packs / Пакеты потребителей OACS
+# Supported Codex Integration And Consumer Packs / Интеграция Codex и consumer packs
 
 ## EN
-OACS consumer packs are local adapter bundles for agent clients. They are not
-part of the OACS v1.0 standard surface. The standard remains the portable JSON
-records, lifecycle, capabilities, evidence, context capsules, and conformance
-fixtures. A consumer pack only teaches a client such as Codex, Claude, Cursor,
-or another IDE agent how to use those records consistently in a repository.
 
-The strong pattern is:
+OACS client adapters are not part of the OACS v1.0 standard surface. The
+portable records, lifecycle, capabilities, evidence, context capsules, and
+conformance fixtures remain the standard. An adapter teaches a client how to
+use those primitives consistently.
 
-```text
-root repo instructions -> OACS context/evidence/checkpoint loop -> current
-tooling gates -> OACS evidence refs -> final answer
+Codex uses one user-scoped Skill and lifecycle integration:
+
+```bash
+acs integrations codex install
+acs integrations codex status
+acs integrations codex doctor
+acs integrations codex uninstall
 ```
 
-For Codex and Claude, the root instruction surfaces are `AGENTS.md` and
-`CLAUDE.md`. For Cursor, the durable surfaces are `.cursor/rules/*.mdc` and
-`.cursor/skills/*/SKILL.md`. The same OACS policy should be projected into all
-of them so each agent follows the same memory and proof discipline.
+The installer places the Skill in `$HOME/.agents/skills/oacs`, merges a small
+managed policy block into `$HOME/.codex/AGENTS.md`, and merges OACS entries into
+`$HOME/.codex/hooks.json`. It preserves existing user content. Uninstall removes
+only managed integration surfaces and never removes persistent databases.
 
-Consumer packs must keep these boundaries:
+The Codex adapter keeps these boundaries:
 
-- OACS is the governed memory/context/evidence layer, not the tool scheduler.
-- Substantial repository work should build OACS context directly with
-  `acs context build --intent repo_development --scope project --json`, then
-  continue through evidence ingestion, verification, leak/secret review, and a
-  checkpoint.
-- Command output, CI, retrieval, package publication, and manual verification
-  become `EvidenceRef` records through `acs tool ingest-result`.
-- Standalone tool evidence does not enter a `ContextCapsule` by itself; it must
-  be attached to reviewed memory when it should guide future context.
-- D2+ durable facts/procedures and D3-D5 patterns require explicit review.
-- Local `.agent/oacs/key.json`, `.agent/oacs/unlocked.key`, `.agent/oacs`,
-  `.oacs`, key material, passphrases, databases, and private agent state must
-  not be read, printed, or committed.
-- Client-specific rules may be strict, but they must not redefine the OACS
-  standard.
+- OACS is the governed memory, context, and evidence layer, not the tool
+  scheduler.
+- Intent is a task classification. Retrieval uses the actual task as `--query`
+  and returns rendered model-facing content, not capsule identifiers alone.
+- Project memory is retrieved from the current repository. Relevant global
+  memory is retrieved from a separate user-data store. Project memory receives
+  the larger budget and Project A storage is never queried from Project B.
+- Checkpoints provide compact current task state. Historical memory is
+  evidence and context, not authorization. A newer user instruction wins.
+- `SessionStart` handles startup, resume, and compact continuation.
+  `UserPromptSubmit` refreshes semantic context only for substantial prompts.
+- Command output, CI, retrieval, publication, and verification can become
+  `EvidenceRef` records through `acs tool ingest-result`.
+- Standalone evidence enters a future context capsule only through reviewed
+  memory that references it.
+- Local keys, passphrases, databases, and private agent state must not be
+  printed or committed.
 
-The reference pack in `examples/consumer_packs/oacs_repo_development` contains:
+Project storage is discovered at `.agent/oacs/oacs.db` or `.oacs/oacs.db`.
+Global storage follows the operating system user-data convention and stays
+outside the Skill directory.
 
-- `AGENTS.fragment.md` for Codex-style root instructions.
-- `CLAUDE.fragment.md` for Claude root instructions.
-- `cursor/rules/oacs-repo-memory.mdc` for Cursor always-on workflow rules.
-- `cursor/skills/oacs-repo-memory/SKILL.md` for Cursor task execution.
-- `scripts/install.py` to copy the selected surfaces into a local repository.
+Repository `AGENTS.md` files should keep only project-specific policy and a
+small OACS opt-in statement. They should not copy the full Codex protocol.
+
+The compatibility pack in `examples/consumer_packs/oacs_repo_development`
+remains for Claude, Cursor, and migration support. It contains:
+
+- `AGENTS.fragment.md`: minimal Codex project opt-in policy.
+- `CLAUDE.fragment.md`: repository-local Claude workflow.
+- `cursor/rules/oacs-repo-memory.mdc`: always-on Cursor workflow.
+- `cursor/skills/oacs-repo-memory/SKILL.md`: Cursor execution workflow.
+- `scripts/install.py`: repository-local surface installer.
 
 ## RU
-OACS consumer packs — это локальные adapter bundles для агентных клиентов. Они
-не являются частью OACS v1.0 standard surface. Стандартом остаются переносимые
-JSON records, lifecycle, capabilities, evidence, context capsules и conformance
-fixtures. Consumer pack только учит конкретный client — Codex, Claude, Cursor
-или другой IDE agent — последовательно использовать эти records в репозитории.
 
-Сильный паттерн:
+Клиентские адаптеры OACS не входят в стандарт OACS v1.0. Стандартом остаются
+переносимые записи, жизненный цикл, полномочия, доказательства, context capsules
+и conformance fixtures. Адаптер учит конкретный клиент последовательно
+использовать эти примитивы.
 
-```text
-root repo instructions -> OACS context/evidence/checkpoint loop -> текущие
-tooling gates -> OACS evidence refs -> final answer
+Codex использует один пользовательский Skill и lifecycle integration:
+
+```bash
+acs integrations codex install
+acs integrations codex status
+acs integrations codex doctor
+acs integrations codex uninstall
 ```
 
-Для Codex и Claude root instruction surfaces — `AGENTS.md` и `CLAUDE.md`. Для
-Cursor устойчивые surfaces — `.cursor/rules/*.mdc` и
-`.cursor/skills/*/SKILL.md`. Одна и та же OACS policy должна проецироваться во
-все эти файлы, чтобы разные агенты соблюдали одну дисциплину памяти и proof.
+Установщик помещает Skill в `$HOME/.agents/skills/oacs`, добавляет небольшой
+управляемый блок в `$HOME/.codex/AGENTS.md` и добавляет OACS hooks в
+`$HOME/.codex/hooks.json`. Существующее содержимое сохраняется. Uninstall
+удаляет только управляемые поверхности интеграции и никогда не удаляет базы.
 
-Consumer packs должны сохранять границы:
+Адаптер Codex сохраняет следующие границы:
 
-- OACS — governed memory/context/evidence layer, а не scheduler tools.
-- Для substantial repository work нужно напрямую строить OACS context через
-  `acs context build --intent repo_development --scope project --json`, затем
-  проходить evidence ingestion, verification, leak/secret review и checkpoint.
-- Command output, CI, retrieval, package publication и manual verification
-  становятся `EvidenceRef` через `acs tool ingest-result`.
-- Standalone tool evidence само не попадает в `ContextCapsule`; его нужно
-  привязать к reviewed memory, если оно должно влиять на будущий context.
-- D2+ durable facts/procedures и D3-D5 patterns требуют explicit review.
-- Локальные `.agent/oacs/key.json`, `.agent/oacs/unlocked.key`,
-  `.agent/oacs`, `.oacs`, key material, passphrases, databases и private agent
-  state нельзя читать, печатать или коммитить.
-- Client-specific rules могут быть жёсткими, но не должны переопределять OACS
-  standard.
+- OACS является управляемым слоем памяти, контекста и доказательств, а не
+  планировщиком tools.
+- Intent классифицирует задачу. Retrieval использует текущую задачу как
+  `--query` и возвращает текст для модели, а не только identifiers capsule.
+- Project memory выбирается из текущего репозитория. Релевантная global memory
+  выбирается из отдельного пользовательского хранилища. Project memory получает
+  больший бюджет, а хранилище Project A не запрашивается из Project B.
+- Checkpoint содержит компактное состояние текущей задачи. Historical memory
+  является контекстом и доказательством, а не разрешением. Более новая
+  инструкция пользователя имеет приоритет.
+- `SessionStart` обслуживает startup, resume и продолжение после compact.
+  `UserPromptSubmit` обновляет semantic context только для существенных prompts.
+- Результаты commands, CI, retrieval, публикации и verification можно сохранять
+  как `EvidenceRef` через `acs tool ingest-result`.
+- Отдельное evidence попадает в будущий context capsule только через
+  проверенную memory, которая ссылается на него.
+- Локальные ключи, passphrases, базы и private agent state нельзя печатать или
+  коммитить.
 
-Reference pack в `examples/consumer_packs/oacs_repo_development` содержит:
+В project `AGENTS.md` следует оставлять только специфические правила проекта и
+короткое включение OACS. Полный протокол Codex там дублировать не следует.
 
-- `AGENTS.fragment.md` для Codex-style root instructions.
-- `CLAUDE.fragment.md` для Claude root instructions.
-- `cursor/rules/oacs-repo-memory.mdc` для Cursor always-on workflow rules.
-- `cursor/skills/oacs-repo-memory/SKILL.md` для Cursor task execution.
-- `scripts/install.py` для копирования выбранных surfaces в локальный repo.
+Compatibility pack в `examples/consumer_packs/oacs_repo_development` сохранён
+для Claude, Cursor и миграции. Он содержит:
+
+- `AGENTS.fragment.md`: минимальный project policy Codex.
+- `CLAUDE.fragment.md`: локальный workflow Claude.
+- `cursor/rules/oacs-repo-memory.mdc`: постоянное правило Cursor.
+- `cursor/skills/oacs-repo-memory/SKILL.md`: workflow выполнения Cursor.
+- `scripts/install.py`: установщик локальных поверхностей репозитория.

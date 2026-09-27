@@ -2,6 +2,36 @@
 
 ## Unreleased
 
+## 1.0.23 - 2026-09-27
+
+### Added
+
+- Added the supported `acs integrations codex install`, `status`, `doctor`,
+  `context`, and `uninstall` commands.
+- Added one packaged global Codex Skill, a merge-safe global `AGENTS.md` policy
+  block, and lifecycle hooks for compact task-state restoration and selective
+  semantic retrieval.
+- Added isolated coverage for project and global retrieval, cross-project
+  isolation, rendered memory content, unavailable stores, checkpoint recovery,
+  user-instruction priority, and integration lifecycle idempotence.
+
+### Changed
+
+- Made `oacs/integrations/codex` the source of truth for the supported Codex
+  integration. It is a Python reference adapter and does not expand the OACS
+  v1.0 portable standard or conformance contract.
+- Separated categorical intent from the actual retrieval query in consumer
+  guidance and required rendered model-facing context.
+- Documented platform user-data storage for global memory and repository-local
+  project storage without placing persistent databases inside the Skill.
+- Reduced repository Codex instructions to project-specific policy while
+  keeping Claude and Cursor consumer surfaces as optional compatibility packs.
+
+### Removed
+
+- Removed the obsolete `examples/skills/codex_oacs_runtime` copy after its
+  supported behavior moved into the packaged Codex integration.
+
 ## 1.0.22 - 2026-09-08
 
 ### Removed

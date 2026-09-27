@@ -28,6 +28,19 @@ from oacs.core.ids import new_id
 from oacs.core.json import hash_json
 from oacs.core.time import now_iso
 from oacs.crypto.hybrid_pqc import HybridPQCKeyProvider
+from oacs.integrations.codex.installer import (
+    doctor as codex_integration_doctor,
+)
+from oacs.integrations.codex.installer import (
+    install as codex_integration_install,
+)
+from oacs.integrations.codex.installer import (
+    status as codex_integration_status,
+)
+from oacs.integrations.codex.installer import (
+    uninstall as codex_integration_uninstall,
+)
+from oacs.integrations.codex.runtime import build_codex_context, run_hook
 from oacs.rules.models import RuleManifest
 from oacs.skills.models import SkillManifest
 from oacs.skills.runner import run_skill
@@ -52,6 +65,8 @@ capability_app = typer.Typer()
 checkpoint_app = typer.Typer()
 policy_app = typer.Typer()
 conformance_app = typer.Typer()
+integrations_app = typer.Typer(help="Install and inspect client integrations.")
+codex_integration_app = typer.Typer(help="Manage the Codex integration.")
 
 app.add_typer(actor_app, name="actor")
 app.add_typer(capability_app, name="capability")
@@ -71,6 +86,8 @@ app.add_typer(audit_app, name="audit")
 app.add_typer(checkpoint_app, name="checkpoint")
 app.add_typer(policy_app, name="policy")
 app.add_typer(conformance_app, name="conformance")
+app.add_typer(integrations_app, name="integrations")
+integrations_app.add_typer(codex_integration_app, name="codex")
 
 
 DbOpt = Annotated[str | None, typer.Option("--db")]
@@ -259,6 +276,70 @@ def doctor(db: DbOpt = None, json_out: JsonOpt = False) -> None:
     emit({"status": status_value, "memory_decrypt_health": memory_health}, json_out)
     if status_value != "PASS":
         raise typer.Exit(1)
+
+
+@codex_integration_app.command("install")
+def integrations_codex_install(
+    home: Annotated[Path | None, typer.Option("--home")] = None,
+    json_out: JsonOpt = False,
+) -> None:
+    emit(codex_integration_install(home), json_out)
+
+
+@codex_integration_app.command("status")
+def integrations_codex_status(
+    home: Annotated[Path | None, typer.Option("--home")] = None,
+    json_out: JsonOpt = False,
+) -> None:
+    emit(codex_integration_status(home), json_out)
+
+
+@codex_integration_app.command("doctor")
+def integrations_codex_doctor(
+    home: Annotated[Path | None, typer.Option("--home")] = None,
+    query: Annotated[str, typer.Option("--query")] = "OACS Codex integration",
+    json_out: JsonOpt = False,
+) -> None:
+    result = codex_integration_doctor(home, query)
+    emit(result, json_out)
+    if result["status"] != "PASS":
+        raise typer.Exit(1)
+
+
+@codex_integration_app.command("uninstall")
+def integrations_codex_uninstall(
+    home: Annotated[Path | None, typer.Option("--home")] = None,
+    json_out: JsonOpt = False,
+) -> None:
+    emit(codex_integration_uninstall(home), json_out)
+
+
+@codex_integration_app.command("context")
+def integrations_codex_context(
+    query: Annotated[str, typer.Option("--query")],
+    intent: Annotated[str, typer.Option("--intent")] = "repo_development",
+    budget: Annotated[int, typer.Option("--budget", min=1)] = 4000,
+    cwd: Annotated[Path | None, typer.Option("--cwd")] = None,
+    json_out: JsonOpt = False,
+) -> None:
+    emit(
+        build_codex_context(
+            query=query,
+            intent=intent,
+            cwd=cwd,
+            budget=budget,
+            current_user_prompt=query,
+        ),
+        json_out,
+    )
+
+
+@codex_integration_app.command("hook", hidden=True)
+def integrations_codex_hook() -> None:
+    payload = json.loads(typer.get_text_stream("stdin").read() or "{}")
+    result = run_hook(payload)
+    if result is not None:
+        typer.echo(json.dumps(result, ensure_ascii=False))
 
 
 @app.command()

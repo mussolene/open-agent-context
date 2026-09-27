@@ -16,6 +16,19 @@ def test_wheel_includes_top_level_schemas():
     assert sdist["force-include"]["conformance"] == "conformance"
 
 
+def test_codex_integration_assets_are_packaged_under_oacs() -> None:
+    root = Path(__file__).resolve().parents[1]
+    assets = root / "oacs" / "integrations" / "codex" / "assets"
+
+    for relative in (
+        "global_agents.md",
+        "oacs/SKILL.md",
+        "oacs/references/protocol.md",
+        "oacs/scripts/oacs_hook.py",
+    ):
+        assert (assets / relative).is_file()
+
+
 def test_public_package_metadata_is_release_ready():
     pyproject = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
     project = pyproject["project"]
@@ -23,7 +36,7 @@ def test_public_package_metadata_is_release_ready():
     urls = project["urls"]
 
     assert project["name"] == "oacs"
-    assert project["version"] == "1.0.22"
+    assert project["version"] == "1.0.23"
     assert "Open Agent Context Standard" in project["description"]
     assert "Development Status :: 5 - Production/Stable" in project["classifiers"]
     assert "License :: OSI Approved :: Apache Software License" in project["classifiers"]

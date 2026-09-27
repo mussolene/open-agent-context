@@ -155,11 +155,12 @@ def test_context_build_docs_do_not_define_gate_contract() -> None:
     agent_workflow = (ROOT / "docs" / "AGENT_WORKFLOW.md").read_text(encoding="utf-8")
     spec = (ROOT / "docs" / "SPEC.md").read_text(encoding="utf-8")
 
-    assert "acs context build --intent repo_development --scope project --json" in consumer_packs
+    assert "actual task as `--query`" in consumer_packs
+    assert "rendered model-facing content" in consumer_packs
     assert "build/" + "skip" not in consumer_packs
     assert "Required consumer decision keys" not in consumer_packs
     assert "reference_consumer_pack" + "_convenience_not_oacs_standard" not in consumer_packs
-    assert "directly before implementation" in agent_workflow
+    assert "retrieval uses the actual task query" in agent_workflow
     assert "local workflow protocols" in roadmap
     assert "context " + "gate" not in spec.casefold()
 
@@ -248,19 +249,14 @@ def test_tool_docs_describe_canonical_evidence_projection() -> None:
     assert "does not enter `ContextCapsule.evidence_refs` by" in text
 
 
-def test_codex_oacs_runtime_skill_uses_current_evidence_capability() -> None:
-    skill = json.loads(
-        (ROOT / "examples" / "skills" / "codex_oacs_runtime" / "skill.json").read_text(
-            encoding="utf-8"
-        )
-    )
+def test_codex_integration_is_supported_and_not_an_example_skill() -> None:
     dogfood = (ROOT / "docs" / "DOGFOOD.md").read_text(encoding="utf-8")
+    roadmap = (ROOT / "docs" / "ROADMAP.md").read_text(encoding="utf-8")
 
-    permissions = skill["permissions"]
-    assert permissions["evidence.ingest"] is True
-    assert "tool.ingest_result" not in permissions
-    assert "evidence.ingest" in dogfood
-    assert "not separate v1 portable capability\noperations" in dogfood
+    assert "not an example Skill" in dogfood
+    assert "oacs/integrations/codex" in dogfood
+    assert "acs integrations codex install" in roadmap
+    assert not (ROOT / "examples" / "skills" / "codex_oacs_runtime").exists()
 
 
 def test_interoperability_docs_link_conformance_fixtures_and_reference_boundary() -> None:
@@ -280,12 +276,13 @@ def test_interoperability_docs_link_conformance_fixtures_and_reference_boundary(
     ).read_text(encoding="utf-8")
 
 
-def test_agent_instructions_use_oacs_native_proof_loop() -> None:
+def test_agent_instructions_delegate_general_protocol_to_global_skill() -> None:
     text = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
 
-    assert "OACS Repo Development Workflow" in text
-    assert "acs tool ingest-result" in text
-    assert "acs evidence inspect <ev_...>" in text
+    assert "OACS Project Policy" in text
+    assert "globally installed `oacs` Skill" in text
+    assert "installed Skill owns the general OACS" in text
+    assert "acs context build" not in text
     assert ".agent/tasks" not in text
 
 

@@ -105,6 +105,9 @@ Schema says otherwise. The `acs` CLI, FastAPI routes, SQLite backend, local key
 providers, local CLI execution, HTTP execution, LM Studio support, benchmark
 runners, and repo dogfood workflow are validation and integration surfaces
 around the standard contract, not mandatory runtime features.
+Supported client integrations, including the packaged Codex adapter, remain
+reference-implementation surfaces even when they have a stable installer and
+lifecycle contract.
 
 ## RU
 OACS v1.0 задаёт детерминированный нижний слой агентского контекста. Модель получает
@@ -210,3 +213,6 @@ JSON Schema не говорит обратного. `acs` CLI, FastAPI routes, S
 local key providers, local CLI execution, HTTP execution, LM Studio support,
 benchmark runners и repo dogfood workflow являются validation и integration
 surfaces вокруг standard contract, а не обязательными runtime features.
+Поддерживаемые client integrations, включая пакетный adapter Codex, остаются
+поверхностями reference implementation даже при наличии стабильного installer
+и lifecycle contract.
