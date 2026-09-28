@@ -9,7 +9,10 @@ Use this Skill for substantial implementation, investigation, refactoring, relea
 
 Repository identity and physical database paths are resolved by OACS. Do not choose database files manually.
 
-For a new or materially changed task, build model-facing context with the actual task as the retrieval query:
+For a new or materially changed task, use the context already delivered by the
+OACS prompt hook when it covers the current request. If no current context was
+delivered, or a narrower retrieval is needed, build model-facing context with
+the actual task as the retrieval query:
 
 ```bash
 acs integrations context \

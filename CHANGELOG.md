@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+## 1.0.26 - 2026-09-28
+
+### Fixed
+
+- Prevented nested Git repositories from discovering project memory belonging
+  to a parent repository.
+- Made Codex, Claude Code, and Cursor diagnostics fail consistently when a
+  project or global store is locked, unreadable, or shadowed by a newer project
+  storage location.
+- Updated the installed OACS Skill guidance to reuse current hook-delivered
+  context instead of repeating semantic retrieval unnecessarily.
+
+### Changed
+
+- Consolidated model-facing context health checks in the shared integration
+  layer so all supported clients use the same diagnostic contract.
+- Clarified that the bundled proof-loop task roles remain disabled until their
+  `.agent/tasks/` dependency is migrated to OACS state and evidence.
+
 ## 1.0.25 - 2026-09-27
 
 ### Added

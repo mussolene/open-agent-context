@@ -88,3 +88,61 @@ def ensure_global_storage() -> Path:
         metadata = service.key_provider.generate()
         service.store.set_metadata("encryption_mode", str(metadata["provider"]))
     return path
+
+
+def context_health_checks(context: dict[str, object]) -> list[dict[str, object]]:
+    checks: list[dict[str, object]] = []
+    for store_name in ("project", "global"):
+        checks.append(
+            {
+                "name": f"{store_name}_context_access",
+                "status": "PASS" if isinstance(context.get(store_name), dict) else "FAIL",
+            }
+        )
+
+    prompt = str(context.get("prompt") or "")
+    stores = [
+        store
+        for store_name in ("project", "global")
+        if isinstance((store := context.get(store_name)), dict)
+    ]
+    selected = sum(int(store.get("memory_count", 0)) for store in stores)
+    rendered_ok = "# OACS Agent Context" in prompt and (
+        selected == 0
+        or any(
+            memory_id in prompt
+            for store in stores
+            for memory_id in store.get("memory_ids", [])
+        )
+    )
+    checks.append(
+        {
+            "name": "rendered_context",
+            "status": "PASS" if rendered_ok else "FAIL",
+            "selected_memories": selected,
+        }
+    )
+
+    warnings = context.get("warnings")
+    warning_items = warnings if isinstance(warnings, list) else []
+    for name, reason in (
+        ("memory_readability", "UnreadableMemoryRecord"),
+        ("project_memory_visibility", "shadowed_legacy_storage"),
+    ):
+        count = sum(
+            1
+            for item in warning_items
+            if isinstance(item, dict) and item.get("reason") == reason
+        )
+        checks.append({"name": name, "status": "FAIL" if count else "PASS", "count": count})
+
+    state = context.get("current_task_state")
+    provenance = state.get("checkpoint_provenance") if isinstance(state, dict) else None
+    checks.append(
+        {
+            "name": "latest_checkpoint",
+            "status": "PASS" if isinstance(provenance, dict) else "FAIL",
+            "available": bool(isinstance(provenance, dict) and provenance.get("id")),
+        }
+    )
+    return checks

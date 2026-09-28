@@ -11,6 +11,7 @@ from oacs.integrations.codex.runtime import build_codex_context, resolve_project
 from oacs.integrations.common import (
     ASSET_ROOT,
     SKILL_MARKER,
+    context_health_checks,
     ensure_global_storage,
     install_skills,
     merge_marked_block,
@@ -140,36 +141,7 @@ def doctor(home: Path | None = None, query: str = "OACS Codex integration") -> d
         checks.append({"name": name, "status": "PASS" if passed else "FAIL"})
 
     context = build_codex_context(query=query, current_user_prompt=query)
-    prompt = str(context.get("prompt") or "")
-    selected = 0
-    for store_name in ("project", "global"):
-        store = context.get(store_name)
-        if isinstance(store, dict):
-            selected += int(store.get("memory_count", 0))
-    rendered_ok = "# OACS Agent Context" in prompt and (
-        selected == 0 or any(
-            memory_id in prompt
-            for store_name in ("project", "global")
-            if isinstance((store := context.get(store_name)), dict)
-            for memory_id in store.get("memory_ids", [])
-        )
-    )
-    checks.append(
-        {
-            "name": "rendered_context",
-            "status": "PASS" if rendered_ok else "FAIL",
-            "selected_memories": selected,
-        }
-    )
-    checkpoint = context.get("current_task_state")
-    provenance = checkpoint.get("checkpoint_provenance") if isinstance(checkpoint, dict) else {}
-    checks.append(
-        {
-            "name": "latest_checkpoint",
-            "status": "PASS" if isinstance(provenance, dict) else "FAIL",
-            "available": bool(isinstance(provenance, dict) and provenance.get("id")),
-        }
-    )
+    checks.extend(context_health_checks(context))
     overall = "PASS" if all(item["status"] == "PASS" for item in checks) else "FAIL"
     return {"status": overall, "checks": checks, "context": context, "installation": snapshot}
 

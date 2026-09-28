@@ -7,6 +7,7 @@ from typing import Any
 
 from oacs.core.config import global_db_path
 from oacs.integrations.common import (
+    context_health_checks,
     ensure_global_storage,
     install_skills,
     load_json_object,
@@ -95,35 +96,7 @@ def doctor(home: Path | None = None, query: str = "OACS Cursor integration") -> 
         {"name": "global_storage", "status": _pass(snapshot["global_storage"]["available"])},
     ]
     context = build_agent_context(query=query, current_user_prompt=query)
-    selected = sum(
-        int(store.get("memory_count", 0))
-        for name in ("project", "global")
-        if isinstance((store := context.get(name)), dict)
-    )
-    prompt = str(context.get("prompt") or "")
-    ids = [
-        memory_id
-        for name in ("project", "global")
-        if isinstance((store := context.get(name)), dict)
-        for memory_id in store.get("memory_ids", [])
-    ]
-    checks.append({
-        "name": "rendered_context",
-        "status": _pass(
-            "# OACS Agent Context" in prompt
-            and (selected == 0 or any(item in prompt for item in ids))
-        ),
-        "selected_memories": selected,
-    })
-    state = context.get("current_task_state")
-    provenance = state.get("checkpoint_provenance") if isinstance(state, dict) else None
-    checks.append(
-        {
-            "name": "latest_checkpoint",
-            "status": _pass(isinstance(provenance, dict)),
-            "available": bool(isinstance(provenance, dict) and provenance.get("id")),
-        }
-    )
+    checks.extend(context_health_checks(context))
     return {
         "status": "PASS" if all(item["status"] == "PASS" for item in checks) else "FAIL",
         "checks": checks,

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import sqlite3
 from pathlib import Path
 
 import pytest
@@ -20,6 +21,8 @@ from oacs.integrations.claude.installer import (
 from oacs.integrations.claude.installer import (
     uninstall as claude_uninstall,
 )
+from oacs.integrations.codex.installer import doctor as codex_doctor
+from oacs.integrations.codex.installer import install as codex_install
 from oacs.integrations.cursor.installer import (
     doctor as cursor_doctor,
 )
@@ -216,3 +219,100 @@ def test_install_refuses_unmanaged_client_skill(
 def test_cursor_does_not_claim_unsupported_prompt_or_compaction_injection() -> None:
     assert run_cursor_hook({"hook_event_name": "beforeSubmitPrompt"}) is None
     assert run_cursor_hook({"hook_event_name": "preCompact"}) is None
+
+
+@pytest.mark.parametrize(
+    ("install_fn", "doctor_fn"),
+    [
+        (claude_install, claude_doctor),
+        (cursor_install, cursor_doctor),
+    ],
+)
+def test_client_doctor_rejects_unreadable_and_shadowed_project_memory(
+    tmp_path, monkeypatch, install_fn, doctor_fn
+) -> None:
+    home = tmp_path / "home"
+    root, project_db = _project(tmp_path)
+    global_db = tmp_path / "global" / "oacs.db"
+    _store(project_db, "Current project memory.", "project")
+    _store(global_db, None, "global")
+    monkeypatch.setenv("OACS_GLOBAL_DB", str(global_db))
+    monkeypatch.chdir(root)
+    install_fn(home)
+
+    memory_id = services(str(project_db)).memory.query(
+        "Current project", None, ["project"]
+    )[0].id
+    with sqlite3.connect(project_db) as connection:
+        connection.execute(
+            "UPDATE memory_records SET content_ciphertext = ? WHERE id = ?",
+            (b"invalid ciphertext", memory_id),
+        )
+    _store(root / ".oacs" / "oacs.db", "Older project memory.", "project")
+
+    diagnosis = doctor_fn(home, "project memory")
+    checks = {item["name"]: item for item in diagnosis["checks"]}
+
+    assert diagnosis["status"] == "FAIL"
+    assert checks["memory_readability"]["count"] == 1
+    assert checks["project_memory_visibility"]["count"] == 1
+
+
+@pytest.mark.parametrize(
+    ("install_fn", "doctor_fn"),
+    [
+        (claude_install, claude_doctor),
+        (cursor_install, cursor_doctor),
+    ],
+)
+def test_client_doctor_rejects_locked_project_store(
+    tmp_path, monkeypatch, install_fn, doctor_fn
+) -> None:
+    home = tmp_path / "home"
+    root, project_db = _project(tmp_path)
+    global_db = tmp_path / "global" / "oacs.db"
+    _store(project_db, "Project memory requiring a key.", "project")
+    _store(global_db, None, "global")
+    monkeypatch.setenv("OACS_GLOBAL_DB", str(global_db))
+    monkeypatch.chdir(root)
+    install_fn(home)
+    (project_db.parent / "unlocked.key").unlink()
+
+    diagnosis = doctor_fn(home, "project memory")
+    checks = {item["name"]: item for item in diagnosis["checks"]}
+
+    assert diagnosis["status"] == "FAIL"
+    assert checks["project_context_access"]["status"] == "FAIL"
+    assert checks["global_context_access"]["status"] == "PASS"
+
+
+@pytest.mark.parametrize(
+    ("install_fn", "doctor_fn"),
+    [
+        (codex_install, codex_doctor),
+        (claude_install, claude_doctor),
+        (cursor_install, cursor_doctor),
+    ],
+)
+def test_client_doctor_rejects_corrupt_project_database(
+    tmp_path, monkeypatch, install_fn, doctor_fn
+) -> None:
+    home = tmp_path / "home"
+    root, project_db = _project(tmp_path)
+    project_db.parent.mkdir(parents=True)
+    project_db.write_bytes(b"not a sqlite database")
+    global_db = tmp_path / "global" / "oacs.db"
+    _store(global_db, None, "global")
+    monkeypatch.setenv("OACS_GLOBAL_DB", str(global_db))
+    monkeypatch.chdir(root)
+    install_fn(home)
+
+    diagnosis = doctor_fn(home, "project memory")
+    checks = {item["name"]: item for item in diagnosis["checks"]}
+
+    assert diagnosis["status"] == "FAIL"
+    assert checks["project_context_access"]["status"] == "FAIL"
+    assert checks["global_context_access"]["status"] == "PASS"
+    assert {item["reason"] for item in diagnosis["context"]["warnings"]} == {
+        "DatabaseError"
+    }

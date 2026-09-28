@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import json
+import sqlite3
 from pathlib import Path
 
 from typer.testing import CliRunner
 
 from oacs.app import services
 from oacs.cli.main import app
+from oacs.core.config import discover_project_db, project_db_path
 from oacs.core.ids import new_id
 from oacs.core.json import hash_json
 from oacs.core.time import now_iso
@@ -118,6 +120,74 @@ def test_cross_project_memory_does_not_leak(tmp_path, monkeypatch) -> None:
     assert project_a != project_b
     assert "Beta architecture finding." in result["prompt"]
     assert "Alpha private architecture finding." not in result["prompt"]
+
+
+def test_nested_repository_does_not_use_parent_project_memory(tmp_path, monkeypatch) -> None:
+    parent, parent_db = _project(tmp_path, "parent")
+    child = parent / "child"
+    child.mkdir()
+    (child / ".git").mkdir()
+    _init_store(parent_db, "Parent-only private memory.", "project")
+    global_db = tmp_path / "global" / "oacs.db"
+    _init_store(global_db, None, "global")
+    monkeypatch.setenv("OACS_GLOBAL_DB", str(global_db))
+
+    assert discover_project_db(child) is None
+    assert project_db_path(child) == child / ".agent" / "oacs" / "oacs.db"
+    result = build_codex_context(query="private memory", cwd=child)
+
+    assert result["project"] is None
+    assert {item["reason"] for item in result["warnings"]} == {"storage_unavailable"}
+    assert "Parent-only private memory." not in result["prompt"]
+
+
+def test_doctor_rejects_unreadable_and_shadowed_project_memory(tmp_path, monkeypatch) -> None:
+    home = tmp_path / "home"
+    root, project_db = _project(tmp_path, "alpha")
+    global_db = tmp_path / "global" / "oacs.db"
+    _init_store(project_db, "Current project memory.", "project")
+    _init_store(global_db, None, "global")
+    monkeypatch.setenv("OACS_GLOBAL_DB", str(global_db))
+    monkeypatch.chdir(root)
+    install(home)
+
+    memory_id = services(str(project_db)).memory.query("Current project", None, ["project"])[0].id
+    with sqlite3.connect(project_db) as connection:
+        connection.execute(
+            "UPDATE memory_records SET content_ciphertext = ? WHERE id = ?",
+            (b"invalid ciphertext", memory_id),
+        )
+    legacy_db = root / ".oacs" / "oacs.db"
+    _init_store(legacy_db, "Older project memory.", "project")
+
+    diagnosis = doctor(home, query="project memory")
+    checks = {item["name"]: item for item in diagnosis["checks"]}
+
+    assert diagnosis["status"] == "FAIL"
+    assert checks["memory_readability"]["count"] == 1
+    assert checks["project_memory_visibility"]["count"] == 1
+    assert "shadowed_legacy_storage" in {
+        item["reason"] for item in diagnosis["context"]["warnings"]
+    }
+
+
+def test_doctor_rejects_locked_project_store(tmp_path, monkeypatch) -> None:
+    home = tmp_path / "home"
+    root, project_db = _project(tmp_path, "alpha")
+    global_db = tmp_path / "global" / "oacs.db"
+    _init_store(project_db, "Project memory requiring a key.", "project")
+    _init_store(global_db, None, "global")
+    monkeypatch.setenv("OACS_GLOBAL_DB", str(global_db))
+    monkeypatch.chdir(root)
+    install(home)
+    (project_db.parent / "unlocked.key").unlink()
+
+    diagnosis = doctor(home, query="project memory")
+    checks = {item["name"]: item for item in diagnosis["checks"]}
+
+    assert diagnosis["status"] == "FAIL"
+    assert checks["project_context_access"]["status"] == "FAIL"
+    assert checks["global_context_access"]["status"] == "PASS"
 
 
 def test_rendered_content_and_empty_retrieval(tmp_path, monkeypatch) -> None:

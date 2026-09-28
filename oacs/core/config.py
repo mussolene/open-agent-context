@@ -37,6 +37,7 @@ class OacsConfig:
 
 def discover_project_db(start: Path | None = None) -> str | None:
     current = (start or Path.cwd()).resolve()
+    project_root = discover_project_root(current)
     for folder in (current, *current.parents):
         for candidate in (
             folder / ".agent" / "oacs" / "oacs.db",
@@ -44,6 +45,8 @@ def discover_project_db(start: Path | None = None) -> str | None:
         ):
             if candidate.exists():
                 return str(candidate)
+        if folder == project_root:
+            break
     return None
 
 

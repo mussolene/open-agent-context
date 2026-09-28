@@ -31,6 +31,12 @@ Project memory is selected from the current repository and receives the larger
 budget. Relevant global memory comes from a separate user-data store. Project A
 storage is never queried while working in Project B.
 
+All client doctors use the same context health contract. They fail when a
+selected project or global store cannot be opened, contains unreadable selected
+memory, or when `.agent/oacs/oacs.db` shadows an existing legacy
+`.oacs/oacs.db`. A shadowed database is reported for explicit migration and is
+never removed automatically.
+
 All clients install the same source Skills from
 `oacs/integrations/shared_assets`:
 
@@ -107,6 +113,12 @@ acs integrations context \
   --query "<actual task>" \
   --json
 ```
+
+Все client doctors используют единый contract проверки context. Проверка
+завершается с `FAIL`, если выбранное project или global storage нельзя открыть,
+если выбранная memory не читается или если `.agent/oacs/oacs.db` скрывает
+существующую legacy-базу `.oacs/oacs.db`. Скрытая база требует явной миграции и
+никогда не удаляется автоматически.
 
 Все клиенты получают одинаковые Skills `oacs` и `proof-loop` из
 `oacs/integrations/shared_assets`. Persistent databases не находятся внутри

@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import sqlite3
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -51,6 +52,9 @@ def build_agent_context(
     elif not project.db_path.exists():
         warnings.append({"store": "project", "reason": "storage_unavailable"})
     else:
+        legacy_db = project.root / ".oacs" / "oacs.db"
+        if project.db_path != legacy_db and legacy_db.exists():
+            warnings.append({"store": "project", "reason": "shadowed_legacy_storage"})
         project_result = _build_store_context(
             project.db_path,
             scope="project",
@@ -289,19 +293,28 @@ def _build_store_context(
             "memory_ids": [memory.id for memory in svc.context.last_memories],
             "prompt": rendered.prompt,
         }
-    except (LockedKeyError, MemoryDecryptError, OSError, ValueError) as exc:
+    except (
+        LockedKeyError,
+        MemoryDecryptError,
+        OSError,
+        ValueError,
+        sqlite3.DatabaseError,
+    ) as exc:
         warnings.append({"store": scope, "reason": type(exc).__name__})
         return None
 
 
 def _latest_checkpoint(db_path: Path) -> dict[str, object] | None:
-    svc = services(str(db_path), require_key=False)
-    rows = svc.store.list(
-        "task_traces",
-        filters={"status": "active"},
-        order_by=[("created_at", "desc"), ("id", "desc")],
-        limit=None,
-    )
+    try:
+        svc = services(str(db_path), require_key=False)
+        rows = svc.store.list(
+            "task_traces",
+            filters={"status": "active"},
+            order_by=[("created_at", "desc"), ("id", "desc")],
+            limit=None,
+        )
+    except (OSError, ValueError, sqlite3.DatabaseError):
+        return None
     for row in rows:
         payload = row.get("payload")
         if isinstance(payload, dict) and payload.get("kind") == "checkpoint":

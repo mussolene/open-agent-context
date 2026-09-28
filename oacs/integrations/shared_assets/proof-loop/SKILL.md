@@ -39,13 +39,14 @@ making those tools part of the generic protocol.
 
 ## Agent Roles
 
-The loop can run in one agent. When the user has authorized delegation and the runtime
-provides matching roles, use:
+The loop can run in one agent. When the user has authorized delegation, use
+bounded native subagents only if their instructions follow the OACS state and
+evidence contract above. The bundled `task-spec-freezer`, `task-builder`,
+`task-verifier`, and `task-fixer` role definitions still require `.agent/tasks/`;
+do not use them with this OACS-based loop until those definitions are migrated.
 
-- `task-spec-freezer` for scope and acceptance criteria;
-- `task-builder` for implementation and implementation evidence;
-- `task-verifier` for a fresh read-only verdict;
-- `task-fixer` only for verifier-confirmed gaps.
+Delegate scope and acceptance criteria, implementation, fresh read-only
+verification, or confirmed fixes only when a separate agent improves the work.
 
 Pass compact scope, acceptance criteria, relevant OACS context, and evidence references.
 Do not pass full chat history or unrelated memory. The parent agent owns final integration
